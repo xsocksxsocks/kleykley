@@ -74,12 +74,24 @@ export function Footer() {
           <div>
             <h4 className="text-gold font-serif text-lg mb-4">Kontakt</h4>
             <ul className="space-y-3">
+              <li className="text-sm font-medium text-cream">
+                Kley Rechtsanwalt GmbH
+              </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-gold mt-1 shrink-0" />
                 <span className="text-sm">
                   Eiderkamp 13<br />
                   24582 Bordesholm
                 </span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone className="w-4 h-4 text-gold shrink-0" />
+                <a 
+                  href="tel:+4943221234567" 
+                  className="text-sm hover:text-gold transition-colors"
+                >
+                  +49 (0) 4322 123 4567
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-gold shrink-0" />
@@ -96,14 +108,9 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-gold/20">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-cream/50">
-              © {new Date().getFullYear()} Kley Rechtsanwalt GmbH. Alle Rechte vorbehalten.
-            </p>
-            <p className="text-xs text-cream/40">
-              Amtsgericht Kiel HRB 25081 KI
-            </p>
-          </div>
+          <p className="text-sm text-cream/50 text-center">
+            © {new Date().getFullYear()} Kley Rechtsanwalt GmbH. Alle Rechte vorbehalten.
+          </p>
         </div>
       </div>
     </footer>
