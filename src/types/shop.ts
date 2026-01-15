@@ -2,6 +2,7 @@ export interface Profile {
   id: string;
   email: string;
   full_name: string | null;
+  company_name: string | null;
   phone: string | null;
   address: string | null;
   city: string | null;
@@ -30,8 +31,18 @@ export interface Product {
   category: string | null;
   stock_quantity: number;
   is_active: boolean;
+  tax_rate: number;
   created_at: string;
   updated_at: string;
+  product_images?: ProductImage[];
+}
+
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  sort_order: number;
+  created_at: string;
 }
 
 export interface Order {
@@ -43,6 +54,11 @@ export interface Order {
   shipping_address: string | null;
   shipping_city: string | null;
   shipping_postal_code: string | null;
+  billing_address: string | null;
+  billing_city: string | null;
+  billing_postal_code: string | null;
+  company_name: string | null;
+  use_different_shipping: boolean;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -63,3 +79,19 @@ export interface CartItem {
   product: Product;
   quantity: number;
 }
+
+// Helper function to calculate tax
+export const calculateTax = (netPrice: number, taxRate: number): number => {
+  return netPrice * (taxRate / 100);
+};
+
+export const calculateGrossPrice = (netPrice: number, taxRate: number): number => {
+  return netPrice + calculateTax(netPrice, taxRate);
+};
+
+export const formatCurrency = (amount: number): string => {
+  return amount.toLocaleString('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  });
+};

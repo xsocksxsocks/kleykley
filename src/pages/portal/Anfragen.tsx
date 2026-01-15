@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Order, OrderItem } from '@/types/shop';
+import { Order, OrderItem, formatCurrency } from '@/types/shop';
+import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const statusLabels: Record<Order['status'], string> = {
@@ -86,19 +87,8 @@ const Anfragen: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <Button variant="ghost" asChild>
-            <Link to="/portal">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Zurück zum Portal
-            </Link>
-          </Button>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
+    <PortalLayout>
+      <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-8">Meine Anfragen</h1>
 
         {loadingOrders ? (
@@ -136,10 +126,7 @@ const Anfragen: React.FC = () => {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="font-bold">
-                          ca. {order.total_amount.toLocaleString('de-DE', {
-                            style: 'currency',
-                            currency: 'EUR',
-                          })}
+                          {formatCurrency(order.total_amount)} netto
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(order.created_at).toLocaleDateString('de-DE')}
@@ -165,15 +152,18 @@ const Anfragen: React.FC = () => {
                                 {item.quantity}x {item.product_name}
                               </span>
                               <span>
-                                ca. {item.total_price.toLocaleString('de-DE', {
-                                  style: 'currency',
-                                  currency: 'EUR',
-                                })}
+                                {formatCurrency(item.total_price)} netto
                               </span>
                             </div>
                           ))}
                         </div>
                       </div>
+                      {order.company_name && (
+                        <div>
+                          <h4 className="font-medium mb-2">Firma</h4>
+                          <p className="text-sm text-muted-foreground">{order.company_name}</p>
+                        </div>
+                      )}
                       {order.shipping_address && (
                         <div>
                           <h4 className="font-medium mb-2">Lieferadresse</h4>
@@ -196,8 +186,8 @@ const Anfragen: React.FC = () => {
             ))}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </PortalLayout>
   );
 };
 
