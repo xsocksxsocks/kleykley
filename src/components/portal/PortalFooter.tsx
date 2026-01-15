@@ -32,7 +32,7 @@ export function PortalFooter() {
               </li>
               <li>
                 <Link to="/portal/anfragen" className="text-sm hover:text-gold transition-colors">
-                  Meine Anfragen
+                  Meine Angebote
                 </Link>
               </li>
               <li>
