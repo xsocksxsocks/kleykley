@@ -98,16 +98,20 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased font-medium;
+    @apply bg-background text-foreground font-sans antialiased;
     font-weight: 500;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif font-bold;
+    @apply font-serif font-bold tracking-tight;
   }
 
-  p, span, a, li, label {
-    @apply font-medium;
+  p {
+    @apply font-sans font-medium leading-relaxed;
+  }
+
+  span, a, li, label, button {
+    @apply font-sans font-semibold;
   }
 }
 
