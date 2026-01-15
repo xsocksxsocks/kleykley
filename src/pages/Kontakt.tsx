@@ -37,11 +37,11 @@ const Kontakt = () => {
       <section className="py-24 bg-navy">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl">
-            <span className="text-gold text-sm tracking-[0.2em] uppercase">Kontakt</span>
+            <span className="text-gold text-base font-semibold tracking-[0.2em] uppercase">Kontakt</span>
             <h1 className="text-4xl md:text-5xl font-serif text-cream mt-4 mb-6 line-decoration">
               Sprechen Sie mit uns
             </h1>
-            <p className="text-cream/70 text-lg leading-relaxed">
+            <p className="text-cream/70 text-xl leading-relaxed font-medium">
               Haben Sie Fragen oder möchten Sie einen Beratungstermin vereinbaren? 
               Wir freuen uns auf Ihre Nachricht.
             </p>
@@ -55,7 +55,7 @@ const Kontakt = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             {/* Contact Info */}
             <div>
-              <h2 className="text-2xl font-serif text-foreground mb-8">
+              <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-8">
                 Kontaktdaten
               </h2>
               <div className="space-y-8">
@@ -64,8 +64,8 @@ const Kontakt = () => {
                     <MapPin className="w-5 h-5 text-gold" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-foreground mb-1">Adresse</h3>
-                    <p className="text-muted-foreground">
+                    <h3 className="font-semibold text-foreground mb-1">Adresse</h3>
+                    <p className="text-muted-foreground text-base font-medium">
                       Kley Rechtsanwalt GmbH<br />
                       Eiderkamp 13<br />
                       24582 Bordesholm
@@ -78,10 +78,10 @@ const Kontakt = () => {
                     <Phone className="w-5 h-5 text-gold" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-foreground mb-1">Telefon</h3>
+                    <h3 className="font-semibold text-foreground mb-1">Telefon</h3>
                     <a 
                       href="tel:+4943221234567" 
-                      className="text-muted-foreground hover:text-gold transition-colors"
+                      className="text-muted-foreground text-base font-medium hover:text-gold transition-colors"
                     >
                       +49 (0) 4322 123 4567
                     </a>
@@ -93,10 +93,10 @@ const Kontakt = () => {
                     <Mail className="w-5 h-5 text-gold" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-foreground mb-1">E-Mail</h3>
+                    <h3 className="font-semibold text-foreground mb-1">E-Mail</h3>
                     <a 
                       href="mailto:info@kanzlei-kley.com" 
-                      className="text-muted-foreground hover:text-gold transition-colors"
+                      className="text-muted-foreground text-base font-medium hover:text-gold transition-colors"
                     >
                       info@kanzlei-kley.com
                     </a>
@@ -108,8 +108,8 @@ const Kontakt = () => {
                     <Clock className="w-5 h-5 text-gold" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-foreground mb-1">Öffnungszeiten</h3>
-                    <p className="text-muted-foreground">
+                    <h3 className="font-semibold text-foreground mb-1">Öffnungszeiten</h3>
+                    <p className="text-muted-foreground text-base font-medium">
                       Montag – Freitag<br />
                       10:00 – 16:00 Uhr<br />
                       <span className="text-sm">Termine nach Vereinbarung</span>
@@ -135,13 +135,13 @@ const Kontakt = () => {
 
             {/* Contact Form */}
             <div>
-              <h2 className="text-2xl font-serif text-foreground mb-8">
+              <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-8">
                 Kontaktformular
               </h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+                    <label htmlFor="name" className="block text-base font-semibold text-foreground mb-2">
                       Name *
                     </label>
                     <Input
@@ -153,7 +153,7 @@ const Kontakt = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                    <label htmlFor="email" className="block text-base font-semibold text-foreground mb-2">
                       E-Mail *
                     </label>
                     <Input
@@ -169,7 +169,7 @@ const Kontakt = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
+                    <label htmlFor="phone" className="block text-base font-semibold text-foreground mb-2">
                       Telefon
                     </label>
                     <Input
@@ -181,7 +181,7 @@ const Kontakt = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
+                    <label htmlFor="subject" className="block text-base font-semibold text-foreground mb-2">
                       Betreff *
                     </label>
                     <Input
@@ -195,8 +195,8 @@ const Kontakt = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
-                    Ihre Nachricht *
+                <label htmlFor="message" className="block text-base font-semibold text-foreground mb-2">
+                  Ihre Nachricht *
                   </label>
                   <Textarea
                     id="message"
@@ -208,7 +208,7 @@ const Kontakt = () => {
                   />
                 </div>
 
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground font-medium">
                   * Pflichtfelder. Mit dem Absenden des Formulars erklären Sie sich mit unserer{" "}
                   <a href="/datenschutz" className="text-gold hover:underline">Datenschutzerklärung</a> einverstanden.
                 </p>

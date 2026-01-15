@@ -66,11 +66,11 @@ const Leistungen = () => {
       <section className="py-24 bg-navy">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl">
-            <span className="text-gold text-sm tracking-[0.2em] uppercase">Rechtsgebiete</span>
+            <span className="text-gold text-base font-semibold tracking-[0.2em] uppercase">Rechtsgebiete</span>
             <h1 className="text-4xl md:text-5xl font-serif text-cream mt-4 mb-6 line-decoration">
               Unsere Leistungen
             </h1>
-            <p className="text-cream/70 text-lg leading-relaxed">
+            <p className="text-cream/70 text-xl leading-relaxed font-medium">
               Wir bieten Ihnen kompetente Rechtsberatung in unseren Schwerpunktgebieten. 
               Jeder Fall wird individuell betrachtet und optimal betreut.
             </p>
@@ -93,10 +93,10 @@ const Leistungen = () => {
                   <div className="w-16 h-16 rounded-lg bg-navy flex items-center justify-center mb-6">
                     <service.icon className="w-8 h-8 text-gold" />
                   </div>
-                  <h2 className="text-3xl font-serif text-foreground mb-4">
+                  <h2 className="text-3xl md:text-4xl font-serif text-foreground mb-4">
                     {service.title}
                   </h2>
-                  <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
+                  <p className="text-muted-foreground text-lg mb-6 leading-relaxed font-medium">
                     {service.description}
                   </p>
                   <Button variant="gold" asChild>
@@ -107,14 +107,14 @@ const Leistungen = () => {
                   </Button>
                 </div>
                 <div className={`bg-card rounded-lg border border-border p-8 ${index % 2 === 1 ? "lg:order-1" : ""}`}>
-                  <h3 className="text-lg font-medium text-foreground mb-6">
+                  <h3 className="text-xl font-semibold text-foreground mb-6">
                     Unsere Leistungen umfassen:
                   </h3>
                   <ul className="space-y-4">
                     {service.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-3">
                         <CheckCircle className="w-5 h-5 text-gold shrink-0 mt-0.5" />
-                        <span className="text-muted-foreground">{feature}</span>
+                        <span className="text-muted-foreground text-base font-medium">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -131,7 +131,7 @@ const Leistungen = () => {
           <h2 className="text-3xl md:text-4xl font-serif text-cream mb-6">
             Haben Sie Fragen?
           </h2>
-          <p className="text-cream/70 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-cream/70 text-xl mb-8 max-w-2xl mx-auto font-medium">
             Kontaktieren Sie uns für ein unverbindliches Erstgespräch. 
             Wir beraten Sie gerne zu Ihrem individuellen Anliegen.
           </p>

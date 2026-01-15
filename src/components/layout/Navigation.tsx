@@ -36,7 +36,7 @@ export function Navigation() {
                 key={link.href}
                 to={link.href}
                 className={cn(
-                  "text-sm font-medium tracking-wide transition-colors duration-300",
+                  "text-base font-semibold tracking-wide transition-colors duration-300",
                   location.pathname === link.href
                     ? "text-gold"
                     : "text-cream/70 hover:text-gold"
@@ -70,7 +70,7 @@ export function Navigation() {
                   to={link.href}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "text-base font-medium py-2 transition-colors",
+                    "text-lg font-semibold py-2 transition-colors",
                     location.pathname === link.href
                       ? "text-gold"
                       : "text-cream/70 hover:text-gold"
