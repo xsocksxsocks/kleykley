@@ -47,14 +47,14 @@ const Index = () => {
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-2xl animate-fade-up">
-            <span className="inline-block text-gold text-sm tracking-[0.3em] uppercase mb-4">
+            <span className="inline-block text-gold text-base tracking-[0.3em] uppercase mb-4">
               Kley Rechtsanwalt GmbH
             </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-cream leading-relaxed mb-6">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif text-cream leading-tight mb-8">
               Ihr Recht ist unser
               <span className="text-gradient-gold block mt-2 pb-2">Anliegen</span>
             </h1>
-            <p className="text-cream/70 text-lg md:text-xl leading-relaxed mb-8 max-w-xl">
+            <p className="text-cream/70 text-xl md:text-2xl leading-relaxed mb-10 max-w-xl">
               Kompetente und persönliche Rechtsberatung in Bordesholm. 
               Wir stehen Ihnen mit Erfahrung und Engagement zur Seite.
             </p>
@@ -85,8 +85,8 @@ const Index = () => {
           }`}
         >
           <div className={`text-center mb-16 ${servicesAnimation.isVisible ? 'animate-slide-up' : ''}`}>
-            <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase">Unsere Expertise</span>
-            <h2 className="text-3xl md:text-4xl font-serif text-foreground mt-4 mb-6">
+            <span className="text-gold text-base font-semibold tracking-[0.2em] uppercase">Unsere Expertise</span>
+            <h2 className="text-4xl md:text-5xl font-serif text-foreground mt-4 mb-6">
               Rechtsgebiete
             </h2>
             <div className="w-16 h-0.5 bg-gradient-gold mx-auto" />
@@ -104,10 +104,10 @@ const Index = () => {
                 <div className="w-14 h-14 rounded-lg bg-navy flex items-center justify-center mb-6 group-hover:bg-gradient-gold transition-all duration-300">
                   <service.icon className="w-7 h-7 text-gold group-hover:text-navy-dark transition-colors" />
                 </div>
-                <h3 className="text-xl font-serif text-foreground mb-3">
+                <h3 className="text-2xl font-serif text-foreground mb-3">
                   {service.title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground text-base leading-relaxed">
                   {service.description}
                 </p>
               </div>
@@ -126,17 +126,17 @@ const Index = () => {
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className={`order-2 lg:order-1 ${aboutAnimation.isVisible ? 'animate-slide-left' : ''}`}>
-              <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase">Über uns</span>
-              <h2 className="text-3xl md:text-4xl font-serif text-cream mt-4 mb-6 line-decoration">
+              <span className="text-gold text-base font-semibold tracking-[0.2em] uppercase">Über uns</span>
+              <h2 className="text-4xl md:text-5xl font-serif text-cream mt-4 mb-6 line-decoration">
                 Vertrauen durch Kompetenz
               </h2>
-              <p className="text-cream/80 leading-relaxed mb-6">
+              <p className="text-cream/80 text-lg leading-relaxed mb-6">
                 Die Kley Rechtsanwalt GmbH steht für persönliche, kompetente und zuverlässige 
                 Rechtsberatung. Unser Ziel ist es, für unsere Mandanten die bestmöglichen 
                 Lösungen zu finden – mit Engagement, Erfahrung und einem offenen Ohr für 
                 Ihre Anliegen.
               </p>
-              <p className="text-cream/80 leading-relaxed mb-8">
+              <p className="text-cream/80 text-lg leading-relaxed mb-8">
                 Von unserem Standort in Bordesholm aus betreuen wir Mandanten in ganz 
                 Schleswig-Holstein und darüber hinaus.
               </p>
@@ -177,11 +177,11 @@ const Index = () => {
           }`}
         >
           <div className={`max-w-2xl ${ctaAnimation.isVisible ? 'animate-slide-up' : ''}`}>
-            <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase">Kontakt</span>
-            <h2 className="text-3xl md:text-4xl font-serif text-foreground mt-4 mb-6">
+            <span className="text-gold text-base font-semibold tracking-[0.2em] uppercase">Kontakt</span>
+            <h2 className="text-4xl md:text-5xl font-serif text-foreground mt-4 mb-6">
               Lassen Sie uns über Ihr Anliegen sprechen
             </h2>
-            <p className="text-muted-foreground text-lg mb-8">
+            <p className="text-muted-foreground text-xl mb-8">
               Vereinbaren Sie noch heute einen Termin für eine unverbindliche Erstberatung.
               Wir nehmen uns Zeit für Sie.
             </p>
