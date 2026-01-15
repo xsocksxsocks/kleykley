@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Building2, Scale, Users, Heart, ArrowRight } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import heroImage from "@/assets/hero-office.jpg";
 import handshakeImage from "@/assets/business-handshake.jpg";
 import justiceImage from "@/assets/justice-scales.jpg";
-
 const services = [
   {
     icon: Building2,
@@ -30,6 +30,10 @@ const services = [
 ];
 
 const Index = () => {
+  const servicesAnimation = useScrollAnimation<HTMLDivElement>();
+  const aboutAnimation = useScrollAnimation<HTMLDivElement>();
+  const ctaAnimation = useScrollAnimation<HTMLDivElement>();
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -74,9 +78,14 @@ const Index = () => {
 
       {/* Services Section */}
       <section className="py-24 bg-background">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="text-gold text-sm tracking-[0.2em] uppercase">Unsere Expertise</span>
+        <div 
+          ref={servicesAnimation.ref}
+          className={`container mx-auto px-6 transition-opacity duration-700 ${
+            servicesAnimation.isVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className={`text-center mb-16 ${servicesAnimation.isVisible ? 'animate-slide-up' : ''}`}>
+            <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase">Unsere Expertise</span>
             <h2 className="text-3xl md:text-4xl font-serif text-foreground mt-4 mb-6">
               Rechtsgebiete
             </h2>
@@ -87,8 +96,10 @@ const Index = () => {
             {services.map((service, index) => (
               <div
                 key={service.title}
-                className="group p-8 bg-card rounded-lg border border-border hover:border-gold/50 transition-all duration-500 hover:shadow-elegant"
-                style={{ animationDelay: `${index * 100}ms` }}
+                className={`group p-8 bg-card rounded-lg border border-border hover:border-gold/50 transition-all duration-500 hover:shadow-elegant ${
+                  servicesAnimation.isVisible ? 'animate-slide-up' : 'opacity-0'
+                }`}
+                style={{ animationDelay: `${index * 150}ms` }}
               >
                 <div className="w-14 h-14 rounded-lg bg-navy flex items-center justify-center mb-6 group-hover:bg-gradient-gold transition-all duration-300">
                   <service.icon className="w-7 h-7 text-gold group-hover:text-navy-dark transition-colors" />
@@ -96,7 +107,7 @@ const Index = () => {
                 <h3 className="text-xl font-serif text-foreground mb-3">
                   {service.title}
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed">
                   {service.description}
                 </p>
               </div>
@@ -107,20 +118,25 @@ const Index = () => {
 
       {/* About Preview Section */}
       <section className="py-24 bg-navy">
-        <div className="container mx-auto px-6">
+        <div 
+          ref={aboutAnimation.ref}
+          className={`container mx-auto px-6 transition-opacity duration-700 ${
+            aboutAnimation.isVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="order-2 lg:order-1">
-              <span className="text-gold text-sm tracking-[0.2em] uppercase">Über uns</span>
+            <div className={`order-2 lg:order-1 ${aboutAnimation.isVisible ? 'animate-slide-left' : ''}`}>
+              <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase">Über uns</span>
               <h2 className="text-3xl md:text-4xl font-serif text-cream mt-4 mb-6 line-decoration">
                 Vertrauen durch Kompetenz
               </h2>
-              <p className="text-cream/70 leading-relaxed mb-6">
+              <p className="text-cream/80 leading-relaxed mb-6">
                 Die Kley Rechtsanwalt GmbH steht für persönliche, kompetente und zuverlässige 
                 Rechtsberatung. Unser Ziel ist es, für unsere Mandanten die bestmöglichen 
                 Lösungen zu finden – mit Engagement, Erfahrung und einem offenen Ohr für 
                 Ihre Anliegen.
               </p>
-              <p className="text-cream/70 leading-relaxed mb-8">
+              <p className="text-cream/80 leading-relaxed mb-8">
                 Von unserem Standort in Bordesholm aus betreuen wir Mandanten in ganz 
                 Schleswig-Holstein und darüber hinaus.
               </p>
@@ -131,7 +147,7 @@ const Index = () => {
                 </Link>
               </Button>
             </div>
-            <div className="order-1 lg:order-2 relative">
+            <div className={`order-1 lg:order-2 relative ${aboutAnimation.isVisible ? 'animate-slide-right' : ''}`}>
               <div className="relative">
                 <img
                   src={handshakeImage}
@@ -154,9 +170,14 @@ const Index = () => {
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="container mx-auto px-6 relative z-10">
-          <div className="max-w-2xl">
-            <span className="text-gold text-sm tracking-[0.2em] uppercase">Kontakt</span>
+        <div 
+          ref={ctaAnimation.ref}
+          className={`container mx-auto px-6 relative z-10 transition-opacity duration-700 ${
+            ctaAnimation.isVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className={`max-w-2xl ${ctaAnimation.isVisible ? 'animate-slide-up' : ''}`}>
+            <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase">Kontakt</span>
             <h2 className="text-3xl md:text-4xl font-serif text-foreground mt-4 mb-6">
               Lassen Sie uns über Ihr Anliegen sprechen
             </h2>
