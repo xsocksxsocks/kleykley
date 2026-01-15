@@ -46,9 +46,9 @@ const Index = () => {
             <span className="inline-block text-gold text-sm tracking-[0.3em] uppercase mb-4">
               Kley Rechtsanwalt GmbH
             </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-cream leading-tight mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-cream leading-relaxed mb-6">
               Ihr Recht ist unser
-              <span className="text-gradient-gold block mt-2">Anliegen</span>
+              <span className="text-gradient-gold block mt-2 pb-2">Anliegen</span>
             </h1>
             <p className="text-cream/70 text-lg md:text-xl leading-relaxed mb-8 max-w-xl">
               Kompetente und persönliche Rechtsberatung in Bordesholm. 
