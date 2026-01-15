@@ -45,6 +45,7 @@ import {
   Edit,
   Trash2,
   RefreshCw,
+  Eye,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -765,24 +766,36 @@ const Admin: React.FC = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Select
-                              value={order.status}
-                              onValueChange={(value) =>
-                                handleUpdateOrderStatus(order.id, value as Order['status'])
-                              }
-                            >
-                              <SelectTrigger className="w-40">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="pending">Neu</SelectItem>
-                                <SelectItem value="confirmed">Angebot erstellt</SelectItem>
-                                <SelectItem value="processing">In Bearbeitung</SelectItem>
-                                <SelectItem value="shipped">Versendet</SelectItem>
-                                <SelectItem value="delivered">Abgeschlossen</SelectItem>
-                                <SelectItem value="cancelled">Storniert</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                asChild
+                              >
+                                <Link to={`/admin/anfrage/${order.id}`}>
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  Details
+                                </Link>
+                              </Button>
+                              <Select
+                                value={order.status}
+                                onValueChange={(value) =>
+                                  handleUpdateOrderStatus(order.id, value as Order['status'])
+                                }
+                              >
+                                <SelectTrigger className="w-40">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">Neu</SelectItem>
+                                  <SelectItem value="confirmed">Angebot erstellt</SelectItem>
+                                  <SelectItem value="processing">In Bearbeitung</SelectItem>
+                                  <SelectItem value="shipped">Versendet</SelectItem>
+                                  <SelectItem value="delivered">Abgeschlossen</SelectItem>
+                                  <SelectItem value="cancelled">Storniert</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}

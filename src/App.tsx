@@ -20,6 +20,7 @@ import Warenkorb from "./pages/portal/Warenkorb";
 import Anfragen from "./pages/portal/Anfragen";
 import Profil from "./pages/portal/Profil";
 import Admin from "./pages/admin/Admin";
+import AnfrageDetail from "./pages/admin/AnfrageDetail";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
                 <Route path="/portal/anfragen" element={<Anfragen />} />
                 <Route path="/portal/profil" element={<Profil />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/anfrage/:id" element={<AnfrageDetail />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
