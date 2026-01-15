@@ -28,9 +28,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Received contact form submission:", { name, email, subject });
 
-    // Send notification email to the law firm (using the Resend account email)
+    // Send notification email to the law firm
     const notificationEmail = await resend.emails.send({
-      from: "Kontaktformular <onboarding@resend.dev>",
+      from: "Kontaktformular <noreply@kley-kanzlei.com>",
       to: ["info@kley-kanzlei.com"],
       subject: `Neue Kontaktanfrage: ${subject}`,
       html: `
@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to the sender
     const confirmationEmail = await resend.emails.send({
-      from: "Kley Rechtsanwalt GmbH <onboarding@resend.dev>",
+      from: "Kley Rechtsanwalt GmbH <noreply@kley-kanzlei.com>",
       to: [email],
       subject: "Ihre Anfrage bei Kley Rechtsanwalt GmbH",
       html: `
