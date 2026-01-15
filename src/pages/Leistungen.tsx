@@ -1,8 +1,8 @@
 import { Layout } from "@/components/layout/Layout";
+import { SEOHead } from "@/components/SEOHead";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Building2, Scale, Users, Heart, ArrowRight, CheckCircle } from "lucide-react";
-
 const services = [
   {
     icon: Building2,
@@ -57,6 +57,11 @@ const services = [
 const Leistungen = () => {
   return (
     <Layout>
+      <SEOHead 
+        title="Leistungen" 
+        description="Unsere Rechtsgebiete: Firmengründungen, Insolvenzrecht, Erbrecht und Familienrecht. Kompetente Rechtsberatung in Bordesholm."
+        canonical="/leistungen"
+      />
       {/* Hero Section */}
       <section className="py-24 bg-navy">
         <div className="container mx-auto px-6">

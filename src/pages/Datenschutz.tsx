@@ -1,8 +1,14 @@
 import { Layout } from "@/components/layout/Layout";
+import { SEOHead } from "@/components/SEOHead";
 
 const Datenschutz = () => {
   return (
     <Layout>
+      <SEOHead 
+        title="Datenschutz" 
+        description="Datenschutzerklärung der Kley Rechtsanwalt GmbH. Informationen zur Verarbeitung Ihrer personenbezogenen Daten."
+        canonical="/datenschutz"
+      />
       {/* Hero Section */}
       <section className="py-24 bg-navy">
         <div className="container mx-auto px-6">
