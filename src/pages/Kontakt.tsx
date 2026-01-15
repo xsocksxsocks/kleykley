@@ -6,9 +6,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Mail, MapPin, Clock, Phone } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Kontakt = () => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -17,13 +19,32 @@ const Kontakt = () => {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Nachricht gesendet",
-      description: "Vielen Dank für Ihre Nachricht. Wir werden uns schnellstmöglich bei Ihnen melden.",
-    });
-    setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+    setIsSubmitting(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-contact-email', {
+        body: formData,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Nachricht gesendet",
+        description: "Vielen Dank für Ihre Nachricht. Wir werden uns schnellstmöglich bei Ihnen melden.",
+      });
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Fehler",
+        description: "Ihre Nachricht konnte leider nicht gesendet werden. Bitte versuchen Sie es später erneut.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -213,8 +234,14 @@ const Kontakt = () => {
                   <a href="/datenschutz" className="text-gold hover:underline">Datenschutzerklärung</a> einverstanden.
                 </p>
 
-                <Button type="submit" variant="gold" size="lg" className="w-full sm:w-auto">
-                  Nachricht senden
+                <Button 
+                  type="submit" 
+                  variant="gold" 
+                  size="lg" 
+                  className="w-full sm:w-auto"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Wird gesendet..." : "Nachricht senden"}
                 </Button>
               </form>
             </div>
