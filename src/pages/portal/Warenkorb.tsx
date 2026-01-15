@@ -8,10 +8,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, Trash2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const Cart: React.FC = () => {
+const Warenkorb: React.FC = () => {
   const { user, profile, isApproved } = useAuth();
   const { items, updateQuantity, removeFromCart, clearCart, totalPrice } = useCart();
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ const Cart: React.FC = () => {
     if (!user || !isApproved) {
       toast({
         title: 'Nicht berechtigt',
-        description: 'Sie müssen freigeschaltet sein, um zu bestellen.',
+        description: 'Ihr Konto muss freigeschaltet sein, um Anfragen zu senden.',
         variant: 'destructive',
       });
       return;
@@ -38,8 +38,8 @@ const Cart: React.FC = () => {
 
     if (items.length === 0) {
       toast({
-        title: 'Warenkorb leer',
-        description: 'Fügen Sie Produkte hinzu, bevor Sie bestellen.',
+        title: 'Keine Produkte ausgewählt',
+        description: 'Fügen Sie Produkte hinzu, bevor Sie eine Anfrage senden.',
         variant: 'destructive',
       });
       return;
@@ -48,7 +48,7 @@ const Cart: React.FC = () => {
     setIsOrdering(true);
 
     try {
-      // Create the order
+      // Create the order/request
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -84,15 +84,15 @@ const Cart: React.FC = () => {
       // Clear cart and show success
       clearCart();
       toast({
-        title: 'Bestellung erfolgreich!',
-        description: `Ihre Bestellung ${orderData.order_number} wurde aufgenommen. Sie erhalten eine Rechnung per E-Mail.`,
+        title: 'Anfrage gesendet!',
+        description: `Ihre Angebotsanfrage ${orderData.order_number} wurde erfolgreich übermittelt. Wir melden uns schnellstmöglich bei Ihnen.`,
       });
-      navigate('/shop/orders');
+      navigate('/portal/anfragen');
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error('Error creating request:', error);
       toast({
         title: 'Fehler',
-        description: 'Die Bestellung konnte nicht aufgegeben werden. Bitte versuchen Sie es erneut.',
+        description: 'Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.',
         variant: 'destructive',
       });
     } finally {
@@ -106,9 +106,9 @@ const Cart: React.FC = () => {
         <header className="border-b bg-card">
           <div className="container mx-auto px-4 py-4">
             <Button variant="ghost" asChild>
-              <Link to="/shop">
+              <Link to="/portal">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Zurück zum Shop
+                Zurück zum Portal
               </Link>
             </Button>
           </div>
@@ -116,13 +116,13 @@ const Cart: React.FC = () => {
         <main className="container mx-auto px-4 py-16">
           <Card className="max-w-md mx-auto text-center">
             <CardContent className="pt-8">
-              <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Ihr Warenkorb ist leer</h3>
+              <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">Keine Produkte ausgewählt</h3>
               <p className="text-muted-foreground mb-4">
-                Entdecken Sie unsere Produkte und fügen Sie diese Ihrem Warenkorb hinzu.
+                Wählen Sie Produkte aus, für die Sie ein Angebot anfordern möchten.
               </p>
               <Button asChild>
-                <Link to="/shop">Zum Shop</Link>
+                <Link to="/portal">Zum Produktkatalog</Link>
               </Button>
             </CardContent>
           </Card>
@@ -136,16 +136,16 @@ const Cart: React.FC = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
           <Button variant="ghost" asChild>
-            <Link to="/shop">
+            <Link to="/portal">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Zurück zum Shop
+              Zurück zum Portal
             </Link>
           </Button>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8">Warenkorb</h1>
+        <h1 className="text-2xl font-bold mb-8">Angebotsanfrage</h1>
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
@@ -161,13 +161,13 @@ const Cart: React.FC = () => {
                       />
                     ) : (
                       <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center">
-                        <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                        <FileText className="h-8 w-8 text-muted-foreground" />
                       </div>
                     )}
                     <div className="flex-1">
                       <h3 className="font-medium">{item.product.name}</h3>
                       <p className="text-muted-foreground">
-                        {item.product.price.toLocaleString('de-DE', {
+                        ca. {item.product.price.toLocaleString('de-DE', {
                           style: 'currency',
                           currency: 'EUR',
                         })}
@@ -191,7 +191,7 @@ const Cart: React.FC = () => {
                       </Button>
                     </div>
                     <p className="font-bold w-24 text-right">
-                      {(item.product.price * item.quantity).toLocaleString('de-DE', {
+                      ca. {(item.product.price * item.quantity).toLocaleString('de-DE', {
                         style: 'currency',
                         currency: 'EUR',
                       })}
@@ -212,31 +212,21 @@ const Cart: React.FC = () => {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>Bestellübersicht</CardTitle>
+                <CardTitle>Ihre Anfrage</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
-                  <span>Zwischensumme</span>
+                  <span>Geschätzter Wert</span>
                   <span>
-                    {totalPrice.toLocaleString('de-DE', {
+                    ca. {totalPrice.toLocaleString('de-DE', {
                       style: 'currency',
                       currency: 'EUR',
                     })}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Versand</span>
-                  <span>Auf Anfrage</span>
-                </div>
-                <div className="border-t pt-4 flex justify-between font-bold text-lg">
-                  <span>Gesamt</span>
-                  <span>
-                    {totalPrice.toLocaleString('de-DE', {
-                      style: 'currency',
-                      currency: 'EUR',
-                    })}
-                  </span>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  Die endgültigen Preise erhalten Sie in Ihrem individuellen Angebot.
+                </p>
 
                 {showCheckout ? (
                   <div className="space-y-4 pt-4 border-t">
@@ -270,12 +260,13 @@ const Cart: React.FC = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="notes">Anmerkungen (optional)</Label>
+                      <Label htmlFor="notes">Nachricht / Anforderungen</Label>
                       <Textarea
                         id="notes"
                         value={shippingData.notes}
                         onChange={(e) => setShippingData({ ...shippingData, notes: e.target.value })}
-                        placeholder="Besondere Hinweise zur Lieferung..."
+                        placeholder="Besondere Wünsche oder Anforderungen..."
+                        rows={4}
                       />
                     </div>
                   </div>
@@ -289,7 +280,7 @@ const Cart: React.FC = () => {
                       onClick={handleOrder}
                       disabled={isOrdering || !shippingData.address || !shippingData.city || !shippingData.postalCode}
                     >
-                      {isOrdering ? 'Wird bestellt...' : 'Auf Rechnung bestellen'}
+                      {isOrdering ? 'Wird gesendet...' : 'Angebotsanfrage senden'}
                     </Button>
                     <Button
                       variant="outline"
@@ -301,7 +292,7 @@ const Cart: React.FC = () => {
                   </>
                 ) : (
                   <Button className="w-full" onClick={() => setShowCheckout(true)}>
-                    Zur Kasse
+                    Weiter zur Anfrage
                   </Button>
                 )}
               </CardFooter>
@@ -313,4 +304,4 @@ const Cart: React.FC = () => {
   );
 };
 
-export default Cart;
+export default Warenkorb;

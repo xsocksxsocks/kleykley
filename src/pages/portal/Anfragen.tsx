@@ -6,15 +6,15 @@ import { Order, OrderItem } from '@/types/shop';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Package, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const statusLabels: Record<Order['status'], string> = {
-  pending: 'Ausstehend',
-  confirmed: 'Bestätigt',
+  pending: 'In Bearbeitung',
+  confirmed: 'Angebot erstellt',
   processing: 'In Bearbeitung',
   shipped: 'Versendet',
-  delivered: 'Geliefert',
+  delivered: 'Abgeschlossen',
   cancelled: 'Storniert',
 };
 
@@ -31,7 +31,7 @@ interface OrderWithItems extends Order {
   order_items: OrderItem[];
 }
 
-const Orders: React.FC = () => {
+const Anfragen: React.FC = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -42,7 +42,7 @@ const Orders: React.FC = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/shop/auth');
+      navigate('/portal/auth');
     }
   }, [user, loading, navigate]);
 
@@ -63,7 +63,7 @@ const Orders: React.FC = () => {
         console.error('Error fetching orders:', error);
         toast({
           title: 'Fehler',
-          description: 'Bestellungen konnten nicht geladen werden.',
+          description: 'Anfragen konnten nicht geladen werden.',
           variant: 'destructive',
         });
       } else {
@@ -90,16 +90,16 @@ const Orders: React.FC = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
           <Button variant="ghost" asChild>
-            <Link to="/shop">
+            <Link to="/portal">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Zurück zum Shop
+              Zurück zum Portal
             </Link>
           </Button>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8">Meine Bestellungen</h1>
+        <h1 className="text-2xl font-bold mb-8">Meine Anfragen</h1>
 
         {loadingOrders ? (
           <div className="flex justify-center py-16">
@@ -108,13 +108,13 @@ const Orders: React.FC = () => {
         ) : orders.length === 0 ? (
           <Card className="text-center py-16">
             <CardContent>
-              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Keine Bestellungen</h3>
+              <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">Keine Anfragen</h3>
               <p className="text-muted-foreground mb-4">
-                Sie haben noch keine Bestellungen aufgegeben.
+                Sie haben noch keine Angebotsanfragen gesendet.
               </p>
               <Button asChild>
-                <Link to="/shop">Zum Shop</Link>
+                <Link to="/portal">Zum Produktkatalog</Link>
               </Button>
             </CardContent>
           </Card>
@@ -136,7 +136,7 @@ const Orders: React.FC = () => {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="font-bold">
-                          {order.total_amount.toLocaleString('de-DE', {
+                          ca. {order.total_amount.toLocaleString('de-DE', {
                             style: 'currency',
                             currency: 'EUR',
                           })}
@@ -157,7 +157,7 @@ const Orders: React.FC = () => {
                   <CardContent className="border-t pt-4">
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-medium mb-2">Artikel</h4>
+                        <h4 className="font-medium mb-2">Angefragte Produkte</h4>
                         <div className="space-y-2">
                           {order.order_items.map((item) => (
                             <div key={item.id} className="flex justify-between text-sm">
@@ -165,7 +165,7 @@ const Orders: React.FC = () => {
                                 {item.quantity}x {item.product_name}
                               </span>
                               <span>
-                                {item.total_price.toLocaleString('de-DE', {
+                                ca. {item.total_price.toLocaleString('de-DE', {
                                   style: 'currency',
                                   currency: 'EUR',
                                 })}
@@ -185,7 +185,7 @@ const Orders: React.FC = () => {
                       )}
                       {order.notes && (
                         <div>
-                          <h4 className="font-medium mb-2">Anmerkungen</h4>
+                          <h4 className="font-medium mb-2">Ihre Nachricht</h4>
                           <p className="text-sm text-muted-foreground">{order.notes}</p>
                         </div>
                       )}
@@ -201,4 +201,4 @@ const Orders: React.FC = () => {
   );
 };
 
-export default Orders;
+export default Anfragen;
