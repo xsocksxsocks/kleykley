@@ -40,11 +40,11 @@ const UeberUns = () => {
       <section className="py-24 bg-navy">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl">
-            <span className="text-gold text-sm tracking-[0.2em] uppercase">Über uns</span>
+            <span className="text-gold text-base font-semibold tracking-[0.2em] uppercase">Über uns</span>
             <h1 className="text-4xl md:text-5xl font-serif text-cream mt-4 mb-6 line-decoration">
               Kley Rechtsanwalt GmbH
             </h1>
-            <p className="text-cream/70 text-lg leading-relaxed">
+            <p className="text-cream/70 text-xl leading-relaxed font-medium">
               Seit Jahren stehen wir für kompetente und persönliche Rechtsberatung 
               in Bordesholm und Umgebung. Lernen Sie uns kennen.
             </p>
@@ -57,10 +57,10 @@ const UeberUns = () => {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-3xl font-serif text-foreground mb-6">
+              <h2 className="text-3xl md:text-4xl font-serif text-foreground mb-6">
                 Ihre Rechtsanwaltskanzlei in Bordesholm
               </h2>
-              <div className="space-y-4 text-muted-foreground leading-relaxed">
+              <div className="space-y-4 text-muted-foreground text-lg leading-relaxed font-medium">
                 <p>
                   Die Kley Rechtsanwalt GmbH ist Ihre Anlaufstelle für kompetente 
                   Rechtsberatung in Schleswig-Holstein. Wir vereinen fundiertes 
@@ -97,7 +97,7 @@ const UeberUns = () => {
       <section className="py-24 bg-muted">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="text-gold text-sm tracking-[0.2em] uppercase">Unsere Werte</span>
+            <span className="text-gold text-base font-semibold tracking-[0.2em] uppercase">Unsere Werte</span>
             <h2 className="text-3xl md:text-4xl font-serif text-foreground mt-4 mb-6">
               Wofür wir stehen
             </h2>
@@ -116,7 +116,7 @@ const UeberUns = () => {
                 <h3 className="text-xl font-serif text-foreground mb-3">
                   {value.title}
                 </h3>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-base font-medium">
                   {value.description}
                 </p>
               </div>
@@ -131,7 +131,7 @@ const UeberUns = () => {
           <h2 className="text-3xl md:text-4xl font-serif text-cream mb-6">
             Bereit für eine Beratung?
           </h2>
-          <p className="text-cream/70 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-cream/70 text-xl mb-8 max-w-2xl mx-auto font-medium">
             Kontaktieren Sie uns für ein unverbindliches Erstgespräch. 
             Wir freuen uns, Sie kennenzulernen.
           </p>

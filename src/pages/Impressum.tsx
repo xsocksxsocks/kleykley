@@ -26,10 +26,10 @@ const Impressum = () => {
           <div className="max-w-3xl prose prose-lg">
             <div className="space-y-8">
               <div>
-                <h2 className="text-2xl font-serif text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Angaben gemäß § 5 TMG
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base font-medium">
                   Kley Rechtsanwalt GmbH<br />
                   Eiderkamp 13<br />
                   24582 Bordesholm
@@ -37,44 +37,44 @@ const Impressum = () => {
               </div>
 
               <div>
-                <h2 className="text-2xl font-serif text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Handelsregister
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base font-medium">
                   Amtsgericht Kiel<br />
                   HRB 25081 KI
                 </p>
               </div>
 
               <div>
-                <h2 className="text-2xl font-serif text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Kontakt
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base font-medium">
                   E-Mail: info@kanzlei-kley.com
                 </p>
               </div>
 
               <div>
-                <h2 className="text-2xl font-serif text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Berufsbezeichnung und berufsrechtliche Regelungen
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base font-medium">
                   Berufsbezeichnung: Rechtsanwalt<br />
                   Zuständige Kammer: Schleswig-Holsteinische Rechtsanwaltskammer<br />
                   Verliehen in: Bundesrepublik Deutschland
                 </p>
-                <p className="text-muted-foreground mt-4">
+                <p className="text-muted-foreground text-base font-medium mt-4">
                   Es gelten folgende berufsrechtliche Regelungen:
                 </p>
-                <ul className="list-disc pl-6 text-muted-foreground mt-2 space-y-1">
+                <ul className="list-disc pl-6 text-muted-foreground text-base font-medium mt-2 space-y-1">
                   <li>Bundesrechtsanwaltsordnung (BRAO)</li>
                   <li>Berufsordnung für Rechtsanwälte (BORA)</li>
                   <li>Fachanwaltsordnung (FAO)</li>
                   <li>Rechtsanwaltsvergütungsgesetz (RVG)</li>
                   <li>Berufsregeln der Rechtsanwälte der Europäischen Union (CCBE)</li>
                 </ul>
-                <p className="text-muted-foreground mt-4">
+                <p className="text-muted-foreground text-base font-medium mt-4">
                   Die berufsrechtlichen Regelungen können über die Bundesrechtsanwaltskammer 
                   unter{" "}
                   <a 
@@ -90,20 +90,20 @@ const Impressum = () => {
               </div>
 
               <div>
-                <h2 className="text-2xl font-serif text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Berufshaftpflichtversicherung
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base font-medium">
                   Es besteht eine Berufshaftpflichtversicherung bei einem in der 
                   Europäischen Union zugelassenen Versicherungsunternehmen.
                 </p>
               </div>
 
               <div>
-                <h2 className="text-2xl font-serif text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Streitschlichtung
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base font-medium">
                   Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung 
                   (OS) bereit:{" "}
                   <a 
@@ -115,7 +115,7 @@ const Impressum = () => {
                     https://ec.europa.eu/consumers/odr
                   </a>
                 </p>
-                <p className="text-muted-foreground mt-4">
+                <p className="text-muted-foreground text-base font-medium mt-4">
                   Bei Streitigkeiten zwischen Rechtsanwälten und ihren Auftraggebern 
                   besteht die Möglichkeit zur Streitbeilegung bei der zuständigen 
                   Rechtsanwaltskammer.
@@ -123,10 +123,10 @@ const Impressum = () => {
               </div>
 
               <div>
-                <h2 className="text-2xl font-serif text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Haftung für Inhalte
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base font-medium">
                   Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte 
                   auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. 
                   Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht 
@@ -137,10 +137,10 @@ const Impressum = () => {
               </div>
 
               <div>
-                <h2 className="text-2xl font-serif text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Haftung für Links
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base font-medium">
                   Unser Angebot enthält Links zu externen Websites Dritter, auf deren 
                   Inhalte wir keinen Einfluss haben. Deshalb können wir für diese 
                   fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der 
@@ -150,10 +150,10 @@ const Impressum = () => {
               </div>
 
               <div>
-                <h2 className="text-2xl font-serif text-foreground mb-4">
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Urheberrecht
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base font-medium">
                   Die durch die Seitenbetreiber erstellten Inhalte und Werke auf 
                   diesen Seiten unterliegen dem deutschen Urheberrecht. Die 
                   Vervielfältigung, Bearbeitung, Verbreitung und jede Art der 
