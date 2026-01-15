@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import logoImage from "@/assets/logo-kanzlei-kley.png";
+import logoImage from "@/assets/logo-kley.png";
 
 const navLinks = [
   { href: "/", label: "Startseite" },
