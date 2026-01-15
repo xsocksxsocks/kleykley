@@ -19,13 +19,13 @@ export function Navigation() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-navy/95 backdrop-blur-sm border-b border-gold/20">
       <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-24">
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
               src={logoImage} 
               alt="Kanzlei Kley" 
-              className="h-14 w-auto"
+              className="h-16 w-auto"
             />
           </Link>
 
