@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MapPin, Clock } from "lucide-react";
+import { Mail, MapPin, Clock, Phone } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -64,6 +64,21 @@ const Kontakt = () => {
                       Eiderkamp 13<br />
                       24582 Bordesholm
                     </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-navy flex items-center justify-center shrink-0">
+                    <Phone className="w-5 h-5 text-gold" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground mb-1">Telefon</h3>
+                    <a 
+                      href="tel:+4943221234567" 
+                      className="text-muted-foreground hover:text-gold transition-colors"
+                    >
+                      +49 (0) 4322 123 4567
+                    </a>
                   </div>
                 </div>
 
