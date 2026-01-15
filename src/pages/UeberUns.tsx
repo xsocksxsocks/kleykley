@@ -1,4 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
+import { SEOHead } from "@/components/SEOHead";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Award, Users, Clock, Shield } from "lucide-react";
@@ -30,6 +31,11 @@ const values = [
 const UeberUns = () => {
   return (
     <Layout>
+      <SEOHead 
+        title="Über uns" 
+        description="Lernen Sie die Kley Rechtsanwalt GmbH kennen. Ihre Rechtsanwaltskanzlei in Bordesholm für kompetente und persönliche Rechtsberatung."
+        canonical="/ueber-uns"
+      />
       {/* Hero Section */}
       <section className="py-24 bg-navy">
         <div className="container mx-auto px-6">

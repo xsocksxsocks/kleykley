@@ -1,4 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
+import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +28,11 @@ const Kontakt = () => {
 
   return (
     <Layout>
+      <SEOHead 
+        title="Kontakt" 
+        description="Kontaktieren Sie die Kley Rechtsanwalt GmbH in Bordesholm. Vereinbaren Sie einen Beratungstermin - wir freuen uns auf Sie."
+        canonical="/kontakt"
+      />
       {/* Hero Section */}
       <section className="py-24 bg-navy">
         <div className="container mx-auto px-6">

@@ -1,8 +1,14 @@
 import { Layout } from "@/components/layout/Layout";
+import { SEOHead } from "@/components/SEOHead";
 
 const Impressum = () => {
   return (
     <Layout>
+      <SEOHead 
+        title="Impressum" 
+        description="Impressum der Kley Rechtsanwalt GmbH in Bordesholm. Angaben gemäß § 5 TMG."
+        canonical="/impressum"
+      />
       {/* Hero Section */}
       <section className="py-24 bg-navy">
         <div className="container mx-auto px-6">
