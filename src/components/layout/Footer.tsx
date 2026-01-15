@@ -16,32 +16,32 @@ export function Footer() {
                 className="h-14 w-auto"
               />
             </Link>
-            <p className="text-sm leading-relaxed text-cream/70 font-medium">
+            <p className="text-base leading-relaxed text-cream/70 font-medium">
               Kompetente Rechtsberatung mit persönlicher Betreuung seit Jahren.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-gold font-serif text-lg mb-4">Navigation</h4>
+            <h4 className="text-gold font-serif text-xl font-bold mb-4">Navigation</h4>
             <ul className="space-y-3">
               <li>
-                <Link to="/" className="text-sm font-medium hover:text-gold transition-colors">
+                <Link to="/" className="text-base font-semibold hover:text-gold transition-colors">
                   Startseite
                 </Link>
               </li>
               <li>
-                <Link to="/leistungen" className="text-sm font-medium hover:text-gold transition-colors">
+                <Link to="/leistungen" className="text-base font-semibold hover:text-gold transition-colors">
                   Leistungen
                 </Link>
               </li>
               <li>
-                <Link to="/ueber-uns" className="text-sm font-medium hover:text-gold transition-colors">
+                <Link to="/ueber-uns" className="text-base font-semibold hover:text-gold transition-colors">
                   Über uns
                 </Link>
               </li>
               <li>
-                <Link to="/kontakt" className="text-sm font-medium hover:text-gold transition-colors">
+                <Link to="/kontakt" className="text-base font-semibold hover:text-gold transition-colors">
                   Kontakt
                 </Link>
               </li>
@@ -50,15 +50,15 @@ export function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h4 className="text-gold font-serif text-lg mb-4">Rechtliches</h4>
+            <h4 className="text-gold font-serif text-xl font-bold mb-4">Rechtliches</h4>
             <ul className="space-y-3">
               <li>
-                <Link to="/impressum" className="text-sm font-medium hover:text-gold transition-colors">
+                <Link to="/impressum" className="text-base font-semibold hover:text-gold transition-colors">
                   Impressum
                 </Link>
               </li>
               <li>
-                <Link to="/datenschutz" className="text-sm font-medium hover:text-gold transition-colors">
+                <Link to="/datenschutz" className="text-base font-semibold hover:text-gold transition-colors">
                   Datenschutz
                 </Link>
               </li>
@@ -67,32 +67,32 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-gold font-serif text-lg mb-4">Kontakt</h4>
+            <h4 className="text-gold font-serif text-xl font-bold mb-4">Kontakt</h4>
             <ul className="space-y-3">
-              <li className="text-sm font-semibold text-cream">
+              <li className="text-base font-bold text-cream">
                 Kley Rechtsanwalt GmbH
               </li>
               <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-gold mt-1 shrink-0" />
-                <span className="text-sm font-medium">
+                <MapPin className="w-5 h-5 text-gold mt-1 shrink-0" />
+                <span className="text-base font-semibold">
                   Eiderkamp 13<br />
                   24582 Bordesholm
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-gold shrink-0" />
+                <Phone className="w-5 h-5 text-gold shrink-0" />
                 <a 
                   href="tel:+4943221234567" 
-                  className="text-sm font-medium hover:text-gold transition-colors"
+                  className="text-base font-semibold hover:text-gold transition-colors"
                 >
                   +49 (0) 4322 123 4567
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-gold shrink-0" />
+                <Mail className="w-5 h-5 text-gold shrink-0" />
                 <a 
                   href="mailto:info@kanzlei-kley.com" 
-                  className="text-sm font-medium hover:text-gold transition-colors"
+                  className="text-base font-semibold hover:text-gold transition-colors"
                 >
                   info@kanzlei-kley.com
                 </a>
@@ -103,7 +103,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-gold/20">
-          <p className="text-sm text-cream/60 text-center font-medium">
+          <p className="text-base text-cream/60 text-center font-semibold">
             © {new Date().getFullYear()} Kley Rechtsanwalt GmbH. Alle Rechte vorbehalten.
           </p>
         </div>
