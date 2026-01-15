@@ -12,8 +12,8 @@ export function Footer() {
             <Link to="/">
               <img 
                 src={logoImage} 
-                alt="KanzleiKley" 
-                className="h-10 w-auto"
+                alt="Kanzlei Kley" 
+                className="h-14 w-auto"
               />
             </Link>
             <p className="text-sm leading-relaxed text-cream/70 font-medium">

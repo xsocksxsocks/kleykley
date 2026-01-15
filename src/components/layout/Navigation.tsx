@@ -24,8 +24,8 @@ export function Navigation() {
           <Link to="/" className="flex items-center">
             <img 
               src={logoImage} 
-              alt="KanzleiKley" 
-              className="h-10 w-auto"
+              alt="Kanzlei Kley" 
+              className="h-14 w-auto"
             />
           </Link>
 
