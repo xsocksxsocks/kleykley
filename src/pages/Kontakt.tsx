@@ -97,11 +97,18 @@ const Kontakt = () => {
                 </div>
               </div>
 
-              {/* Map placeholder */}
-              <div className="mt-12 rounded-lg overflow-hidden border border-border h-64 bg-muted flex items-center justify-center">
-                <p className="text-muted-foreground text-sm">
-                  Eiderkamp 13, 24582 Bordesholm
-                </p>
+              {/* Google Maps */}
+              <div className="mt-12 rounded-lg overflow-hidden border border-border h-64">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2365.8!2d9.9984!3d54.1745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47b2598c0c0c0c0c%3A0x0!2sEiderkamp%2013%2C%2024582%20Bordesholm!5e0!3m2!1sde!2sde!4v1704067200000!5m2!1sde!2sde"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Kley Rechtsanwalt GmbH Standort"
+                />
               </div>
             </div>
 
