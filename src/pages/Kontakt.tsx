@@ -105,7 +105,7 @@ const Kontakt = () => {
                     <h3 className="font-medium text-foreground mb-1">Öffnungszeiten</h3>
                     <p className="text-muted-foreground">
                       Montag – Freitag<br />
-                      09:00 – 18:00 Uhr<br />
+                      10:00 – 16:00 Uhr<br />
                       <span className="text-sm">Termine nach Vereinbarung</span>
                     </p>
                   </div>
