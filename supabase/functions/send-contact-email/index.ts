@@ -28,10 +28,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Received contact form submission:", { name, email, subject });
 
-    // Send notification email to the law firm
+    // Send notification email to the law firm (using the Resend account email)
     const notificationEmail = await resend.emails.send({
       from: "Kontaktformular <onboarding@resend.dev>",
-      to: ["info@kanzlei-kley.com"],
+      to: ["info@kley-kanzlei.com"],
       subject: `Neue Kontaktanfrage: ${subject}`,
       html: `
         <h2>Neue Kontaktanfrage über die Website</h2>
