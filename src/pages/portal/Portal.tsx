@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/types/shop';
+import { Product, ProductImage, formatCurrency } from '@/types/shop';
+import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, LogOut, Settings, Clock, Package, FileText } from 'lucide-react';
+import { ShoppingCart, Clock, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Portal: React.FC = () => {
-  const { user, profile, isAdmin, isApproved, signOut, loading } = useAuth();
-  const { addToCart, totalItems } = useCart();
+  const { user, profile, isAdmin, isApproved, loading } = useAuth();
+  const { addToCart } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -34,7 +35,10 @@ const Portal: React.FC = () => {
 
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_images (*)
+        `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -64,9 +68,12 @@ const Portal: React.FC = () => {
     });
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/portal/auth');
+  const getProductImage = (product: Product): string | null => {
+    if (product.product_images && product.product_images.length > 0) {
+      const sorted = [...product.product_images].sort((a, b) => a.sort_order - b.sort_order);
+      return sorted[0].image_url;
+    }
+    return product.image_url;
   };
 
   if (loading) {
@@ -84,20 +91,8 @@ const Portal: React.FC = () => {
   // Pending approval view - no mention of automatic approval
   if (!isApproved && !isAdmin) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b bg-card">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <h1 className="text-xl font-bold">Kley Kundenportal</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">{profile?.email}</span>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Abmelden
-              </Button>
-            </div>
-          </div>
-        </header>
-        <main className="container mx-auto px-4 py-16">
+      <PortalLayout showNav={false}>
+        <div className="container mx-auto px-4 py-16">
           <Card className="max-w-md mx-auto text-center">
             <CardHeader>
               <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
@@ -113,57 +108,34 @@ const Portal: React.FC = () => {
               <p className="mt-4 text-sm text-muted-foreground">
                 Bei Fragen können Sie uns gerne kontaktieren.
               </p>
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={async () => {
+                  const { signOut } = useAuth();
+                  await signOut();
+                  navigate('/portal/auth');
+                }}
+              >
+                Abmelden
+              </Button>
             </CardContent>
           </Card>
-        </main>
-      </div>
+        </div>
+      </PortalLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Kley Kundenportal</h1>
-          <div className="flex items-center gap-4">
-            {isAdmin && (
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/admin">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Admin
-                </Link>
-              </Button>
-            )}
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/portal/anfragen">
-                <FileText className="h-4 w-4 mr-2" />
-                Meine Anfragen
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/portal/warenkorb">
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Anfrage
-                {totalItems > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    {totalItems}
-                  </Badge>
-                )}
-              </Link>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Abmelden
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
+    <PortalLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-2">Willkommen, {profile?.full_name || 'Kunde'}!</h2>
+          <h2 className="text-2xl font-bold mb-2">
+            Willkommen, {profile?.company_name || profile?.full_name || 'Kunde'}!
+          </h2>
           <p className="text-muted-foreground">
             Entdecken Sie unsere Produkte und senden Sie uns eine Angebotsanfrage.
+            <span className="block text-sm mt-1">Alle Preise verstehen sich als Netto-Preise zzgl. MwSt.</span>
           </p>
         </div>
 
@@ -183,56 +155,61 @@ const Portal: React.FC = () => {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <Card key={product.id} className="flex flex-col">
-                <CardHeader>
-                  {product.image_url ? (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-md mb-4"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
-                      <Package className="h-12 w-12 text-muted-foreground" />
+            {products.map((product) => {
+              const imageUrl = getProductImage(product);
+              return (
+                <Card key={product.id} className="flex flex-col">
+                  <CardHeader>
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={product.name}
+                        className="w-full h-48 object-cover rounded-md mb-4"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
+                        <Package className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
+                    <CardTitle className="text-lg">{product.name}</CardTitle>
+                    {product.category && (
+                      <Badge variant="secondary">{product.category}</Badge>
+                    )}
+                  </CardHeader>
+                  <CardContent className="flex-1">
+                    <p className="text-muted-foreground text-sm line-clamp-3">
+                      {product.description}
+                    </p>
+                    <div className="mt-4">
+                      <p className="text-2xl font-bold">
+                        {formatCurrency(product.price)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Netto zzgl. {product.tax_rate}% MwSt.
+                      </p>
                     </div>
-                  )}
-                  <CardTitle className="text-lg">{product.name}</CardTitle>
-                  {product.category && (
-                    <Badge variant="secondary">{product.category}</Badge>
-                  )}
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <p className="text-muted-foreground text-sm line-clamp-3">
-                    {product.description}
-                  </p>
-                  <p className="text-2xl font-bold mt-4">
-                    {product.price.toLocaleString('de-DE', {
-                      style: 'currency',
-                      currency: 'EUR',
-                    })}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {product.stock_quantity > 0
-                      ? `${product.stock_quantity} verfügbar`
-                      : 'Auf Anfrage'}
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    className="w-full"
-                    onClick={() => handleAddToCart(product)}
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Zur Anfrage hinzufügen
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {product.stock_quantity > 0
+                        ? `${product.stock_quantity} verfügbar`
+                        : 'Auf Anfrage'}
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button
+                      className="w-full"
+                      onClick={() => handleAddToCart(product)}
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Zur Anfrage hinzufügen
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </PortalLayout>
   );
 };
 

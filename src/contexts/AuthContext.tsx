@@ -10,7 +10,15 @@ interface AuthContextType {
   isAdmin: boolean;
   isApproved: boolean;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string,
+    companyName?: string,
+    address?: string,
+    city?: string,
+    postalCode?: string
+  ) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -108,19 +116,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    companyName?: string,
+    address?: string,
+    city?: string,
+    postalCode?: string
+  ) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
+          company_name: companyName,
+          address: address,
+          city: city,
+          postal_code: postalCode,
         },
       },
     });
+
+    // Update profile with additional data after signup
+    if (!error && data.user) {
+      await supabase
+        .from('profiles')
+        .update({
+          company_name: companyName,
+          address: address,
+          city: city,
+          postal_code: postalCode,
+        })
+        .eq('id', data.user.id);
+    }
     
     return { error: error as Error | null };
   };

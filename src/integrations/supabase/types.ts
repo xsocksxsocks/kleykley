@@ -64,6 +64,10 @@ export type Database = {
       }
       orders: {
         Row: {
+          billing_address: string | null
+          billing_city: string | null
+          billing_postal_code: string | null
+          company_name: string | null
           created_at: string
           id: string
           notes: string | null
@@ -74,9 +78,14 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
           updated_at: string
+          use_different_shipping: boolean
           user_id: string
         }
         Insert: {
+          billing_address?: string | null
+          billing_city?: string | null
+          billing_postal_code?: string | null
+          company_name?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -87,9 +96,14 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           updated_at?: string
+          use_different_shipping?: boolean
           user_id: string
         }
         Update: {
+          billing_address?: string | null
+          billing_city?: string | null
+          billing_postal_code?: string | null
+          company_name?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -100,6 +114,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           updated_at?: string
+          use_different_shipping?: boolean
           user_id?: string
         }
         Relationships: [
@@ -108,6 +123,38 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          product_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          product_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          product_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -123,6 +170,7 @@ export type Database = {
           name: string
           price: number
           stock_quantity: number
+          tax_rate: number
           updated_at: string
         }
         Insert: {
@@ -135,6 +183,7 @@ export type Database = {
           name: string
           price: number
           stock_quantity?: number
+          tax_rate?: number
           updated_at?: string
         }
         Update: {
@@ -147,6 +196,7 @@ export type Database = {
           name?: string
           price?: number
           stock_quantity?: number
+          tax_rate?: number
           updated_at?: string
         }
         Relationships: []
@@ -157,6 +207,7 @@ export type Database = {
           approval_status: Database["public"]["Enums"]["approval_status"]
           approved_at: string | null
           city: string | null
+          company_name: string | null
           created_at: string
           email: string
           full_name: string | null
@@ -172,6 +223,7 @@ export type Database = {
           approval_status?: Database["public"]["Enums"]["approval_status"]
           approved_at?: string | null
           city?: string | null
+          company_name?: string | null
           created_at?: string
           email: string
           full_name?: string | null
@@ -187,6 +239,7 @@ export type Database = {
           approval_status?: Database["public"]["Enums"]["approval_status"]
           approved_at?: string | null
           city?: string | null
+          company_name?: string | null
           created_at?: string
           email?: string
           full_name?: string | null

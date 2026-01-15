@@ -18,6 +18,7 @@ import Auth from "./pages/portal/Auth";
 import Portal from "./pages/portal/Portal";
 import Warenkorb from "./pages/portal/Warenkorb";
 import Anfragen from "./pages/portal/Anfragen";
+import Profil from "./pages/portal/Profil";
 import Admin from "./pages/admin/Admin";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/portal/auth" element={<Auth />} />
                 <Route path="/portal/warenkorb" element={<Warenkorb />} />
                 <Route path="/portal/anfragen" element={<Anfragen />} />
+                <Route path="/portal/profil" element={<Profil />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

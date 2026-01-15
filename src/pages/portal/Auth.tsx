@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import logoImage from '@/assets/logo-kley.png';
 
 const loginSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
@@ -18,6 +19,10 @@ const signupSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
   password: z.string().min(6, 'Passwort muss mindestens 6 Zeichen haben'),
   fullName: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
+  companyName: z.string().min(2, 'Firmenname muss mindestens 2 Zeichen haben'),
+  address: z.string().min(5, 'Bitte geben Sie eine gültige Adresse ein'),
+  postalCode: z.string().min(4, 'Bitte geben Sie eine gültige PLZ ein'),
+  city: z.string().min(2, 'Bitte geben Sie eine gültige Stadt ein'),
 });
 
 const Auth: React.FC = () => {
@@ -27,7 +32,15 @@ const Auth: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ email: '', password: '', fullName: '' });
+  const [signupData, setSignupData] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+    companyName: '',
+    address: '',
+    postalCode: '',
+    city: '',
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -102,7 +115,15 @@ const Auth: React.FC = () => {
     }
 
     setIsLoading(true);
-    const { error } = await signUp(signupData.email, signupData.password, signupData.fullName);
+    const { error } = await signUp(
+      signupData.email,
+      signupData.password,
+      signupData.fullName,
+      signupData.companyName,
+      signupData.address,
+      signupData.city,
+      signupData.postalCode
+    );
     setIsLoading(false);
 
     if (error) {
@@ -138,9 +159,10 @@ const Auth: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Kley Kundenportal</CardTitle>
+          <img src={logoImage} alt="Kley" className="h-12 mx-auto mb-4" />
+          <CardTitle className="text-2xl font-bold">Kundenportal</CardTitle>
           <CardDescription>
             Melden Sie sich an oder erstellen Sie ein Konto
           </CardDescription>
@@ -186,20 +208,34 @@ const Auth: React.FC = () => {
             
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Vollständiger Name</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    value={signupData.fullName}
-                    onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
-                    placeholder="Max Mustermann"
-                    disabled={isLoading}
-                  />
-                  {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">Vollständiger Name *</Label>
+                    <Input
+                      id="signup-name"
+                      type="text"
+                      value={signupData.fullName}
+                      onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                      placeholder="Max Mustermann"
+                      disabled={isLoading}
+                    />
+                    {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-company">Firmenname *</Label>
+                    <Input
+                      id="signup-company"
+                      type="text"
+                      value={signupData.companyName}
+                      onChange={(e) => setSignupData({ ...signupData, companyName: e.target.value })}
+                      placeholder="Musterfirma GmbH"
+                      disabled={isLoading}
+                    />
+                    {errors.companyName && <p className="text-sm text-destructive">{errors.companyName}</p>}
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">E-Mail</Label>
+                  <Label htmlFor="signup-email">E-Mail *</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -211,7 +247,7 @@ const Auth: React.FC = () => {
                   {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Passwort</Label>
+                  <Label htmlFor="signup-password">Passwort *</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -222,6 +258,51 @@ const Auth: React.FC = () => {
                   />
                   {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                 </div>
+
+                <div className="border-t pt-4">
+                  <h3 className="font-medium mb-3">Lieferadresse</h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-address">Straße und Hausnummer *</Label>
+                      <Input
+                        id="signup-address"
+                        type="text"
+                        value={signupData.address}
+                        onChange={(e) => setSignupData({ ...signupData, address: e.target.value })}
+                        placeholder="Musterstraße 123"
+                        disabled={isLoading}
+                      />
+                      {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-postal">PLZ *</Label>
+                        <Input
+                          id="signup-postal"
+                          type="text"
+                          value={signupData.postalCode}
+                          onChange={(e) => setSignupData({ ...signupData, postalCode: e.target.value })}
+                          placeholder="12345"
+                          disabled={isLoading}
+                        />
+                        {errors.postalCode && <p className="text-sm text-destructive">{errors.postalCode}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-city">Stadt *</Label>
+                        <Input
+                          id="signup-city"
+                          type="text"
+                          value={signupData.city}
+                          onChange={(e) => setSignupData({ ...signupData, city: e.target.value })}
+                          placeholder="Musterstadt"
+                          disabled={isLoading}
+                        />
+                        {errors.city && <p className="text-sm text-destructive">{errors.city}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Wird registriert...' : 'Registrieren'}
                 </Button>
