@@ -237,7 +237,7 @@ const Warenkorb: React.FC = () => {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>Ihre Anfrage</CardTitle>
+                <CardTitle>Ihr Angebot</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">

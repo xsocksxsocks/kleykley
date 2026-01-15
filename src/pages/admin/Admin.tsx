@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -46,8 +47,16 @@ import {
   Trash2,
   RefreshCw,
   Eye,
+  Image,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ProductImageUpload } from '@/components/admin/ProductImageUpload';
+
+interface ProductImage {
+  id: string;
+  image_url: string;
+  sort_order: number;
+}
 
 const statusLabels: Record<Order['status'], string> = {
   pending: 'Neu',
@@ -95,6 +104,9 @@ const Admin: React.FC = () => {
     stock_quantity: '',
     is_active: true,
   });
+  const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [selectedProductForImages, setSelectedProductForImages] = useState<Product | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -355,6 +367,25 @@ const Admin: React.FC = () => {
       is_active: product.is_active,
     });
     setProductDialogOpen(true);
+  };
+
+  const openImageDialog = async (product: Product) => {
+    setSelectedProductForImages(product);
+    
+    // Fetch images for this product
+    const { data, error } = await supabase
+      .from('product_images')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('sort_order', { ascending: true });
+    
+    if (!error && data) {
+      setProductImages(data as ProductImage[]);
+    } else {
+      setProductImages([]);
+    }
+    
+    setImageDialogOpen(true);
   };
 
   const triggerAutoApproval = async () => {
@@ -694,6 +725,14 @@ const Admin: React.FC = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
+                                onClick={() => openImageDialog(product)}
+                                title="Bilder verwalten"
+                              >
+                                <Image className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={() => openEditProduct(product)}
                               >
                                 <Edit className="h-4 w-4" />
@@ -806,6 +845,26 @@ const Admin: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Image Management Dialog */}
+        <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>
+                Bilder verwalten: {selectedProductForImages?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh]">
+              {selectedProductForImages && (
+                <ProductImageUpload
+                  productId={selectedProductForImages.id}
+                  images={productImages}
+                  onImagesChange={setProductImages}
+                />
+              )}
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
