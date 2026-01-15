@@ -7,10 +7,10 @@ import { Product } from '@/types/shop';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, User, LogOut, Settings, Clock, Package } from 'lucide-react';
+import { ShoppingCart, LogOut, Settings, Clock, Package, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const Shop: React.FC = () => {
+const Portal: React.FC = () => {
   const { user, profile, isAdmin, isApproved, signOut, loading } = useAuth();
   const { addToCart, totalItems } = useCart();
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ const Shop: React.FC = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/shop/auth');
+      navigate('/portal/auth');
     }
   }, [user, loading, navigate]);
 
@@ -59,14 +59,14 @@ const Shop: React.FC = () => {
   const handleAddToCart = (product: Product) => {
     addToCart(product);
     toast({
-      title: 'Zum Warenkorb hinzugefügt',
+      title: 'Zur Anfrage hinzugefügt',
       description: `${product.name} wurde hinzugefügt.`,
     });
   };
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/shop/auth');
+    navigate('/portal/auth');
   };
 
   if (loading) {
@@ -81,13 +81,13 @@ const Shop: React.FC = () => {
     return null;
   }
 
-  // Pending approval view
+  // Pending approval view - no mention of automatic approval
   if (!isApproved && !isAdmin) {
     return (
       <div className="min-h-screen bg-background">
         <header className="border-b bg-card">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <h1 className="text-xl font-bold">Kley Shop</h1>
+            <h1 className="text-xl font-bold">Kley Kundenportal</h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">{profile?.email}</span>
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
@@ -107,20 +107,11 @@ const Shop: React.FC = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Ihr Konto wird derzeit überprüft und muss freigeschaltet werden, 
-                bevor Sie Produkte sehen und bestellen können.
+                Vielen Dank für Ihre Registrierung. Ihr Konto wird derzeit von unserem Team 
+                überprüft. Sie werden per E-Mail benachrichtigt, sobald Ihr Zugang freigeschaltet wurde.
               </p>
-              {profile?.scheduled_approval_at && (
-                <p className="mt-4 text-sm">
-                  <strong>Voraussichtliche Freischaltung:</strong><br />
-                  {new Date(profile.scheduled_approval_at).toLocaleString('de-DE', {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })}
-                </p>
-              )}
-              <p className="mt-4 text-xs text-muted-foreground">
-                Die automatische Freischaltung erfolgt nur zwischen 8:00 und 20:00 Uhr.
+              <p className="mt-4 text-sm text-muted-foreground">
+                Bei Fragen können Sie uns gerne kontaktieren.
               </p>
             </CardContent>
           </Card>
@@ -133,7 +124,7 @@ const Shop: React.FC = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Kley Shop</h1>
+          <h1 className="text-xl font-bold">Kley Kundenportal</h1>
           <div className="flex items-center gap-4">
             {isAdmin && (
               <Button variant="outline" size="sm" asChild>
@@ -144,15 +135,15 @@ const Shop: React.FC = () => {
               </Button>
             )}
             <Button variant="outline" size="sm" asChild>
-              <Link to="/shop/orders">
-                <Package className="h-4 w-4 mr-2" />
-                Bestellungen
+              <Link to="/portal/anfragen">
+                <FileText className="h-4 w-4 mr-2" />
+                Meine Anfragen
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/shop/cart">
+              <Link to="/portal/warenkorb">
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                Warenkorb
+                Anfrage
                 {totalItems > 0 && (
                   <Badge variant="secondary" className="ml-2">
                     {totalItems}
@@ -172,7 +163,7 @@ const Shop: React.FC = () => {
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-2">Willkommen, {profile?.full_name || 'Kunde'}!</h2>
           <p className="text-muted-foreground">
-            Entdecken Sie unsere Produkte und bestellen Sie auf Rechnung.
+            Entdecken Sie unsere Produkte und senden Sie uns eine Angebotsanfrage.
           </p>
         </div>
 
@@ -186,7 +177,7 @@ const Shop: React.FC = () => {
               <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-2">Keine Produkte verfügbar</h3>
               <p className="text-muted-foreground">
-                Aktuell sind keine Produkte im Shop verfügbar.
+                Aktuell sind keine Produkte im Portal verfügbar.
               </p>
             </CardContent>
           </Card>
@@ -223,18 +214,17 @@ const Shop: React.FC = () => {
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {product.stock_quantity > 0
-                      ? `${product.stock_quantity} auf Lager`
-                      : 'Nicht auf Lager'}
+                      ? `${product.stock_quantity} verfügbar`
+                      : 'Auf Anfrage'}
                   </p>
                 </CardContent>
                 <CardFooter>
                   <Button
                     className="w-full"
                     onClick={() => handleAddToCart(product)}
-                    disabled={product.stock_quantity <= 0}
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
-                    In den Warenkorb
+                    Zur Anfrage hinzufügen
                   </Button>
                 </CardFooter>
               </Card>
@@ -246,4 +236,4 @@ const Shop: React.FC = () => {
   );
 };
 
-export default Shop;
+export default Portal;

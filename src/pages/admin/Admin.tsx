@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, Product, Order, OrderItem } from '@/types/shop';
@@ -37,7 +37,7 @@ import {
   ArrowLeft,
   Users,
   Package,
-  ShoppingCart,
+  FileText,
   Check,
   X,
   Clock,
@@ -49,11 +49,11 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 const statusLabels: Record<Order['status'], string> = {
-  pending: 'Ausstehend',
-  confirmed: 'Bestätigt',
+  pending: 'Neu',
+  confirmed: 'Angebot erstellt',
   processing: 'In Bearbeitung',
   shipped: 'Versendet',
-  delivered: 'Geliefert',
+  delivered: 'Abgeschlossen',
   cancelled: 'Storniert',
 };
 
@@ -74,7 +74,6 @@ interface OrderWithItems extends Order {
 const Admin: React.FC = () => {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   
   const [customers, setCustomers] = useState<Profile[]>([]);
@@ -98,7 +97,7 @@ const Admin: React.FC = () => {
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
-      navigate('/shop');
+      navigate('/portal');
     }
   }, [user, isAdmin, loading, navigate]);
 
@@ -176,7 +175,7 @@ const Admin: React.FC = () => {
 
       toast({
         title: 'Kunde freigeschaltet',
-        description: 'Der Kunde kann jetzt im Shop bestellen.',
+        description: 'Der Kunde kann jetzt im Portal Anfragen senden.',
       });
     } catch (error) {
       console.error('Error approving customer:', error);
@@ -318,7 +317,7 @@ const Admin: React.FC = () => {
 
       toast({
         title: 'Status aktualisiert',
-        description: `Bestellung wurde auf "${statusLabels[status]}" gesetzt.`,
+        description: `Anfrage wurde auf "${statusLabels[status]}" gesetzt.`,
       });
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -364,7 +363,7 @@ const Admin: React.FC = () => {
       if (error) throw error;
 
       toast({
-        title: 'Auto-Freischaltung ausgeführt',
+        title: 'Freischaltung ausgeführt',
         description: `${data.approved_count} Kunden wurden freigeschaltet.`,
       });
 
@@ -381,7 +380,7 @@ const Admin: React.FC = () => {
       console.error('Error triggering auto-approval:', error);
       toast({
         title: 'Fehler',
-        description: 'Auto-Freischaltung konnte nicht ausgeführt werden.',
+        description: 'Freischaltung konnte nicht ausgeführt werden.',
         variant: 'destructive',
       });
     }
@@ -404,7 +403,7 @@ const Admin: React.FC = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" asChild>
-              <Link to="/shop">
+              <Link to="/portal">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Zurück
               </Link>
@@ -416,7 +415,7 @@ const Admin: React.FC = () => {
               <Badge variant="destructive">{pendingCustomers.length} wartend</Badge>
             )}
             {pendingOrders.length > 0 && (
-              <Badge variant="secondary">{pendingOrders.length} neue Bestellungen</Badge>
+              <Badge variant="secondary">{pendingOrders.length} neue Anfragen</Badge>
             )}
           </div>
         </div>
@@ -439,8 +438,8 @@ const Admin: React.FC = () => {
               Produkte
             </TabsTrigger>
             <TabsTrigger value="orders" className="flex items-center gap-2">
-              <ShoppingCart className="h-4 w-4" />
-              Bestellungen
+              <FileText className="h-4 w-4" />
+              Anfragen
               {pendingOrders.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {pendingOrders.length}
@@ -455,7 +454,7 @@ const Admin: React.FC = () => {
                 <CardTitle>Kundenverwaltung</CardTitle>
                 <Button variant="outline" size="sm" onClick={triggerAutoApproval}>
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Auto-Freischaltung ausführen
+                  Zeitgesteuerte Freischaltung ausführen
                 </Button>
               </CardHeader>
               <CardContent>
@@ -474,7 +473,6 @@ const Admin: React.FC = () => {
                         <TableHead>Name</TableHead>
                         <TableHead>E-Mail</TableHead>
                         <TableHead>Registriert</TableHead>
-                        <TableHead>Geplante Freischaltung</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Aktionen</TableHead>
                       </TableRow>
@@ -488,14 +486,6 @@ const Admin: React.FC = () => {
                           <TableCell>{customer.email}</TableCell>
                           <TableCell>
                             {new Date(customer.registered_at).toLocaleDateString('de-DE')}
-                          </TableCell>
-                          <TableCell>
-                            {customer.scheduled_approval_at
-                              ? new Date(customer.scheduled_approval_at).toLocaleString('de-DE', {
-                                  dateStyle: 'short',
-                                  timeStyle: 'short',
-                                })
-                              : '-'}
                           </TableCell>
                           <TableCell>
                             <Badge
@@ -608,7 +598,7 @@ const Admin: React.FC = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="stock">Lagerbestand</Label>
+                          <Label htmlFor="stock">Verfügbar</Label>
                           <Input
                             id="stock"
                             type="number"
@@ -676,7 +666,7 @@ const Admin: React.FC = () => {
                         <TableHead>Name</TableHead>
                         <TableHead>Kategorie</TableHead>
                         <TableHead>Preis</TableHead>
-                        <TableHead>Lager</TableHead>
+                        <TableHead>Verfügbar</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Aktionen</TableHead>
                       </TableRow>
@@ -728,7 +718,7 @@ const Admin: React.FC = () => {
           <TabsContent value="orders">
             <Card>
               <CardHeader>
-                <CardTitle>Bestellungen</CardTitle>
+                <CardTitle>Angebotsanfragen</CardTitle>
               </CardHeader>
               <CardContent>
                 {loadingData ? (
@@ -737,16 +727,16 @@ const Admin: React.FC = () => {
                   </div>
                 ) : orders.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    Keine Bestellungen vorhanden.
+                    Keine Anfragen vorhanden.
                   </p>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Bestellnr.</TableHead>
+                        <TableHead>Anfrage-Nr.</TableHead>
                         <TableHead>Kunde</TableHead>
                         <TableHead>Datum</TableHead>
-                        <TableHead>Betrag</TableHead>
+                        <TableHead>Geschätzter Wert</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Aktionen</TableHead>
                       </TableRow>
@@ -785,11 +775,11 @@ const Admin: React.FC = () => {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="pending">Ausstehend</SelectItem>
-                                <SelectItem value="confirmed">Bestätigt</SelectItem>
+                                <SelectItem value="pending">Neu</SelectItem>
+                                <SelectItem value="confirmed">Angebot erstellt</SelectItem>
                                 <SelectItem value="processing">In Bearbeitung</SelectItem>
                                 <SelectItem value="shipped">Versendet</SelectItem>
-                                <SelectItem value="delivered">Geliefert</SelectItem>
+                                <SelectItem value="delivered">Abgeschlossen</SelectItem>
                                 <SelectItem value="cancelled">Storniert</SelectItem>
                               </SelectContent>
                             </Select>

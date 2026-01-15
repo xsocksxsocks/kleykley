@@ -32,7 +32,7 @@ const Auth: React.FC = () => {
 
   useEffect(() => {
     if (user && !loading) {
-      navigate('/shop');
+      navigate('/portal');
     }
   }, [user, loading, navigate]);
 
@@ -78,7 +78,7 @@ const Auth: React.FC = () => {
         title: 'Willkommen zurück!',
         description: 'Sie sind jetzt angemeldet.',
       });
-      navigate('/shop');
+      navigate('/portal');
     }
   };
 
@@ -124,7 +124,7 @@ const Auth: React.FC = () => {
         title: 'Registrierung erfolgreich!',
         description: 'Ihr Konto wird geprüft. Sie werden benachrichtigt, sobald es freigeschaltet ist.',
       });
-      navigate('/shop');
+      navigate('/portal');
     }
   };
 
@@ -140,7 +140,7 @@ const Auth: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Kley Shop</CardTitle>
+          <CardTitle className="text-2xl font-bold">Kley Kundenportal</CardTitle>
           <CardDescription>
             Melden Sie sich an oder erstellen Sie ein Konto
           </CardDescription>
@@ -226,8 +226,7 @@ const Auth: React.FC = () => {
                   {isLoading ? 'Wird registriert...' : 'Registrieren'}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  Nach der Registrierung muss Ihr Konto freigeschaltet werden.
-                  Dies erfolgt automatisch innerhalb von 3 Stunden (zwischen 8-20 Uhr).
+                  Nach der Registrierung muss Ihr Konto von uns geprüft und freigeschaltet werden.
                 </p>
               </form>
             </TabsContent>

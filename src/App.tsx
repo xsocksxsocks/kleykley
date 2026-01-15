@@ -14,10 +14,10 @@ import Kontakt from "./pages/Kontakt";
 import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
 import NotFound from "./pages/NotFound";
-import Auth from "./pages/shop/Auth";
-import Shop from "./pages/shop/Shop";
-import Cart from "./pages/shop/Cart";
-import Orders from "./pages/shop/Orders";
+import Auth from "./pages/portal/Auth";
+import Portal from "./pages/portal/Portal";
+import Warenkorb from "./pages/portal/Warenkorb";
+import Anfragen from "./pages/portal/Anfragen";
 import Admin from "./pages/admin/Admin";
 
 const queryClient = new QueryClient();
@@ -39,10 +39,10 @@ const App = () => (
                 <Route path="/kontakt" element={<Kontakt />} />
                 <Route path="/impressum" element={<Impressum />} />
                 <Route path="/datenschutz" element={<Datenschutz />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/shop/auth" element={<Auth />} />
-                <Route path="/shop/cart" element={<Cart />} />
-                <Route path="/shop/orders" element={<Orders />} />
+                <Route path="/portal" element={<Portal />} />
+                <Route path="/portal/auth" element={<Auth />} />
+                <Route path="/portal/warenkorb" element={<Warenkorb />} />
+                <Route path="/portal/anfragen" element={<Anfragen />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
