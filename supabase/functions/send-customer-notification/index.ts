@@ -145,6 +145,10 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
 
       const billingAddr = data?.billingAddress;
       const shippingAddr = data?.shippingAddress;
+      
+      const netTotal = data?.totalAmount || 0;
+      const vatAmount = netTotal * 0.19;
+      const grossTotal = netTotal + vatAmount;
 
       return {
         subject: `Ihre Angebotsanfrage ${data?.orderNumber || ''} wurde empfangen`,
@@ -171,14 +175,15 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
             </tbody>
           </table>
 
-          <div style="margin-top: 20px; text-align: right;">
+          <div style="margin-top: 20px; text-align: right; border-top: 1px solid #e5e5e5; padding-top: 15px;">
             ${data?.discountAmount && data.discountAmount > 0 ? `
               <p style="margin: 5px 0; color: #22c55e;">
                 <strong>Rabatt${data?.discountCode ? ` (${data.discountCode})` : ''}:</strong> -${formatCurrency(data.discountAmount)}
               </p>
             ` : ''}
-            <p style="margin: 5px 0;"><strong>Zwischensumme (netto):</strong> ${formatCurrency(data?.totalAmount || 0)}</p>
-            <p style="margin: 5px 0; font-size: 12px; color: #666;">zzgl. 19% MwSt.</p>
+            <p style="margin: 5px 0;"><strong>Zwischensumme (netto):</strong> ${formatCurrency(netTotal)}</p>
+            <p style="margin: 5px 0; color: #666;">MwSt. (19%):</strong> ${formatCurrency(vatAmount)}</p>
+            <p style="margin: 10px 0; font-size: 18px; font-weight: bold; color: #b8860b;"><strong>Gesamtbetrag (brutto):</strong> ${formatCurrency(grossTotal)}</p>
           </div>
 
           ${billingAddr ? `
