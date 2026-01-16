@@ -445,74 +445,34 @@ const Portal: React.FC = () => {
               </div>
 
               {parentCategories.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
                   <Button
                     variant={selectedCategory === null && selectedParentCategory === null ? 'default' : 'outline'}
                     size="sm"
+                    className="shrink-0"
                     onClick={() => {
                       setSelectedCategory(null);
                       setSelectedParentCategory(null);
                     }}
                   >
-                    Alle Kategorien
+                    Alle
                   </Button>
                   {parentCategories.map((parentCat) => {
-                    const subcats = getSubcategories(parentCat.id);
                     const isParentSelected = selectedParentCategory === parentCat.id;
-                    const hasSelectedSubcat = subcats.some(sub => sub.id === selectedCategory);
-                    
-                    if (subcats.length === 0) {
-                      return (
-                        <Button
-                          key={parentCat.id}
-                          variant={isParentSelected ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => {
-                            setSelectedParentCategory(parentCat.id);
-                            setSelectedCategory(null);
-                          }}
-                        >
-                          {parentCat.name}
-                        </Button>
-                      );
-                    }
                     
                     return (
-                      <DropdownMenu key={parentCat.id}>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant={isParentSelected || hasSelectedSubcat ? 'default' : 'outline'}
-                            size="sm"
-                            className="gap-1"
-                          >
-                            {parentCat.name}
-                            <ChevronDown className="h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedParentCategory(parentCat.id);
-                              setSelectedCategory(null);
-                            }}
-                            className={isParentSelected && !selectedCategory ? 'bg-accent' : ''}
-                          >
-                            Alle in {parentCat.name}
-                          </DropdownMenuItem>
-                          {subcats.map((subcat) => (
-                            <DropdownMenuItem
-                              key={subcat.id}
-                              onClick={() => {
-                                setSelectedParentCategory(parentCat.id);
-                                setSelectedCategory(subcat.id);
-                              }}
-                              className={selectedCategory === subcat.id ? 'bg-accent' : ''}
-                            >
-                              {subcat.name}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <Button
+                        key={parentCat.id}
+                        variant={isParentSelected ? 'default' : 'outline'}
+                        size="sm"
+                        className="shrink-0"
+                        onClick={() => {
+                          setSelectedParentCategory(parentCat.id);
+                          setSelectedCategory(null);
+                        }}
+                      >
+                        {parentCat.name}
+                      </Button>
                     );
                   })}
                 </div>
