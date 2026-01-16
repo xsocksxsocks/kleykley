@@ -197,19 +197,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
         .eq('id', data.user.id);
 
-      // Send welcome email
-      try {
-        await supabase.functions.invoke('send-customer-notification', {
-          body: {
-            type: 'welcome',
-            customerEmail: email,
-            customerName: fullName || companyName || 'Kunde',
-          },
-        });
-        logDebug('AuthContext', 'Welcome email sent');
-      } catch (emailError) {
-        logError('AuthContext:sendWelcomeEmail', emailError);
-      }
+      // NOTE: Welcome email is NOT sent here anymore!
+      // It will be sent when the account is approved (manually or via auto-approval)
+      logDebug('AuthContext', 'Account created - welcome email will be sent upon approval');
     }
     
     return { error: error as Error | null };
