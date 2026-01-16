@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Settings, FileText, User } from 'lucide-react';
+import { LogOut, Settings, FileText, User, Home } from 'lucide-react';
 import { PortalFooter } from './PortalFooter';
 import { CartDropdown } from './CartDropdown';
 import logoImage from '@/assets/logo-kley.png';
@@ -46,7 +46,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
               )}
               <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
                 <Link to="/portal">
-                  <span>Portal</span>
+                  <Home className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Portal</span>
                 </Link>
               </Button>
               <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
