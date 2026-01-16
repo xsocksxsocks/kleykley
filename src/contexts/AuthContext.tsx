@@ -15,6 +15,7 @@ interface AuthContextType {
     password: string,
     fullName: string,
     companyName?: string,
+    phone?: string,
     address?: string,
     city?: string,
     postalCode?: string
@@ -121,6 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     password: string,
     fullName: string,
     companyName?: string,
+    phone?: string,
     address?: string,
     city?: string,
     postalCode?: string
@@ -135,6 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         data: {
           full_name: fullName,
           company_name: companyName,
+          phone: phone,
           address: address,
           city: city,
           postal_code: postalCode,
@@ -148,6 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('profiles')
         .update({
           company_name: companyName,
+          phone: phone,
           address: address,
           city: city,
           postal_code: postalCode,

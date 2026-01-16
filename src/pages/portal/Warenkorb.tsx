@@ -33,6 +33,7 @@ const Warenkorb: React.FC = () => {
   const [useDifferentShipping, setUseDifferentShipping] = useState(false);
   const [billingData, setBillingData] = useState({
     companyName: profile?.company_name || '',
+    phone: profile?.phone || '',
     address: profile?.address || '',
     city: profile?.city || '',
     postalCode: profile?.postal_code || '',
@@ -48,6 +49,7 @@ const Warenkorb: React.FC = () => {
     if (profile) {
       setBillingData({
         companyName: profile.company_name || '',
+        phone: profile.phone || '',
         address: profile.address || '',
         city: profile.city || '',
         postalCode: profile.postal_code || '',
@@ -108,6 +110,7 @@ const Warenkorb: React.FC = () => {
         user_id: user.id,
         total_amount: totals.netTotal,
         company_name: billingData.companyName,
+        phone: billingData.phone,
         billing_address: billingData.address,
         billing_city: billingData.city,
         billing_postal_code: billingData.postalCode,
@@ -320,6 +323,16 @@ const Warenkorb: React.FC = () => {
                       />
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="phone">Telefon *</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={billingData.phone}
+                        onChange={(e) => setBillingData({ ...billingData, phone: e.target.value })}
+                        placeholder="+49 123 456789"
+                      />
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="billingAddress">Straße und Hausnummer</Label>
                       <Input
                         id="billingAddress"
@@ -408,7 +421,7 @@ const Warenkorb: React.FC = () => {
                     <Button
                       className="w-full"
                       onClick={handleOrder}
-                      disabled={isOrdering || !billingData.address || !billingData.city || !billingData.postalCode}
+                      disabled={isOrdering || !billingData.address || !billingData.city || !billingData.postalCode || !billingData.phone}
                     >
                       {isOrdering ? 'Wird gesendet...' : 'Angebotsanfrage senden'}
                     </Button>
