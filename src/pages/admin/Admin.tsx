@@ -50,11 +50,13 @@ import {
   Tag,
   Car,
   LayoutDashboard,
+  FolderOpen,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ProductImageUpload } from '@/components/admin/ProductImageUpload';
 import VehicleManagement from '@/components/admin/VehicleManagement';
 import AdminDashboard from '@/components/admin/AdminDashboard';
+import { DocumentUpload } from '@/components/admin/DocumentUpload';
 
 interface ProductImage {
   id: string;
@@ -620,6 +622,10 @@ const Admin: React.FC = () => {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="documents" className="flex items-center gap-2">
+              <FolderOpen className="h-4 w-4" />
+              Dokumente
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -1142,6 +1148,10 @@ const Admin: React.FC = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="documents">
+            <DocumentUpload />
           </TabsContent>
         </Tabs>
       </main>

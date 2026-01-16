@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { FavoriteButton } from '@/components/portal/FavoriteButton';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { RecentlyViewedSection } from '@/components/portal/RecentlyViewedSection';
 
 interface Category {
   id: string;
@@ -333,6 +334,8 @@ const Portal: React.FC = () => {
             <span className="block text-sm mt-1">Alle Preise verstehen sich als Netto-Preise zzgl. MwSt.</span>
           </p>
         </div>
+
+        <RecentlyViewedSection />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6">
