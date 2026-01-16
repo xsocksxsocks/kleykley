@@ -335,8 +335,6 @@ const Portal: React.FC = () => {
           </p>
         </div>
 
-        <RecentlyViewedSection />
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="products" className="flex items-center gap-2">
@@ -731,6 +729,8 @@ const Portal: React.FC = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        <RecentlyViewedSection />
       </div>
     </PortalLayout>
   );
