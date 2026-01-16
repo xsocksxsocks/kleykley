@@ -40,8 +40,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (newTotal > product.stock_quantity) {
       toast({
-        title: 'Nicht genügend Lagerbestand',
-        description: `Nur ${product.stock_quantity} Stück von "${product.name}" verfügbar.`,
+        title: 'Maximale Anzahl erreicht',
+        description: `Es sind nur ${product.stock_quantity} Stück von "${product.name}" verfügbar.`,
         variant: 'destructive',
       });
       return false;
@@ -74,8 +74,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const item = items.find((item) => item.product.id === productId);
     if (item && quantity > item.product.stock_quantity) {
       toast({
-        title: 'Nicht genügend Lagerbestand',
-        description: `Nur ${item.product.stock_quantity} Stück von "${item.product.name}" verfügbar.`,
+        title: 'Maximale Anzahl erreicht',
+        description: `Es sind nur ${item.product.stock_quantity} Stück von "${item.product.name}" verfügbar.`,
         variant: 'destructive',
       });
       return false;
