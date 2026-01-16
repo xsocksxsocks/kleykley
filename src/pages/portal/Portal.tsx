@@ -436,7 +436,7 @@ const Portal: React.FC = () => {
                   return (
                     <Card key={product.id} className="flex flex-col relative">
                       <div className="absolute top-2 left-2 z-10">
-                        <FavoriteButton itemType="product" itemId={product.id} className="bg-white/80 hover:bg-white" />
+                        <FavoriteButton itemType="product" itemId={product.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
                       </div>
                       {(product.is_recommended || (product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0)) && (
                         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
@@ -624,7 +624,7 @@ const Portal: React.FC = () => {
                   return (
                     <Card key={vehicle.id} className="flex flex-col relative">
                       <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                        <FavoriteButton itemType="vehicle" itemId={vehicle.id} className="bg-white/80 hover:bg-white" />
+                        <FavoriteButton itemType="vehicle" itemId={vehicle.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
                         {vehicle.is_sold && (
                           <Badge className="bg-destructive text-destructive-foreground">
                             Verkauft
