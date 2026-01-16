@@ -730,7 +730,9 @@ const Portal: React.FC = () => {
           </TabsContent>
         </Tabs>
 
-        <RecentlyViewedSection />
+        <div className="mt-12">
+          <RecentlyViewedSection />
+        </div>
       </div>
     </PortalLayout>
   );
