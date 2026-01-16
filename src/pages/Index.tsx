@@ -150,8 +150,8 @@ const Index = () => {
             <div className={`order-1 lg:order-2 relative ${aboutAnimation.isVisible ? 'animate-slide-right' : ''}`}>
               <div className="relative">
                 <img
-                  src={handshakeImage}
-                  alt="Professionelle Zusammenarbeit"
+                  src={justiceImage}
+                  alt="Waage der Gerechtigkeit"
                   className="rounded-lg shadow-elegant w-full"
                 />
                 <div className="absolute -bottom-6 -left-6 w-32 h-32 border-2 border-gold/30 rounded-lg" />
