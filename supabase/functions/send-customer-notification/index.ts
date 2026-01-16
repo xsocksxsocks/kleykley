@@ -257,7 +257,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
           <h2>Sehr geehrte/r ${name},</h2>
           <p>Ihre Bestellung ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} wurde versendet.</p>
           ${data?.newStatus ? `<p><strong>Neuer Status:</strong> ${data.newStatus}</p>` : ''}
-          <p>Die Lieferung sollte in den nächsten Tagen bei Ihnen eintreffen.</p>
+          <p>Die Versandabwicklung erfolgt gemäß den vereinbarten Konditionen. Sollten Sie noch keine detaillierten Versandinformationen erhalten haben, werden wir Ihnen diese in Kürze zukommen lassen.</p>
           <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Status ansehen</a></p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
