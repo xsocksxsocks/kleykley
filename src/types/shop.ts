@@ -73,6 +73,8 @@ export interface OrderItem {
   quantity: number;
   unit_price: number;
   total_price: number;
+  original_unit_price?: number | null;
+  discount_percentage?: number | null;
   created_at: string;
 }
 
