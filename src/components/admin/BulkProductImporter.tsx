@@ -214,9 +214,20 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
       setExtractionProgress(20);
       setExtractionStatus('Sende an KI zur Analyse...');
 
-      const { data, error } = await supabase.functions.invoke('extract-products-from-pdf', {
-        body: { pdfBase64: base64 },
-      });
+      // Use AbortController with extended timeout for large PDFs (3 minutes)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 180000);
+      
+      let data, error;
+      try {
+        const response = await supabase.functions.invoke('extract-products-from-pdf', {
+          body: { pdfBase64: base64 },
+        });
+        data = response.data;
+        error = response.error;
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       setExtractionProgress(80);
       setExtractionStatus('Verarbeite Ergebnisse...');
