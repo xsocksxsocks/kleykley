@@ -32,6 +32,7 @@ import {
   FileText,
   Calendar,
   Package,
+  Car,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -255,12 +256,25 @@ const AnfrageDetail: React.FC = () => {
                   </TableHeader>
                   <TableBody>
                     {order.order_items.map((item) => {
-                      const hasDiscount = item.discount_percentage && item.discount_percentage > 0;
+                      const hasDiscount = (item.discount_percentage ?? 0) > 0;
+                      const isVehicle = item.product_name.startsWith('[FAHRZEUG]');
+                      const displayName = isVehicle 
+                        ? item.product_name.replace('[FAHRZEUG] ', '') 
+                        : item.product_name;
+                      
                       return (
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
-                              {item.product_name}
+                              {isVehicle ? (
+                                <Badge variant="outline" className="flex items-center gap-1">
+                                  <Car className="h-3 w-3" />
+                                  Fahrzeug
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline">Ware</Badge>
+                              )}
+                              {displayName}
                               {hasDiscount && (
                                 <Badge className="bg-red-500 text-white text-xs">
                                   -{item.discount_percentage}%

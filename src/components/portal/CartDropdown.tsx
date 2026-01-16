@@ -66,7 +66,10 @@ export const CartDropdown: React.FC = () => {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{item.product.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="outline" className="text-xs px-1.5 py-0">Ware</Badge>
+                          <p className="text-sm font-medium truncate">{item.product.name}</p>
+                        </div>
                         <p className="text-xs text-muted-foreground">
                           {formatCurrency(discountedPrice)} / Stück
                         </p>

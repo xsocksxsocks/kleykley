@@ -189,7 +189,8 @@ const Warenkorb: React.FC = () => {
 
       if (orderError) throw orderError;
 
-      const orderItems = items.map((item) => {
+      // Product items
+      const productOrderItems = items.map((item) => {
         const discountPercentage = (item.product as any).discount_percentage || 0;
         const discountedUnitPrice = calculateDiscountedPrice(item.product.price, discountPercentage);
         return {
@@ -204,11 +205,31 @@ const Warenkorb: React.FC = () => {
         };
       });
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
+      // Vehicle items (stored with product_id = null, name prefixed with [FAHRZEUG])
+      const vehicleOrderItems = vehicleItems.map((item) => {
+        const discountPercentage = item.vehicle.discount_percentage || 0;
+        const discountedUnitPrice = calculateDiscountedPrice(item.vehicle.price, discountPercentage);
+        return {
+          order_id: createdOrder.id,
+          product_id: null,
+          product_name: `[FAHRZEUG] ${item.vehicle.brand} ${item.vehicle.model}`,
+          quantity: 1,
+          unit_price: discountedUnitPrice,
+          total_price: discountedUnitPrice,
+          original_unit_price: item.vehicle.price,
+          discount_percentage: discountPercentage,
+        };
+      });
 
-      if (itemsError) throw itemsError;
+      const allOrderItems = [...productOrderItems, ...vehicleOrderItems];
+
+      if (allOrderItems.length > 0) {
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(allOrderItems);
+
+        if (itemsError) throw itemsError;
+      }
 
       clearCart();
       toast({
@@ -280,6 +301,7 @@ const Warenkorb: React.FC = () => {
                       )}
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">Ware</Badge>
                           <h3 className="font-medium">{item.product.name}</h3>
                           {hasDiscount && (
                             <Badge className="bg-red-500 text-white text-xs">
