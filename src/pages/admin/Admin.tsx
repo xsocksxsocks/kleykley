@@ -56,6 +56,7 @@ import {
   Upload,
   ChevronDown,
   Loader2,
+  Mail,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -71,6 +72,7 @@ import { DocumentUpload } from '@/components/admin/DocumentUpload';
 import { CustomerManagement } from '@/components/admin/CustomerManagement';
 import { DiscountCodeManagement } from '@/components/admin/DiscountCodeManagement';
 import { BulkProductImporter } from '@/components/admin/BulkProductImporter';
+import { EmailLogViewer } from '@/components/admin/EmailLogViewer';
 
 interface ProductImage {
   id: string;
@@ -691,6 +693,10 @@ const Admin: React.FC = () => {
               <FolderOpen className="h-4 w-4" />
               Dokumente
             </TabsTrigger>
+            <TabsTrigger value="emails" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              E-Mail-Log
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -1306,6 +1312,10 @@ const Admin: React.FC = () => {
 
           <TabsContent value="documents">
             <DocumentUpload />
+          </TabsContent>
+
+          <TabsContent value="emails">
+            <EmailLogViewer />
           </TabsContent>
         </Tabs>
       </main>

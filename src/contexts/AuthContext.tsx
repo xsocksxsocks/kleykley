@@ -161,6 +161,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           country: country,
         })
         .eq('id', data.user.id);
+
+      // Send welcome email
+      try {
+        await supabase.functions.invoke('send-customer-notification', {
+          body: {
+            type: 'welcome',
+            customerEmail: email,
+            customerName: fullName || companyName || 'Kunde',
+          },
+        });
+        console.log('Welcome email sent');
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+      }
     }
     
     return { error: error as Error | null };

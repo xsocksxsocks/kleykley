@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -189,10 +190,31 @@ const getFooter = () => `
   </p>
 `;
 
+const getNotificationTypeLabel = (type: NotificationType): string => {
+  const labels: Record<NotificationType, string> = {
+    welcome: 'Willkommen',
+    status_approved: 'Konto freigeschaltet',
+    status_rejected: 'Konto abgelehnt',
+    status_pending: 'Konto in Prüfung',
+    order_confirmed: 'Angebot erstellt',
+    order_processing: 'Anfrage in Bearbeitung',
+    order_shipped: 'Versandbestätigung',
+    order_delivered: 'Lieferung abgeschlossen',
+    order_cancelled: 'Stornierung',
+    document_uploaded: 'Neues Dokument',
+  };
+  return labels[type] || type;
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Initialize Supabase client with service role for logging
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     const { type, customerEmail, customerName, data }: NotificationRequest = await req.json();
@@ -219,6 +241,26 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
+    // Log the email to the database
+    const { error: logError } = await supabase
+      .from('email_logs')
+      .insert({
+        recipient_email: customerEmail,
+        recipient_name: customerName,
+        notification_type: type,
+        subject: subject,
+        status: emailResponse.error ? 'failed' : 'sent',
+        error_message: emailResponse.error?.message || null,
+        metadata: {
+          resend_id: emailResponse.data?.id,
+          data: data,
+        },
+      });
+
+    if (logError) {
+      console.error("Failed to log email:", logError);
+    }
+
     return new Response(
       JSON.stringify({ success: true, message: "Notification sent", id: emailResponse.data?.id }),
       {
@@ -228,6 +270,30 @@ const handler = async (req: Request): Promise<Response> => {
     );
   } catch (error: any) {
     console.error("Error in send-customer-notification:", error);
+
+    // Try to log the failed email
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      
+      const body = await req.clone().json().catch(() => ({}));
+      
+      await supabase
+        .from('email_logs')
+        .insert({
+          recipient_email: body.customerEmail || 'unknown',
+          recipient_name: body.customerName || null,
+          notification_type: body.type || 'unknown',
+          subject: 'Failed to send',
+          status: 'failed',
+          error_message: error.message,
+          metadata: { data: body.data },
+        });
+    } catch (logError) {
+      console.error("Failed to log error:", logError);
+    }
+
     return new Response(
       JSON.stringify({ error: error.message }),
       {
