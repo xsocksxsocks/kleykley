@@ -644,8 +644,8 @@ const Warenkorb: React.FC = () => {
                     <span>{formatCurrency(totals.grossTotal)}</span>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Die endgültigen Preise erhalten Sie in Ihrem individuellen Angebot.
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Die endgültigen Preise, Lieferzeiten sowie ggf. weitere Hinweise erhalten Sie in Ihrem individuellen unverbindlichen Angebot.
                 </p>
 
                 {showCheckout && (
