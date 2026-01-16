@@ -2,10 +2,11 @@ import React, { ReactNode } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Settings, FileText, User, Home } from 'lucide-react';
+import { LogOut, Settings, FileText, User, Home, Heart, FolderOpen } from 'lucide-react';
 import { PortalFooter } from './PortalFooter';
 import { CartDropdown } from './CartDropdown';
 import { PortalBreadcrumb } from './PortalBreadcrumb';
+import { ThemeToggle } from './ThemeToggle';
 import logoImage from '@/assets/logo-kley.png';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +24,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
   const isOnProfil = location.pathname === '/portal/profil';
   const isOnAnfragen = location.pathname === '/portal/anfragen';
   const isOnWarenkorb = location.pathname === '/portal/warenkorb';
+  const isOnFavoriten = location.pathname === '/portal/favoriten';
+  const isOnDokumente = location.pathname === '/portal/dokumente';
 
   const handleSignOut = async () => {
     await signOut();
@@ -88,6 +91,34 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                     asChild 
                     className={cn(
                       "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
+                      isOnFavoriten && "bg-gold/20 text-gold border-gold/50"
+                    )}
+                  >
+                    <Link to="/portal/favoriten">
+                      <Heart className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Favoriten</span>
+                    </Link>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    asChild 
+                    className={cn(
+                      "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
+                      isOnDokumente && "bg-gold/20 text-gold border-gold/50"
+                    )}
+                  >
+                    <Link to="/portal/dokumente">
+                      <FolderOpen className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Dokumente</span>
+                    </Link>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    asChild 
+                    className={cn(
+                      "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
                       isOnAnfragen && "bg-gold/20 text-gold border-gold/50"
                     )}
                   >
@@ -99,6 +130,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                   <CartDropdown isActive={isOnWarenkorb} />
                 </>
               )}
+              <ThemeToggle />
               <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-cream hover:bg-gold/10 hover:text-gold">
                 <LogOut className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Abmelden</span>

@@ -9,9 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car } from 'lucide-react';
+import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car, Heart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { FavoriteButton } from '@/components/portal/FavoriteButton';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 
 interface Category {
   id: string;
@@ -432,6 +434,9 @@ const Portal: React.FC = () => {
                   const imageUrl = getProductImage(product);
                   return (
                     <Card key={product.id} className="flex flex-col relative">
+                      <div className="absolute top-2 left-2 z-10">
+                        <FavoriteButton itemType="product" itemId={product.id} className="bg-white/80 hover:bg-white" />
+                      </div>
                       {(product.is_recommended || (product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0)) && (
                         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
                           {product.is_recommended && (
@@ -618,6 +623,7 @@ const Portal: React.FC = () => {
                   return (
                     <Card key={vehicle.id} className="flex flex-col relative">
                       <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                        <FavoriteButton itemType="vehicle" itemId={vehicle.id} className="bg-white/80 hover:bg-white" />
                         {vehicle.is_sold && (
                           <Badge className="bg-destructive text-destructive-foreground">
                             Verkauft

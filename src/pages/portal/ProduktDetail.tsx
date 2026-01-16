@@ -21,7 +21,8 @@ import {
   Percent
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { FavoriteButton } from '@/components/portal/FavoriteButton';
 interface Category {
   id: string;
   name: string;
@@ -78,6 +79,14 @@ const ProduktDetail: React.FC = () => {
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const { addItem } = useRecentlyViewed();
+
+  // Track recently viewed
+  useEffect(() => {
+    if (id) {
+      addItem(id, 'product');
+    }
+  }, [id, addItem]);
 
   useEffect(() => {
     if (!loading && !user) {
