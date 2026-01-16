@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart, Vehicle } from '@/contexts/CartContext';
@@ -9,13 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car, Heart } from 'lucide-react';
+import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { FavoriteButton } from '@/components/portal/FavoriteButton';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedSection } from '@/components/portal/RecentlyViewedSection';
-
 interface Category {
   id: string;
   name: string;
@@ -52,6 +51,10 @@ const Portal: React.FC = () => {
   const [vehicleSearchQuery, setVehicleSearchQuery] = useState('');
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingVehicles, setLoadingVehicles] = useState(true);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 24;
   
   // Get initial tab from URL param or default to 'products'
   const tabFromUrl = searchParams.get('tab');
@@ -195,11 +198,25 @@ const Portal: React.FC = () => {
   });
 
   // Sort: recommended first
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (a.is_recommended && !b.is_recommended) return -1;
-    if (!a.is_recommended && b.is_recommended) return 1;
-    return 0;
-  });
+  const sortedProducts = useMemo(() => {
+    return [...filteredProducts].sort((a, b) => {
+      if (a.is_recommended && !b.is_recommended) return -1;
+      if (!a.is_recommended && b.is_recommended) return 1;
+      return 0;
+    });
+  }, [filteredProducts]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    return sortedProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+  }, [sortedProducts, currentPage]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery]);
 
   // Filter vehicles by type and search
   const filteredVehicles = vehicles.filter((v) => {
@@ -430,112 +447,192 @@ const Portal: React.FC = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sortedProducts.map((product) => {
-                  const imageUrl = getProductImage(product);
-                  return (
-                    <Card key={product.id} className="flex flex-col relative">
-                      <div className="absolute top-2 left-2 z-10">
-                        <FavoriteButton itemType="product" itemId={product.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
-                      </div>
-                      {(product.is_recommended || (product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0)) && (
-                        <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-                          {product.is_recommended && (
-                            <Badge className="bg-gold text-navy-dark flex items-center gap-1">
-                              <Star className="h-3 w-3 fill-current" />
-                              Empfohlen
-                            </Badge>
-                          )}
-                          {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 && (
-                            <Badge className="bg-red-500 text-white flex items-center gap-1">
-                              <Percent className="h-3 w-3" />
-                              -{product.discount_percentage}%
-                            </Badge>
-                          )}
+              <>
+                {/* Product count and page info */}
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    {sortedProducts.length} Produkte gefunden
+                    {totalPages > 1 && ` • Seite ${currentPage} von ${totalPages}`}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {paginatedProducts.map((product) => {
+                    const imageUrl = getProductImage(product);
+                    return (
+                      <Card key={product.id} className="flex flex-col relative">
+                        <div className="absolute top-2 left-2 z-10">
+                          <FavoriteButton itemType="product" itemId={product.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
                         </div>
-                      )}
-                      <Link to={`/portal/produkt/${product.id}`} className="block">
-                        <CardHeader>
-                          {imageUrl ? (
-                            <img
-                              src={imageUrl}
-                              alt={product.name}
-                              className="w-full h-48 object-cover rounded-md mb-4 transition-transform hover:scale-[1.02]"
-                            />
-                          ) : (
-                            <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
-                              <Package className="h-12 w-12 text-muted-foreground" />
-                            </div>
-                          )}
-                          <CardTitle className="text-lg hover:text-primary transition-colors">{product.name}</CardTitle>
-                          {(product as any).product_number && (
-                            <p className="text-xs text-muted-foreground mt-1">Art.-Nr.: {(product as any).product_number}</p>
-                          )}
-                        </CardHeader>
-                      </Link>
-                      <CardContent className="flex-1">
-                        {product.description && (
-                          <p className="text-muted-foreground text-sm line-clamp-3">
-                            {product.description}
-                          </p>
+                        {(product.is_recommended || (product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0)) && (
+                          <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                            {product.is_recommended && (
+                              <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                                <Star className="h-3 w-3 fill-current" />
+                                Empfohlen
+                              </Badge>
+                            )}
+                            {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 && (
+                              <Badge className="bg-red-500 text-white flex items-center gap-1">
+                                <Percent className="h-3 w-3" />
+                                -{product.discount_percentage}%
+                              </Badge>
+                            )}
+                          </div>
                         )}
-                        <div className="mt-4">
-                          {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 ? (
-                            <>
-                              <p className="text-sm text-muted-foreground line-through">
-                                {formatCurrency(product.price)}
-                              </p>
-                              <p className="text-2xl font-bold text-red-600">
-                                {formatCurrency(calculateDiscountedPrice(product.price, product.discount_percentage))}
-                              </p>
-                            </>
-                          ) : (
-                            <p className="text-2xl font-bold">
-                              {formatCurrency(product.price)}
+                        <Link to={`/portal/produkt/${product.id}`} className="block">
+                          <CardHeader>
+                            {imageUrl ? (
+                              <img
+                                src={imageUrl}
+                                alt={product.name}
+                                className="w-full h-48 object-cover rounded-md mb-4 transition-transform hover:scale-[1.02]"
+                              />
+                            ) : (
+                              <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
+                                <Package className="h-12 w-12 text-muted-foreground" />
+                              </div>
+                            )}
+                            <CardTitle className="text-lg hover:text-primary transition-colors">{product.name}</CardTitle>
+                            {(product as any).product_number && (
+                              <p className="text-xs text-muted-foreground mt-1">Art.-Nr.: {(product as any).product_number}</p>
+                            )}
+                          </CardHeader>
+                        </Link>
+                        <CardContent className="flex-1">
+                          {product.description && (
+                            <p className="text-muted-foreground text-sm line-clamp-3">
+                              {product.description}
                             </p>
                           )}
-                          <p className="text-xs text-muted-foreground">
-                            Netto zzgl. {product.tax_rate}% MwSt.
-                          </p>
-                        </div>
-                        {product.stock_quantity > 0 && product.stock_quantity <= 5 ? (
-                          <p className="text-sm text-amber-600 mt-2 flex items-center gap-1">
-                            <AlertTriangle className="h-3 w-3" />
-                            Nur noch {product.stock_quantity} verfügbar
-                          </p>
-                        ) : product.stock_quantity > 0 ? (
-                          <p className="text-sm text-muted-foreground mt-2">
-                            {product.stock_quantity} verfügbar
-                          </p>
-                        ) : (
-                          <p className="text-sm text-muted-foreground mt-2">
-                            Auf Anfrage
-                          </p>
-                        )}
-                      </CardContent>
-                      <CardFooter className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          className="flex-1"
-                          asChild
-                        >
-                          <Link to={`/portal/produkt/${product.id}`}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Details
-                          </Link>
-                        </Button>
-                        <Button
-                          className="flex-1"
-                          onClick={() => handleAddToCart(product)}
-                        >
-                          <ShoppingCart className="h-4 w-4 mr-2" />
-                          Hinzufügen
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  );
-                })}
-              </div>
+                          <div className="mt-4">
+                            {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 ? (
+                              <>
+                                <p className="text-sm text-muted-foreground line-through">
+                                  {formatCurrency(product.price)}
+                                </p>
+                                <p className="text-2xl font-bold text-red-600">
+                                  {formatCurrency(calculateDiscountedPrice(product.price, product.discount_percentage))}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-2xl font-bold">
+                                {formatCurrency(product.price)}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              Netto zzgl. {product.tax_rate}% MwSt.
+                            </p>
+                          </div>
+                          {product.stock_quantity > 0 && product.stock_quantity <= 5 ? (
+                            <p className="text-sm text-amber-600 mt-2 flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              Nur noch {product.stock_quantity} verfügbar
+                            </p>
+                          ) : product.stock_quantity > 0 ? (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {product.stock_quantity} verfügbar
+                            </p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Auf Anfrage
+                            </p>
+                          )}
+                        </CardContent>
+                        <CardFooter className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            className="flex-1"
+                            asChild
+                          >
+                            <Link to={`/portal/produkt/${product.id}`}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Details
+                            </Link>
+                          </Button>
+                          <Button
+                            className="flex-1"
+                            onClick={() => handleAddToCart(product)}
+                          >
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            Hinzufügen
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                {/* Pagination controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                    >
+                      Erste
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => {
+                          // Show first, last, current, and pages around current
+                          if (page === 1 || page === totalPages) return true;
+                          if (Math.abs(page - currentPage) <= 2) return true;
+                          return false;
+                        })
+                        .map((page, index, array) => {
+                          // Add ellipsis between gaps
+                          const prevPage = array[index - 1];
+                          const showEllipsisBefore = prevPage && page - prevPage > 1;
+                          
+                          return (
+                            <React.Fragment key={page}>
+                              {showEllipsisBefore && (
+                                <span className="px-2 text-muted-foreground">...</span>
+                              )}
+                              <Button
+                                variant={currentPage === page ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setCurrentPage(page)}
+                                className="min-w-[40px]"
+                              >
+                                {page}
+                              </Button>
+                            </React.Fragment>
+                          );
+                        })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Letzte
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 
