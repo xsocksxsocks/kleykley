@@ -49,10 +49,12 @@ import {
   Eye,
   Tag,
   Car,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ProductImageUpload } from '@/components/admin/ProductImageUpload';
 import VehicleManagement from '@/components/admin/VehicleManagement';
+import AdminDashboard from '@/components/admin/AdminDashboard';
 
 interface ProductImage {
   id: string;
@@ -135,7 +137,7 @@ const Admin: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [activeTab, setActiveTab] = useState('customers');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   
   // Product form state
@@ -584,6 +586,10 @@ const Admin: React.FC = () => {
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-8">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
             <TabsTrigger value="customers" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Kunden
@@ -615,6 +621,10 @@ const Admin: React.FC = () => {
               )}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <AdminDashboard orders={orders} />
+          </TabsContent>
 
           <TabsContent value="customers">
             <Card>
