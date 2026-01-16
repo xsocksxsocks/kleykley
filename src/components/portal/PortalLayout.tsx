@@ -2,13 +2,20 @@ import React, { ReactNode } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Settings, FileText, User, Home, Heart, FolderOpen } from 'lucide-react';
+import { LogOut, Settings, FileText, User, Home, Heart, FolderOpen, ChevronDown } from 'lucide-react';
 import { PortalFooter } from './PortalFooter';
 import { CartDropdown } from './CartDropdown';
 import { PortalBreadcrumb } from './PortalBreadcrumb';
 import { ThemeToggle } from './ThemeToggle';
 import logoImage from '@/assets/logo-kley.png';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface PortalLayoutProps {
   children: ReactNode;
@@ -26,6 +33,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
   const isOnWarenkorb = location.pathname === '/portal/warenkorb';
   const isOnFavoriten = location.pathname === '/portal/favoriten';
   const isOnDokumente = location.pathname === '/portal/dokumente';
+  const isOnUserMenu = isOnProfil || isOnFavoriten || isOnDokumente;
 
   const handleSignOut = async () => {
     await signOut();
@@ -69,50 +77,56 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                   <span className="hidden sm:inline">Portal</span>
                 </Link>
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                asChild 
-                className={cn(
-                  "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
-                  isOnProfil && "bg-gold/20 text-gold border-gold/50"
-                )}
-              >
-                <Link to="/portal/profil">
-                  <User className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Profil</span>
-                </Link>
-              </Button>
+              
+              {/* User Menu Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className={cn(
+                      "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
+                      isOnUserMenu && "bg-gold/20 text-gold border-gold/50"
+                    )}
+                  >
+                    <User className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Mein Konto</span>
+                    <ChevronDown className="h-3 w-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link to="/portal/profil" className={cn("flex items-center gap-2", isOnProfil && "bg-muted")}>
+                      <User className="h-4 w-4" />
+                      Profil
+                    </Link>
+                  </DropdownMenuItem>
+                  {canAccessShop && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/portal/favoriten" className={cn("flex items-center gap-2", isOnFavoriten && "bg-muted")}>
+                          <Heart className="h-4 w-4" />
+                          Favoriten
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/portal/dokumente" className={cn("flex items-center gap-2", isOnDokumente && "bg-muted")}>
+                          <FolderOpen className="h-4 w-4" />
+                          Dokumente
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2 text-destructive">
+                    <LogOut className="h-4 w-4" />
+                    Abmelden
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {canAccessShop && (
                 <>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    asChild 
-                    className={cn(
-                      "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
-                      isOnFavoriten && "bg-gold/20 text-gold border-gold/50"
-                    )}
-                  >
-                    <Link to="/portal/favoriten">
-                      <Heart className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Favoriten</span>
-                    </Link>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    asChild 
-                    className={cn(
-                      "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
-                      isOnDokumente && "bg-gold/20 text-gold border-gold/50"
-                    )}
-                  >
-                    <Link to="/portal/dokumente">
-                      <FolderOpen className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Dokumente</span>
-                    </Link>
-                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -131,10 +145,6 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                 </>
               )}
               <ThemeToggle />
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-cream hover:bg-gold/10 hover:text-gold">
-                <LogOut className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Abmelden</span>
-              </Button>
             </div>
           </div>
         </header>
