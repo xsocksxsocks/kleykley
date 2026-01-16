@@ -220,6 +220,7 @@ const Portal: React.FC = () => {
         </div>
       </PortalLayout>
     );
+  }
 
   return (
     <PortalLayout>
