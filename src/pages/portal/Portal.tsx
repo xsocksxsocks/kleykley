@@ -308,9 +308,6 @@ const Portal: React.FC = () => {
                         </div>
                       )}
                       <CardTitle className="text-lg hover:text-primary transition-colors">{product.name}</CardTitle>
-                      {categoryName && (
-                        <Badge variant="secondary">{categoryName}</Badge>
-                      )}
                     </CardHeader>
                   </Link>
                   <CardContent className="flex-1">
