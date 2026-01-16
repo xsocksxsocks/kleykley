@@ -10,7 +10,15 @@ interface ExtractedProduct {
   description: string | null;
   price: number | null;
   category: string | null;
-  imageBase64: string | null;
+  imageDescription: string | null;
+}
+
+interface ExtractedData {
+  products: ExtractedProduct[];
+  images: {
+    productName: string;
+    base64: string;
+  }[];
 }
 
 serve(async (req) => {
@@ -39,7 +47,7 @@ serve(async (req) => {
 
     console.log('Starting PDF product extraction...');
 
-    const systemPrompt = `Du bist ein Experte für die Extraktion von Produktdaten aus PDF-Dokumenten wie Katalogen und Preislisten.
+const systemPrompt = `Du bist ein Experte für die Extraktion von Produktdaten aus PDF-Dokumenten wie Katalogen und Preislisten.
 
 Deine Aufgabe ist es, alle Produkte aus dem bereitgestellten PDF zu extrahieren und strukturiert zurückzugeben.
 
@@ -48,12 +56,14 @@ Für jedes Produkt extrahiere:
 - description: Eine Beschreibung des Produkts (kann null sein)
 - price: Der Preis als Zahl ohne Währungssymbol (z.B. 49.99). Wenn kein Preis angegeben ist, setze null
 - category: Eine passende Kategorie für das Produkt basierend auf dem Kontext (kann null sein)
+- imageDescription: Eine kurze Beschreibung des Produktbildes falls vorhanden (z.B. "Schwarzes T-Shirt mit Logo", "Metallisches Gehäuse"). Falls kein Bild vorhanden, setze null.
 
 Achte besonders auf:
 - Artikelnummern und Produktbezeichnungen
 - Preisangaben (brutto/netto, Stückpreis, Staffelpreise - nimm den Einzelpreis)
 - Kategorien oder Abschnittsüberschriften
 - Technische Spezifikationen als Teil der Beschreibung
+- Produktbilder und deren visuelle Eigenschaften
 
 Gib die Produkte als JSON-Array zurück.`;
 
@@ -102,7 +112,8 @@ Gib die Produkte als JSON-Array zurück.`;
                         name: { type: 'string', description: 'Produktname' },
                         description: { type: 'string', nullable: true, description: 'Produktbeschreibung' },
                         price: { type: 'number', nullable: true, description: 'Preis als Zahl' },
-                        category: { type: 'string', nullable: true, description: 'Produktkategorie' }
+                        category: { type: 'string', nullable: true, description: 'Produktkategorie' },
+                        imageDescription: { type: 'string', nullable: true, description: 'Beschreibung des Produktbildes' }
                       },
                       required: ['name']
                     }
@@ -172,11 +183,59 @@ Gib die Produkte als JSON-Array zurück.`;
 
     console.log(`Extracted ${products.length} products`);
 
+    // Generate images for products that have image descriptions
+    const productsWithImages: ExtractedProduct[] = [];
+    const productImages: { productName: string; base64: string }[] = [];
+
+    for (const product of products) {
+      productsWithImages.push(product);
+      
+      if (product.imageDescription) {
+        try {
+          console.log(`Generating image for: ${product.name}`);
+          
+          const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'google/gemini-2.5-flash-image-preview',
+              messages: [
+                {
+                  role: 'user',
+                  content: `Generate a professional product photo of: ${product.imageDescription}. Clean white background, high quality, commercial product photography style.`
+                }
+              ],
+              modalities: ['image', 'text']
+            }),
+          });
+
+          if (imageResponse.ok) {
+            const imageData = await imageResponse.json();
+            const generatedImage = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+            
+            if (generatedImage) {
+              productImages.push({
+                productName: product.name,
+                base64: generatedImage
+              });
+              console.log(`Image generated for: ${product.name}`);
+            }
+          }
+        } catch (imageError) {
+          console.error(`Error generating image for ${product.name}:`, imageError);
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
-        products,
-        count: products.length 
+        products: productsWithImages,
+        images: productImages,
+        count: productsWithImages.length 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

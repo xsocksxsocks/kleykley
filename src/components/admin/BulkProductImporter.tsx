@@ -32,6 +32,7 @@ import {
   Edit,
   Save,
   X,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/types/shop';
@@ -42,6 +43,7 @@ interface ExtractedProduct {
   description: string | null;
   price: number | null;
   category: string | null;
+  imageBase64: string | null;
   selected: boolean;
   editing: boolean;
 }
@@ -107,12 +109,21 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
         throw new Error(data.error || 'Extraktion fehlgeschlagen');
       }
 
+      // Map images to products
+      const imageMap = new Map<string, string>();
+      if (data.images) {
+        for (const img of data.images) {
+          imageMap.set(img.productName, img.base64);
+        }
+      }
+
       const extractedProducts: ExtractedProduct[] = data.products.map((p: any, index: number) => ({
         id: `temp-${index}-${Date.now()}`,
         name: p.name || '',
         description: p.description || null,
         price: p.price || null,
         category: p.category || null,
+        imageBase64: imageMap.get(p.name) || null,
         selected: true,
         editing: false,
       }));
@@ -165,6 +176,53 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
     setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
+  const uploadImageToStorage = async (base64Data: string, productName: string): Promise<string | null> => {
+    try {
+      // Extract base64 content and mime type
+      const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);
+      if (!matches) return null;
+
+      const mimeType = matches[1];
+      const base64Content = matches[2];
+      
+      // Convert base64 to blob
+      const byteCharacters = atob(base64Content);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mimeType });
+
+      // Generate filename
+      const extension = mimeType.split('/')[1] || 'png';
+      const fileName = `${Date.now()}-${productName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}.${extension}`;
+
+      // Upload to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, blob, {
+          contentType: mimeType,
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Upload error:', error);
+        return null;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(data.path);
+
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
+
   const handleImport = async () => {
     const selectedProducts = products.filter((p) => p.selected);
     if (selectedProducts.length === 0) {
@@ -182,6 +240,12 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
       let errorCount = 0;
 
       for (const product of selectedProducts) {
+        // Upload image if exists
+        let imageUrl: string | null = null;
+        if (product.imageBase64) {
+          imageUrl = await uploadImageToStorage(product.imageBase64, product.name);
+        }
+
         // Find category ID if category name matches
         const categoryMatch = categories.find(
           (c) => c.name.toLowerCase() === product.category?.toLowerCase()
@@ -192,6 +256,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
           description: product.description,
           price: product.price || 0,
           category_id: categoryMatch?.id || null,
+          image_url: imageUrl,
           stock_quantity: 0,
           is_active: true,
         };
@@ -323,6 +388,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
                         onCheckedChange={(checked) => handleSelectAll(!!checked)}
                       />
                     </TableHead>
+                    <TableHead className="w-[60px]">Bild</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Beschreibung</TableHead>
                     <TableHead>Kategorie</TableHead>
@@ -341,6 +407,19 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
                       </TableCell>
                       {editingProduct?.id === product.id ? (
                         <>
+                          <TableCell>
+                            {product.imageBase64 ? (
+                              <img
+                                src={product.imageBase64}
+                                alt={product.name}
+                                className="w-10 h-10 object-cover rounded"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
+                                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <Input
                               value={editingProduct.name}
@@ -422,6 +501,19 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
                         </>
                       ) : (
                         <>
+                          <TableCell>
+                            {product.imageBase64 ? (
+                              <img
+                                src={product.imageBase64}
+                                alt={product.name}
+                                className="w-10 h-10 object-cover rounded"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
+                                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            )}
+                          </TableCell>
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell className="max-w-[200px] truncate text-muted-foreground">
                             {product.description || '-'}
