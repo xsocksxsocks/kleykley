@@ -593,7 +593,7 @@ const Portal: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {sortedVehicles.map((vehicle) => {
-                  const hasDiscount = vehicle.discount_percentage && vehicle.discount_percentage > 0;
+                  const hasDiscount = (vehicle.discount_percentage ?? 0) > 0;
                   const discountedPrice = hasDiscount 
                     ? calculateDiscountedPrice(vehicle.price, vehicle.discount_percentage!) 
                     : vehicle.price;
