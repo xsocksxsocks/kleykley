@@ -140,9 +140,38 @@ const AnfrageDetail: React.FC = () => {
 
       setOrder((prev) => prev ? { ...prev, status } : null);
 
+      // Send email notification to customer
+      const statusToNotificationType: Record<Order['status'], string> = {
+        pending: '',
+        confirmed: 'order_confirmed',
+        processing: 'order_processing',
+        shipped: 'order_shipped',
+        delivered: 'order_delivered',
+        cancelled: 'order_cancelled',
+      };
+
+      const notificationType = statusToNotificationType[status];
+      if (notificationType && order.profiles?.email) {
+        try {
+          await supabase.functions.invoke('send-customer-notification', {
+            body: {
+              type: notificationType,
+              customerEmail: order.profiles.email,
+              customerName: order.profiles.full_name || order.profiles.company_name || 'Kunde',
+              data: {
+                orderNumber: order.order_number,
+              },
+            },
+          });
+          console.log('Order status notification email sent');
+        } catch (emailError) {
+          console.error('Failed to send order status notification:', emailError);
+        }
+      }
+
       toast({
         title: 'Status aktualisiert',
-        description: `Anfrage wurde auf "${statusLabels[status]}" gesetzt.`,
+        description: `Anfrage wurde auf "${statusLabels[status]}" gesetzt. E-Mail wurde gesendet.`,
       });
     } catch (error) {
       console.error('Error updating order status:', error);
