@@ -347,6 +347,86 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          sort_order: number
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          sort_order?: number
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          sort_order?: number
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_images_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          brand: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          model: string | null
+          name: string
+          price: number
+          stock_quantity: number
+          updated_at: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+          year: number | null
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          model?: string | null
+          name: string
+          price: number
+          stock_quantity?: number
+          updated_at?: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+          year?: number | null
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          model?: string | null
+          name?: string
+          price?: number
+          stock_quantity?: number
+          updated_at?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -379,6 +459,7 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
+      vehicle_type: "auto" | "motorrad" | "baumaschine"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -515,6 +596,7 @@ export const Constants = {
         "delivered",
         "cancelled",
       ],
+      vehicle_type: ["auto", "motorrad", "baumaschine"],
     },
   },
 } as const
