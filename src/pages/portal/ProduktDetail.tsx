@@ -15,7 +15,9 @@ import {
   ChevronLeft, 
   ChevronRight,
   Minus,
-  Plus
+  Plus,
+  AlertTriangle,
+  Percent
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -44,9 +46,15 @@ interface ProductData {
   is_active: boolean;
   tax_rate: number;
   is_recommended: boolean;
+  discount_percentage: number;
   created_at: string;
   updated_at: string;
 }
+
+const calculateDiscountedPrice = (price: number, discountPercentage: number = 0): number => {
+  if (!discountPercentage || discountPercentage <= 0) return price;
+  return price * (1 - discountPercentage / 100);
+};
 
 const formatCurrency = (amount: number): string => {
   return amount.toLocaleString('de-DE', {
@@ -311,22 +319,50 @@ const ProduktDetail: React.FC = () => {
 
             {/* Price */}
             <div className="border-y py-4">
-              <p className="text-4xl font-bold text-primary">
-                {formatCurrency(product.price)}
-              </p>
+              {product.discount_percentage > 0 ? (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge className="bg-red-500 text-white flex items-center gap-1">
+                      <Percent className="h-3 w-3" />
+                      -{product.discount_percentage}% Rabatt
+                    </Badge>
+                  </div>
+                  <p className="text-lg text-muted-foreground line-through">
+                    {formatCurrency(product.price)}
+                  </p>
+                  <p className="text-4xl font-bold text-red-600">
+                    {formatCurrency(calculateDiscountedPrice(product.price, product.discount_percentage))}
+                  </p>
+                </>
+              ) : (
+                <p className="text-4xl font-bold text-primary">
+                  {formatCurrency(product.price)}
+                </p>
+              )}
               <p className="text-sm text-muted-foreground mt-1">
-                Netto zzgl. {product.tax_rate}% MwSt. = {formatCurrency(product.price * (1 + product.tax_rate / 100))} brutto
+                Netto zzgl. {product.tax_rate}% MwSt. = {formatCurrency(calculateDiscountedPrice(product.price, product.discount_percentage) * (1 + product.tax_rate / 100))} brutto
               </p>
             </div>
 
             {/* Availability */}
             <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${product.stock_quantity > 0 ? 'bg-green-500' : 'bg-yellow-500'}`} />
-              <span className="text-sm">
-                {product.stock_quantity > 0
-                  ? `${product.stock_quantity} Stück verfügbar`
-                  : 'Auf Anfrage verfügbar'}
-              </span>
+              {product.stock_quantity > 0 && product.stock_quantity <= 5 ? (
+                <>
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <span className="text-sm text-amber-600 font-medium">
+                    Nur noch {product.stock_quantity} Stück verfügbar
+                  </span>
+                </>
+              ) : (
+                <>
+                  <div className={`w-3 h-3 rounded-full ${product.stock_quantity > 0 ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                  <span className="text-sm">
+                    {product.stock_quantity > 0
+                      ? `${product.stock_quantity} Stück verfügbar`
+                      : 'Auf Anfrage verfügbar'}
+                  </span>
+                </>
+              )}
             </div>
 
             {/* Description */}

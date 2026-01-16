@@ -3,12 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Product, ProductImage, formatCurrency } from '@/types/shop';
+import { Product, ProductImage, formatCurrency, calculateDiscountedPrice } from '@/types/shop';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle } from 'lucide-react';
+import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,6 +21,7 @@ interface Category {
 interface ExtendedProduct extends Product {
   category_id?: string | null;
   is_recommended?: boolean;
+  discount_percentage?: number;
 }
 
 const Portal: React.FC = () => {
@@ -323,12 +324,20 @@ const Portal: React.FC = () => {
               const categoryName = getCategoryName(product.category_id);
               return (
                 <Card key={product.id} className="flex flex-col relative">
-                  {product.is_recommended && (
-                    <div className="absolute top-2 right-2 z-10">
-                      <Badge className="bg-gold text-navy-dark flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-current" />
-                        Empfohlen
-                      </Badge>
+                  {(product.is_recommended || (product.discount_percentage && product.discount_percentage > 0)) && (
+                    <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                      {product.is_recommended && (
+                        <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-current" />
+                          Empfohlen
+                        </Badge>
+                      )}
+                      {product.discount_percentage && product.discount_percentage > 0 && (
+                        <Badge className="bg-red-500 text-white flex items-center gap-1">
+                          <Percent className="h-3 w-3" />
+                          -{product.discount_percentage}%
+                        </Badge>
+                      )}
                     </div>
                   )}
                   <Link to={`/portal/produkt/${product.id}`} className="block">
@@ -352,9 +361,20 @@ const Portal: React.FC = () => {
                       {product.description}
                     </p>
                     <div className="mt-4">
-                      <p className="text-2xl font-bold">
-                        {formatCurrency(product.price)}
-                      </p>
+                      {product.discount_percentage && product.discount_percentage > 0 ? (
+                        <>
+                          <p className="text-sm text-muted-foreground line-through">
+                            {formatCurrency(product.price)}
+                          </p>
+                          <p className="text-2xl font-bold text-red-600">
+                            {formatCurrency(calculateDiscountedPrice(product.price, product.discount_percentage))}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-2xl font-bold">
+                          {formatCurrency(product.price)}
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground">
                         Netto zzgl. {product.tax_rate}% MwSt.
                       </p>

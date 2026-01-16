@@ -146,6 +146,7 @@ const Admin: React.FC = () => {
     stock_quantity: '',
     is_active: true,
     is_recommended: false,
+    discount_percentage: '',
   });
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   
@@ -294,6 +295,7 @@ const Admin: React.FC = () => {
         stock_quantity: parseInt(productForm.stock_quantity) || 0,
         is_active: productForm.is_active,
         is_recommended: productForm.is_recommended,
+        discount_percentage: parseFloat(productForm.discount_percentage) || 0,
       };
 
       if (editingProduct) {
@@ -407,6 +409,7 @@ const Admin: React.FC = () => {
       stock_quantity: '',
       is_active: true,
       is_recommended: false,
+      discount_percentage: '',
     });
     setProductImages([]);
   };
@@ -421,6 +424,7 @@ const Admin: React.FC = () => {
       stock_quantity: product.stock_quantity.toString(),
       is_active: product.is_active,
       is_recommended: (product as any).is_recommended || false,
+      discount_percentage: ((product as any).discount_percentage || 0).toString(),
     });
     
     // Fetch images for this product
@@ -797,6 +801,24 @@ const Admin: React.FC = () => {
                             setProductForm({ ...productForm, is_recommended: checked })
                           }
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="discount">Rabatt (%)</Label>
+                        <Input
+                          id="discount"
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="1"
+                          placeholder="0"
+                          value={productForm.discount_percentage}
+                          onChange={(e) =>
+                            setProductForm({ ...productForm, discount_percentage: e.target.value })
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Prozentualer Rabatt auf den Verkaufspreis (0-100%)
+                        </p>
                       </div>
                       <div className="flex items-center justify-between">
                         <Label htmlFor="active">Aktiv</Label>
