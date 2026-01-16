@@ -46,6 +46,7 @@ interface CarForSale {
   power_hp: number | null;
   previous_owners: number;
   price: number;
+  discount_percentage: number | null;
   description: string | null;
   description_en: string | null;
   features: string[] | null;
@@ -86,6 +87,7 @@ const VehicleManagement: React.FC = () => {
     power_hp: '',
     previous_owners: '1',
     price: '',
+    discount_percentage: '',
     description: '',
     description_en: '',
     features: '',
@@ -137,6 +139,7 @@ const VehicleManagement: React.FC = () => {
       power_hp: '',
       previous_owners: '1',
       price: '',
+      discount_percentage: '',
       description: '',
       description_en: '',
       features: '',
@@ -163,6 +166,7 @@ const VehicleManagement: React.FC = () => {
       power_hp: car.power_hp?.toString() || '',
       previous_owners: car.previous_owners.toString(),
       price: car.price.toString(),
+      discount_percentage: car.discount_percentage?.toString() || '',
       description: car.description || '',
       description_en: car.description_en || '',
       features: car.features?.join('\n') || '',
@@ -244,6 +248,7 @@ const VehicleManagement: React.FC = () => {
         power_hp: form.power_hp ? parseInt(form.power_hp) : null,
         previous_owners: parseInt(form.previous_owners) || 1,
         price: parseFloat(form.price),
+        discount_percentage: form.discount_percentage ? parseFloat(form.discount_percentage) : 0,
         description: form.description || null,
         description_en: form.description_en || null,
         features: form.features ? form.features.split('\n').filter(f => f.trim()) : null,
@@ -567,6 +572,18 @@ const VehicleManagement: React.FC = () => {
                           step="0.01"
                           value={form.price}
                           onChange={(e) => setForm({ ...form, price: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Rabatt (%)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="1"
+                          value={form.discount_percentage}
+                          onChange={(e) => setForm({ ...form, discount_percentage: e.target.value })}
+                          placeholder="z.B. 10"
                         />
                       </div>
                     </div>
