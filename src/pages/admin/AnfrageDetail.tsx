@@ -61,6 +61,7 @@ interface OrderWithDetails extends Order {
   order_items: OrderItem[];
   profiles: Profile;
   admin_notes?: string | null;
+  admin_notes_updated_at?: string | null;
 }
 
 const AnfrageDetail: React.FC = () => {
@@ -157,15 +158,19 @@ const AnfrageDetail: React.FC = () => {
     if (!order) return;
 
     setSavingNotes(true);
+    const now = new Date().toISOString();
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ admin_notes: adminNotes })
+        .update({ 
+          admin_notes: adminNotes,
+          admin_notes_updated_at: now
+        })
         .eq('id', order.id);
 
       if (error) throw error;
 
-      setOrder((prev) => prev ? { ...prev, admin_notes: adminNotes } : null);
+      setOrder((prev) => prev ? { ...prev, admin_notes: adminNotes, admin_notes_updated_at: now } : null);
 
       toast({
         title: 'Notiz gespeichert',
@@ -380,10 +385,23 @@ const AnfrageDetail: React.FC = () => {
             {/* Admin Notes - Only visible to admins */}
             <Card className="border-amber-200 bg-amber-50/50">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-amber-800">
-                  <StickyNote className="h-5 w-5" />
-                  Interne Notizen (nur für Admins)
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-amber-800">
+                    <StickyNote className="h-5 w-5" />
+                    Interne Notizen (nur für Admins)
+                  </CardTitle>
+                </div>
+                {order.admin_notes_updated_at && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    Zuletzt bearbeitet: {new Date(order.admin_notes_updated_at).toLocaleDateString('de-DE', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                )}
               </CardHeader>
               <CardContent className="space-y-3">
                 <Textarea
