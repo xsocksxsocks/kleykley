@@ -667,54 +667,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_documents: {
-        Row: {
-          document_type: string
-          file_size: number | null
-          file_url: string
-          id: string
-          name: string
-          uploaded_at: string
-          uploaded_by: string | null
-          user_id: string
-        }
-        Insert: {
-          document_type: string
-          file_size?: number | null
-          file_url: string
-          id?: string
-          name: string
-          uploaded_at?: string
-          uploaded_by?: string | null
-          user_id: string
-        }
-        Update: {
-          document_type?: string
-          file_size?: number | null
-          file_url?: string
-          id?: string
-          name?: string
-          uploaded_at?: string
-          uploaded_by?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_documents_uploaded_by_fkey"
-            columns: ["uploaded_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_documents_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_roles: {
         Row: {
           created_at: string
