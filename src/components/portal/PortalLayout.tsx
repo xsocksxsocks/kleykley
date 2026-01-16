@@ -33,7 +33,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
   const isOnWarenkorb = location.pathname === '/portal/warenkorb';
   const isOnFavoriten = location.pathname === '/portal/favoriten';
   const isOnDokumente = location.pathname === '/portal/dokumente';
-  const isOnUserMenu = isOnProfil || isOnFavoriten || isOnDokumente;
+  const isOnUserMenu = isOnProfil || isOnFavoriten || isOnDokumente || isOnAnfragen;
 
   const handleSignOut = async () => {
     await signOut();
@@ -78,7 +78,13 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                 </Link>
               </Button>
               
-              {/* User Menu Dropdown */}
+              {canAccessShop && (
+                <CartDropdown isActive={isOnWarenkorb} />
+              )}
+              
+              <ThemeToggle />
+
+              {/* User Menu Dropdown - far right */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
@@ -94,9 +100,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                     <ChevronDown className="h-3 w-3 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-48 bg-popover border shadow-lg">
                   <DropdownMenuItem asChild>
-                    <Link to="/portal/profil" className={cn("flex items-center gap-2", isOnProfil && "bg-muted")}>
+                    <Link to="/portal/profil" className={cn("flex items-center gap-2 cursor-pointer", isOnProfil && "bg-muted")}>
                       <User className="h-4 w-4" />
                       Profil
                     </Link>
@@ -104,13 +110,19 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                   {canAccessShop && (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link to="/portal/favoriten" className={cn("flex items-center gap-2", isOnFavoriten && "bg-muted")}>
+                        <Link to="/portal/anfragen" className={cn("flex items-center gap-2 cursor-pointer", isOnAnfragen && "bg-muted")}>
+                          <FileText className="h-4 w-4" />
+                          Meine Angebote
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/portal/favoriten" className={cn("flex items-center gap-2 cursor-pointer", isOnFavoriten && "bg-muted")}>
                           <Heart className="h-4 w-4" />
                           Favoriten
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/portal/dokumente" className={cn("flex items-center gap-2", isOnDokumente && "bg-muted")}>
+                        <Link to="/portal/dokumente" className={cn("flex items-center gap-2 cursor-pointer", isOnDokumente && "bg-muted")}>
                           <FolderOpen className="h-4 w-4" />
                           Dokumente
                         </Link>
@@ -118,33 +130,12 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                     </>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2 text-destructive">
+                  <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2 text-destructive cursor-pointer">
                     <LogOut className="h-4 w-4" />
                     Abmelden
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-
-              {canAccessShop && (
-                <>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    asChild 
-                    className={cn(
-                      "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
-                      isOnAnfragen && "bg-gold/20 text-gold border-gold/50"
-                    )}
-                  >
-                    <Link to="/portal/anfragen">
-                      <FileText className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Meine Angebote</span>
-                    </Link>
-                  </Button>
-                  <CartDropdown isActive={isOnWarenkorb} />
-                </>
-              )}
-              <ThemeToggle />
             </div>
           </div>
         </header>
