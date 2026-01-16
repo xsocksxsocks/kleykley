@@ -19,6 +19,8 @@ import Portal from "./pages/portal/Portal";
 import Warenkorb from "./pages/portal/Warenkorb";
 import Anfragen from "./pages/portal/Anfragen";
 import Profil from "./pages/portal/Profil";
+import Favoriten from "./pages/portal/Favoriten";
+import Dokumente from "./pages/portal/Dokumente";
 import ProduktDetail from "./pages/portal/ProduktDetail";
 import FahrzeugDetail from "./pages/portal/FahrzeugDetail";
 import Admin from "./pages/admin/Admin";
@@ -48,6 +50,8 @@ const App = () => (
                 <Route path="/portal/warenkorb" element={<Warenkorb />} />
                 <Route path="/portal/anfragen" element={<Anfragen />} />
                 <Route path="/portal/profil" element={<Profil />} />
+                <Route path="/portal/favoriten" element={<Favoriten />} />
+                <Route path="/portal/dokumente" element={<Dokumente />} />
                 <Route path="/portal/produkt/:id" element={<ProduktDetail />} />
                 <Route path="/portal/fahrzeug/:id" element={<FahrzeugDetail />} />
                 <Route path="/admin" element={<Admin />} />

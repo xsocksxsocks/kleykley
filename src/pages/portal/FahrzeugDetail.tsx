@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Car, Star, ShoppingCart, Calendar, Gauge, Fuel, Settings, Users, Palette, Check, Percent } from 'lucide-react';
 import { formatCurrency, calculateDiscountedPrice } from '@/types/shop';
 import { useToast } from '@/hooks/use-toast';
-
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { FavoriteButton } from '@/components/portal/FavoriteButton';
 const FahrzeugDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isApproved, isAdmin, loading } = useAuth();
@@ -21,8 +22,16 @@ const FahrzeugDetail: React.FC = () => {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const { addItem } = useRecentlyViewed();
 
   const isInCart = vehicle ? vehicleItems.some(item => item.vehicle.id === vehicle.id) : false;
+
+  // Track recently viewed
+  useEffect(() => {
+    if (id) {
+      addItem(id, 'vehicle');
+    }
+  }, [id, addItem]);
 
   useEffect(() => {
     if (!loading && !user) {
