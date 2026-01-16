@@ -321,7 +321,6 @@ const Portal: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedProducts.map((product) => {
               const imageUrl = getProductImage(product);
-              const categoryName = getCategoryName(product.category_id);
               return (
                 <Card key={product.id} className="flex flex-col relative">
                   {(product.is_recommended || (product.discount_percentage && product.discount_percentage > 0)) && (
@@ -357,9 +356,11 @@ const Portal: React.FC = () => {
                     </CardHeader>
                   </Link>
                   <CardContent className="flex-1">
-                    <p className="text-muted-foreground text-sm line-clamp-3">
-                      {product.description}
-                    </p>
+                    {product.description && (
+                      <p className="text-muted-foreground text-sm line-clamp-3">
+                        {product.description}
+                      </p>
+                    )}
                     <div className="mt-4">
                       {product.discount_percentage && product.discount_percentage > 0 ? (
                         <>
