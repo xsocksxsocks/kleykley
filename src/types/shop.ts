@@ -11,6 +11,8 @@ export interface Profile {
   registered_at: string;
   approved_at: string | null;
   scheduled_approval_at: string | null;
+  deletion_requested_at: string | null;
+  deletion_scheduled_at: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -8,8 +8,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
@@ -30,7 +43,7 @@ const passwordSchema = z.object({
 });
 
 const Profil: React.FC = () => {
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -163,6 +176,71 @@ const Profil: React.FC = () => {
     }
   };
 
+  const handleRequestDeletion = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.rpc('request_account_deletion', {
+        user_id: user.id,
+      });
+
+      if (error) throw error;
+
+      await refreshProfile();
+      toast({
+        title: 'Löschung beantragt',
+        description: 'Ihr Konto wird in 30 Tagen gelöscht. Sie können dies jederzeit rückgängig machen.',
+      });
+    } catch (error) {
+      console.error('Error requesting deletion:', error);
+      toast({
+        title: 'Fehler',
+        description: 'Löschung konnte nicht beantragt werden.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelDeletion = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.rpc('cancel_account_deletion', {
+        user_id: user.id,
+      });
+
+      if (error) throw error;
+
+      await refreshProfile();
+      toast({
+        title: 'Löschung abgebrochen',
+        description: 'Ihr Konto bleibt bestehen.',
+      });
+    } catch (error) {
+      console.error('Error canceling deletion:', error);
+      toast({
+        title: 'Fehler',
+        description: 'Löschung konnte nicht abgebrochen werden.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isDeletionPending = profile?.deletion_scheduled_at != null;
+  const deletionDate = profile?.deletion_scheduled_at 
+    ? new Date(profile.deletion_scheduled_at).toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    : null;
+
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -176,10 +254,31 @@ const Profil: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-8">Mein Profil</h1>
 
+        {isDeletionPending && (
+          <Alert variant="destructive" className="mb-6 max-w-2xl">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Konto zur Löschung vorgemerkt</AlertTitle>
+            <AlertDescription>
+              <p className="mb-2">
+                Ihr Konto wird am <strong>{deletionDate}</strong> unwiderruflich gelöscht.
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCancelDeletion}
+                disabled={isLoading}
+              >
+                Löschung abbrechen
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Tabs defaultValue="profile" className="max-w-2xl">
           <TabsList className="mb-6">
             <TabsTrigger value="profile">Profildaten</TabsTrigger>
             <TabsTrigger value="password">Passwort ändern</TabsTrigger>
+            <TabsTrigger value="account">Konto</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -314,6 +413,81 @@ const Profil: React.FC = () => {
                     {isLoading ? 'Wird geändert...' : 'Passwort ändern'}
                   </Button>
                 </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="account">
+            <Card>
+              <CardHeader>
+                <CardTitle>Konto verwalten</CardTitle>
+                <CardDescription>
+                  Verwalten Sie Ihr Konto und Ihre Daten gemäß DSGVO.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h3 className="font-medium mb-2">Kontostatus</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {profile?.approval_status === 'approved' && 'Ihr Konto ist freigeschaltet.'}
+                    {profile?.approval_status === 'pending' && 'Ihr Konto wartet auf Freischaltung.'}
+                    {profile?.approval_status === 'rejected' && 'Ihr Konto wurde abgelehnt.'}
+                  </p>
+                </div>
+
+                <div className="border-t pt-6">
+                  <h3 className="font-medium mb-2 text-destructive flex items-center gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    Konto löschen
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Gemäß DSGVO haben Sie das Recht, die Löschung Ihrer personenbezogenen Daten zu verlangen. 
+                    Nach Beantragung haben Sie 30 Tage Zeit, die Löschung rückgängig zu machen. 
+                    Nach Ablauf dieser Frist werden alle Ihre Daten unwiderruflich gelöscht.
+                  </p>
+                  
+                  {isDeletionPending ? (
+                    <div className="bg-destructive/10 p-4 rounded-lg">
+                      <p className="text-sm font-medium text-destructive mb-2">
+                        Löschung geplant für: {deletionDate}
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        onClick={handleCancelDeletion}
+                        disabled={isLoading}
+                      >
+                        Löschung abbrechen
+                      </Button>
+                    </div>
+                  ) : (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" disabled={isLoading}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Konto löschen beantragen
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Konto wirklich löschen?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Ihr Konto und alle damit verbundenen Daten werden in 30 Tagen unwiderruflich gelöscht. 
+                            Sie können die Löschung innerhalb dieser Frist jederzeit abbrechen, indem Sie sich anmelden.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleRequestDeletion}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Ja, Löschung beantragen
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
