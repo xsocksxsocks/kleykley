@@ -20,6 +20,7 @@ const signupSchema = z.object({
   password: z.string().min(6, 'Passwort muss mindestens 6 Zeichen haben'),
   fullName: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
   companyName: z.string().min(2, 'Firmenname muss mindestens 2 Zeichen haben'),
+  phone: z.string().min(5, 'Bitte geben Sie eine gültige Telefonnummer ein'),
   address: z.string().min(5, 'Bitte geben Sie eine gültige Adresse ein'),
   postalCode: z.string().min(4, 'Bitte geben Sie eine gültige PLZ ein'),
   city: z.string().min(2, 'Bitte geben Sie eine gültige Stadt ein'),
@@ -37,6 +38,7 @@ const Auth: React.FC = () => {
     password: '',
     fullName: '',
     companyName: '',
+    phone: '',
     address: '',
     postalCode: '',
     city: '',
@@ -120,6 +122,7 @@ const Auth: React.FC = () => {
       signupData.password,
       signupData.fullName,
       signupData.companyName,
+      signupData.phone,
       signupData.address,
       signupData.city,
       signupData.postalCode
@@ -257,6 +260,19 @@ const Auth: React.FC = () => {
                     disabled={isLoading}
                   />
                   {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-phone">Telefonnummer *</Label>
+                  <Input
+                    id="signup-phone"
+                    type="tel"
+                    value={signupData.phone}
+                    onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
+                    placeholder="+49 123 456789"
+                    disabled={isLoading}
+                  />
+                  {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
                 </div>
 
                 <div className="border-t pt-4">

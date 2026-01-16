@@ -338,19 +338,25 @@ const AnfrageDetail: React.FC = () => {
                   <Mail className="h-4 w-4 mt-1 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">E-Mail</p>
-                    <p className="font-medium">{customer?.email}</p>
+                    <a href={`mailto:${customer?.email}`} className="font-medium text-primary hover:underline">
+                      {customer?.email}
+                    </a>
                   </div>
                 </div>
 
-                {customer?.phone && (
-                  <div className="flex items-start gap-2">
-                    <Phone className="h-4 w-4 mt-1 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Telefon</p>
-                      <p className="font-medium">{customer.phone}</p>
-                    </div>
+                <div className="flex items-start gap-2">
+                  <Phone className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Telefon</p>
+                    {(order as any).phone || customer?.phone ? (
+                      <a href={`tel:${(order as any).phone || customer?.phone}`} className="font-medium text-primary hover:underline">
+                        {(order as any).phone || customer?.phone}
+                      </a>
+                    ) : (
+                      <p className="text-muted-foreground">-</p>
+                    )}
                   </div>
-                )}
+                </div>
 
                 <Separator />
 

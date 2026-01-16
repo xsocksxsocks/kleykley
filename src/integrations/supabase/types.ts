@@ -99,6 +99,7 @@ export type Database = {
           id: string
           notes: string | null
           order_number: string
+          phone: string | null
           shipping_address: string | null
           shipping_city: string | null
           shipping_postal_code: string | null
@@ -117,6 +118,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number: string
+          phone?: string | null
           shipping_address?: string | null
           shipping_city?: string | null
           shipping_postal_code?: string | null
@@ -135,6 +137,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number?: string
+          phone?: string | null
           shipping_address?: string | null
           shipping_city?: string | null
           shipping_postal_code?: string | null

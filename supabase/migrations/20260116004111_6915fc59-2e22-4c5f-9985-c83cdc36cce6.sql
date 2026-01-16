@@ -1,0 +1,2 @@
+-- Add phone column to orders table
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS phone text;
