@@ -590,7 +590,7 @@ const Admin: React.FC = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-8">
+          <TabsList className="mb-8 w-full flex-wrap h-auto gap-1 justify-start">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
