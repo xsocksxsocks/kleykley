@@ -301,8 +301,8 @@ const Warenkorb: React.FC = () => {
                       )}
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">Ware</Badge>
                           <h3 className="font-medium">{item.product.name}</h3>
+                          <Badge variant="outline" className="text-xs">Ware</Badge>
                           {hasDiscount && (
                             <Badge className="bg-red-500 text-white text-xs">
                               -{discountPercentage}%
