@@ -38,6 +38,7 @@ import {
   Save,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { OrderHistorySection } from '@/components/admin/OrderHistorySection';
 
 const statusLabels: Record<Order['status'], string> = {
   pending: 'Neu',
@@ -410,6 +411,9 @@ const AnfrageDetail: React.FC = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Order History */}
+            <OrderHistorySection orderId={order.id} />
 
             {/* Admin Notes - Only visible to admins */}
             <Card className="border-amber-200 bg-amber-50/50">
