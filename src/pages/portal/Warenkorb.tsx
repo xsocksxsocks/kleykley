@@ -96,7 +96,7 @@ const Warenkorb: React.FC = () => {
     // Products
     items.forEach((item) => {
       const originalPrice = item.product.price * item.quantity;
-      const discountPercentage = (item.product as any).discount_percentage || 0;
+      const discountPercentage = item.product.discount_percentage || 0;
       const discountedPrice = calculateDiscountedPrice(item.product.price, discountPercentage) * item.quantity;
       const itemTax = calculateTax(discountedPrice, item.product.tax_rate);
       
@@ -389,7 +389,7 @@ const Warenkorb: React.FC = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => {
-              const discountPercentage = (item.product as any).discount_percentage || 0;
+              const discountPercentage = item.product.discount_percentage || 0;
               const discountedPrice = calculateDiscountedPrice(item.product.price, discountPercentage);
               const hasDiscount = discountPercentage > 0;
               
@@ -622,6 +622,12 @@ const Warenkorb: React.FC = () => {
                 </div>
 
                 <div className="space-y-2 pt-2 border-t">
+                  {(totals.discountTotal > 0 || totals.codeDiscount > 0) && (
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Warenwert (vor Rabatt)</span>
+                      <span>{formatCurrency(totals.netTotal + totals.discountTotal + totals.codeDiscount)}</span>
+                    </div>
+                  )}
                   {totals.discountTotal > 0 && (
                     <div className="flex justify-between text-sm text-red-600">
                       <span>Produktrabatte</span>
@@ -634,7 +640,7 @@ const Warenkorb: React.FC = () => {
                       <span>-{formatCurrency(totals.codeDiscount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-sm font-medium">
                     <span>Zwischensumme (Netto)</span>
                     <span>{formatCurrency(totals.netTotal)}</span>
                   </div>
