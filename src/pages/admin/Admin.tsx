@@ -400,6 +400,9 @@ const Admin: React.FC = () => {
 
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
     try {
+      // First get the order with customer details
+      const order = orders.find(o => o.id === orderId);
+      
       const { error } = await supabase
         .from('orders')
         .update({ status })
@@ -411,9 +414,48 @@ const Admin: React.FC = () => {
         prev.map((o) => (o.id === orderId ? { ...o, status } : o))
       );
 
+      // Send email notification to customer
+      if (order) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('email, full_name, company_name')
+          .eq('id', order.user_id)
+          .maybeSingle();
+
+        if (profileData?.email) {
+          const statusToNotificationType: Record<Order['status'], string> = {
+            pending: '',
+            confirmed: 'order_confirmed',
+            processing: 'order_processing',
+            shipped: 'order_shipped',
+            delivered: 'order_delivered',
+            cancelled: 'order_cancelled',
+          };
+
+          const notificationType = statusToNotificationType[status];
+          if (notificationType) {
+            try {
+              await supabase.functions.invoke('send-customer-notification', {
+                body: {
+                  type: notificationType,
+                  customerEmail: profileData.email,
+                  customerName: profileData.full_name || profileData.company_name || 'Kunde',
+                  data: {
+                    orderNumber: order.order_number,
+                  },
+                },
+              });
+              console.log('Order status notification email sent');
+            } catch (emailError) {
+              console.error('Failed to send order status notification:', emailError);
+            }
+          }
+        }
+      }
+
       toast({
         title: 'Status aktualisiert',
-        description: `Anfrage wurde auf "${statusLabels[status]}" gesetzt.`,
+        description: `Anfrage wurde auf "${statusLabels[status]}" gesetzt. E-Mail wurde gesendet.`,
       });
     } catch (error) {
       console.error('Error updating order status:', error);

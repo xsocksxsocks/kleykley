@@ -191,6 +191,9 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
 
   const handleChangeStatus = async (customerId: string, newStatus: 'pending' | 'approved' | 'rejected') => {
     try {
+      const customer = customers.find(c => c.id === customerId);
+      if (!customer) return;
+
       const updateData: { approval_status: typeof newStatus; approved_at?: string | null } = {
         approval_status: newStatus,
       };
@@ -216,6 +219,23 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
         )
       );
 
+      // Send email notification
+      const notificationType = newStatus === 'approved' ? 'status_approved' : 
+                               newStatus === 'rejected' ? 'status_rejected' : 'status_pending';
+      
+      try {
+        await supabase.functions.invoke('send-customer-notification', {
+          body: {
+            type: notificationType,
+            customerEmail: customer.email,
+            customerName: customer.full_name || customer.company_name || 'Kunde',
+          },
+        });
+        console.log('Status notification email sent');
+      } catch (emailError) {
+        console.error('Failed to send status notification email:', emailError);
+      }
+
       const statusLabels = {
         pending: 'Wartend',
         approved: 'Freigeschaltet',
@@ -224,7 +244,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
 
       toast({
         title: 'Status geändert',
-        description: `Kundenstatus auf "${statusLabels[newStatus]}" gesetzt.`,
+        description: `Kundenstatus auf "${statusLabels[newStatus]}" gesetzt. E-Mail wurde gesendet.`,
       });
     } catch (error) {
       console.error('Error changing customer status:', error);

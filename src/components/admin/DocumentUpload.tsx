@@ -155,9 +155,29 @@ export const DocumentUpload: React.FC = () => {
 
       if (dbError) throw dbError;
 
+      // Send email notification to customer
+      const customer = customers.find(c => c.id === selectedCustomer);
+      if (customer?.email) {
+        try {
+          await supabase.functions.invoke('send-customer-notification', {
+            body: {
+              type: 'document_uploaded',
+              customerEmail: customer.email,
+              customerName: customer.full_name || customer.company_name || 'Kunde',
+              data: {
+                documentName: documentName,
+              },
+            },
+          });
+          console.log('Document notification email sent');
+        } catch (emailError) {
+          console.error('Failed to send document notification:', emailError);
+        }
+      }
+
       toast({
         title: 'Dokument hochgeladen',
-        description: 'Das Dokument wurde erfolgreich hochgeladen.',
+        description: 'Das Dokument wurde erfolgreich hochgeladen und der Kunde wurde benachrichtigt.',
       });
 
       // Reset form and refresh
