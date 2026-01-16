@@ -183,59 +183,61 @@ Gib die Produkte als JSON-Array zurück.`;
 
     console.log(`Extracted ${products.length} products`);
 
-    // Generate images for products that have image descriptions
-    const productsWithImages: ExtractedProduct[] = [];
-    const productImages: { productName: string; base64: string }[] = [];
+    // Generate images in parallel for products that have image descriptions
+    // Limit to first 10 products with image descriptions to avoid timeout
+    const productsWithDescriptions = products.filter(p => p.imageDescription).slice(0, 10);
+    
+    console.log(`Generating images for ${productsWithDescriptions.length} products in parallel...`);
 
-    for (const product of products) {
-      productsWithImages.push(product);
-      
-      if (product.imageDescription) {
-        try {
-          console.log(`Generating image for: ${product.name}`);
+    const imagePromises = productsWithDescriptions.map(async (product) => {
+      try {
+        console.log(`Generating image for: ${product.name}`);
+        
+        const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash-image-preview',
+            messages: [
+              {
+                role: 'user',
+                content: `Generate a professional product photo of: ${product.imageDescription}. Clean white background, high quality, commercial product photography style.`
+              }
+            ],
+            modalities: ['image', 'text']
+          }),
+        });
+
+        if (imageResponse.ok) {
+          const imageData = await imageResponse.json();
+          const generatedImage = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
           
-          const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: 'google/gemini-2.5-flash-image-preview',
-              messages: [
-                {
-                  role: 'user',
-                  content: `Generate a professional product photo of: ${product.imageDescription}. Clean white background, high quality, commercial product photography style.`
-                }
-              ],
-              modalities: ['image', 'text']
-            }),
-          });
-
-          if (imageResponse.ok) {
-            const imageData = await imageResponse.json();
-            const generatedImage = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-            
-            if (generatedImage) {
-              productImages.push({
-                productName: product.name,
-                base64: generatedImage
-              });
-              console.log(`Image generated for: ${product.name}`);
-            }
+          if (generatedImage) {
+            console.log(`Image generated for: ${product.name}`);
+            return { productName: product.name, base64: generatedImage };
           }
-        } catch (imageError) {
-          console.error(`Error generating image for ${product.name}:`, imageError);
         }
+        return null;
+      } catch (imageError) {
+        console.error(`Error generating image for ${product.name}:`, imageError);
+        return null;
       }
-    }
+    });
+
+    const imageResults = await Promise.all(imagePromises);
+    const productImages = imageResults.filter(Boolean) as { productName: string; base64: string }[];
+
+    console.log(`Successfully generated ${productImages.length} images`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        products: productsWithImages,
+        products,
         images: productImages,
-        count: productsWithImages.length 
+        count: products.length 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
