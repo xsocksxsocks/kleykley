@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -33,6 +34,8 @@ import {
   Calendar,
   Package,
   Car,
+  StickyNote,
+  Save,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -57,6 +60,7 @@ const statusColors: Record<Order['status'], string> = {
 interface OrderWithDetails extends Order {
   order_items: OrderItem[];
   profiles: Profile;
+  admin_notes?: string | null;
 }
 
 const AnfrageDetail: React.FC = () => {
@@ -67,6 +71,8 @@ const AnfrageDetail: React.FC = () => {
 
   const [order, setOrder] = useState<OrderWithDetails | null>(null);
   const [loadingData, setLoadingData] = useState(true);
+  const [adminNotes, setAdminNotes] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -102,6 +108,7 @@ const AnfrageDetail: React.FC = () => {
         }
 
         setOrder(data as OrderWithDetails);
+        setAdminNotes((data as OrderWithDetails).admin_notes || '');
       } catch (error) {
         console.error('Error fetching order:', error);
         toast({
@@ -143,6 +150,36 @@ const AnfrageDetail: React.FC = () => {
         description: 'Status konnte nicht aktualisiert werden.',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleSaveAdminNotes = async () => {
+    if (!order) return;
+
+    setSavingNotes(true);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ admin_notes: adminNotes })
+        .eq('id', order.id);
+
+      if (error) throw error;
+
+      setOrder((prev) => prev ? { ...prev, admin_notes: adminNotes } : null);
+
+      toast({
+        title: 'Notiz gespeichert',
+        description: 'Die Admin-Notiz wurde erfolgreich gespeichert.',
+      });
+    } catch (error) {
+      console.error('Error saving admin notes:', error);
+      toast({
+        title: 'Fehler',
+        description: 'Notiz konnte nicht gespeichert werden.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingNotes(false);
     }
   };
 
@@ -339,6 +376,34 @@ const AnfrageDetail: React.FC = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Admin Notes - Only visible to admins */}
+            <Card className="border-amber-200 bg-amber-50/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-amber-800">
+                  <StickyNote className="h-5 w-5" />
+                  Interne Notizen (nur für Admins)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Textarea
+                  placeholder="Interne Notizen zu dieser Anfrage..."
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  rows={4}
+                  className="bg-white"
+                />
+                <Button 
+                  onClick={handleSaveAdminNotes} 
+                  disabled={savingNotes}
+                  size="sm"
+                  className="w-full"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {savingNotes ? 'Speichern...' : 'Notiz speichern'}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar - Customer Info */}
