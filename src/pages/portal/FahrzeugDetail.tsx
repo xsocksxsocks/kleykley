@@ -154,28 +154,33 @@ const FahrzeugDetail: React.FC = () => {
                   <Car className="h-24 w-24 text-muted-foreground" />
                 </div>
               )}
-              {(vehicle.is_featured || vehicle.is_reserved || vehicle.is_sold || hasDiscount) && (
-                <div className="absolute top-4 right-4 flex flex-col gap-2">
-                  {vehicle.is_featured && (
-                    <Badge className="bg-gold text-navy-dark flex items-center gap-1">
-                      <Star className="h-3 w-3 fill-current" />
-                      Empfohlen
-                    </Badge>
-                  )}
-                  {hasDiscount && (
-                    <Badge className="bg-red-500 text-white flex items-center gap-1">
-                      <Percent className="h-3 w-3" />
-                      -{vehicle.discount_percentage}%
-                    </Badge>
-                  )}
-                  {vehicle.is_reserved && (
-                    <Badge className="bg-amber-500 text-white">Reserviert</Badge>
-                  )}
-                  {vehicle.is_sold && (
-                    <Badge className="bg-red-500 text-white">Verkauft</Badge>
-                  )}
-                </div>
-              )}
+              <div className="absolute top-4 left-4 flex flex-col gap-2">
+                {vehicle.is_sold && (
+                  <Badge className="bg-destructive text-destructive-foreground">Verkauft</Badge>
+                )}
+                {vehicle.is_reserved && !vehicle.is_sold && (
+                  <Badge className="bg-amber-500 text-white">Reserviert</Badge>
+                )}
+              </div>
+              <div className="absolute top-4 right-4 flex flex-col gap-2">
+                {vehicle.is_featured && (
+                  <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-current" />
+                    Empfohlen
+                  </Badge>
+                )}
+                {hasDiscount && (
+                  <Badge className="bg-red-500 text-white flex items-center gap-1">
+                    <Percent className="h-3 w-3" />
+                    -{vehicle.discount_percentage}%
+                  </Badge>
+                )}
+                {vehicle.vat_deductible && (
+                  <Badge variant="outline" className="bg-background/80">
+                    MwSt. ausweisbar
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {/* Thumbnail Gallery */}
@@ -228,9 +233,14 @@ const FahrzeugDetail: React.FC = () => {
                     {formatCurrency(vehicle.price)}
                   </p>
                 )}
-                <p className="text-sm text-muted-foreground">
-                  {vehicle.vat_deductible ? 'Netto zzgl. MwSt. (MwSt. ausweisbar)' : 'Brutto inkl. MwSt.'}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Netto zzgl. 19% MwSt.
                 </p>
+                {vehicle.vat_deductible && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ MwSt. ausweisbar
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -245,7 +255,7 @@ const FahrzeugDetail: React.FC = () => {
               {vehicle.is_sold 
                 ? 'Nicht verfügbar' 
                 : isInCart 
-                  ? 'Bereits in Anfrage' 
+                  ? 'Bereits im Angebot' 
                   : 'Zur Anfrage hinzufügen'}
             </Button>
 
