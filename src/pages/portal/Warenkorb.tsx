@@ -345,10 +345,56 @@ const Warenkorb: React.FC = () => {
         if (itemsError) throw itemsError;
       }
 
+      // Send confirmation email to customer
+      try {
+        const orderItemsForEmail = allOrderItems.map(item => ({
+          productName: item.product_name,
+          quantity: item.quantity,
+          unitPrice: item.unit_price,
+          totalPrice: item.total_price,
+          discountPercentage: item.discount_percentage,
+        }));
+
+        await supabase.functions.invoke('send-customer-notification', {
+          body: {
+            type: 'order_created',
+            customerEmail: profile?.email || user.email,
+            customerName: billingData.customerName || profile?.full_name || 'Kunde',
+            data: {
+              orderNumber: createdOrder.order_number,
+              orderItems: orderItemsForEmail,
+              totalAmount: totals.netTotal,
+              discountAmount: totals.codeDiscount,
+              discountCode: appliedDiscount?.code,
+              billingAddress: {
+                companyName: billingData.companyName,
+                customerName: billingData.customerName,
+                address: billingData.address,
+                postalCode: billingData.postalCode,
+                city: billingData.city,
+                country: billingData.country,
+              },
+              shippingAddress: useDifferentShipping ? {
+                companyName: shippingData.companyName,
+                customerName: shippingData.customerName,
+                address: shippingData.address,
+                postalCode: shippingData.postalCode,
+                city: shippingData.city,
+                country: shippingData.country,
+              } : undefined,
+              notes: notes || undefined,
+            },
+          },
+        });
+        console.log('Order confirmation email sent');
+      } catch (emailError) {
+        console.error('Failed to send order confirmation email:', emailError);
+      }
+
       clearCart();
       toast({
         title: 'Anfrage gesendet!',
-        description: `Ihre Angebotsanfrage ${createdOrder.order_number} wurde erfolgreich übermittelt.`,
+        description: `Ihre Angebotsanfrage ${createdOrder.order_number} wurde erfolgreich übermittelt. Sie erhalten eine Bestätigung per E-Mail.`,
       });
       navigate('/portal/anfragen');
     } catch (error) {

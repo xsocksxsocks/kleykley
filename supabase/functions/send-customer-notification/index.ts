@@ -14,6 +14,7 @@ type NotificationType =
   | 'status_approved'
   | 'status_rejected'
   | 'status_pending'
+  | 'order_created'
   | 'order_confirmed'
   | 'order_processing'
   | 'order_shipped'
@@ -21,6 +22,14 @@ type NotificationType =
   | 'order_cancelled'
   | 'document_uploaded'
   | 'welcome';
+
+interface OrderItem {
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  discountPercentage?: number;
+}
 
 interface NotificationRequest {
   type: NotificationType;
@@ -30,8 +39,39 @@ interface NotificationRequest {
     orderNumber?: string;
     documentName?: string;
     reason?: string;
+    // Order details for order_created
+    orderItems?: OrderItem[];
+    totalAmount?: number;
+    discountAmount?: number;
+    discountCode?: string;
+    billingAddress?: {
+      companyName?: string;
+      customerName?: string;
+      address?: string;
+      postalCode?: string;
+      city?: string;
+      country?: string;
+    };
+    shippingAddress?: {
+      companyName?: string;
+      customerName?: string;
+      address?: string;
+      postalCode?: string;
+      city?: string;
+      country?: string;
+    };
+    notes?: string;
+    newStatus?: string;
+    oldStatus?: string;
   };
 }
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(value);
+};
 
 const getEmailContent = (type: NotificationType, customerName: string, data?: NotificationRequest['data']) => {
   const name = customerName || 'Kunde';
@@ -91,6 +131,97 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
         `,
       };
+
+    case 'order_created': {
+      const items = data?.orderItems || [];
+      const itemsHtml = items.map(item => `
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">${item.productName}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5; text-align: center;">${item.quantity}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5; text-align: right;">${formatCurrency(item.unitPrice)}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5; text-align: right;">${formatCurrency(item.totalPrice)}</td>
+        </tr>
+      `).join('');
+
+      const billingAddr = data?.billingAddress;
+      const shippingAddr = data?.shippingAddress;
+
+      return {
+        subject: `Ihre Angebotsanfrage ${data?.orderNumber || ''} wurde empfangen`,
+        html: `
+          <h2>Vielen Dank für Ihre Angebotsanfrage, ${name}!</h2>
+          <p>Wir haben Ihre unverbindliche Angebotsanfrage erhalten und werden diese schnellstmöglich bearbeiten.</p>
+          
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0;"><strong>Anfragenummer:</strong> ${data?.orderNumber || '-'}</p>
+          </div>
+
+          <h3 style="margin-top: 30px; border-bottom: 2px solid #b8860b; padding-bottom: 10px;">Angefragte Positionen</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+              <tr style="background-color: #f8f9fa;">
+                <th style="padding: 10px; text-align: left;">Artikel</th>
+                <th style="padding: 10px; text-align: center;">Menge</th>
+                <th style="padding: 10px; text-align: right;">Einzelpreis (netto)</th>
+                <th style="padding: 10px; text-align: right;">Gesamt (netto)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div style="margin-top: 20px; text-align: right;">
+            ${data?.discountAmount && data.discountAmount > 0 ? `
+              <p style="margin: 5px 0; color: #22c55e;">
+                <strong>Rabatt${data?.discountCode ? ` (${data.discountCode})` : ''}:</strong> -${formatCurrency(data.discountAmount)}
+              </p>
+            ` : ''}
+            <p style="margin: 5px 0;"><strong>Zwischensumme (netto):</strong> ${formatCurrency(data?.totalAmount || 0)}</p>
+            <p style="margin: 5px 0; font-size: 12px; color: #666;">zzgl. 19% MwSt.</p>
+          </div>
+
+          ${billingAddr ? `
+            <h3 style="margin-top: 30px; border-bottom: 2px solid #b8860b; padding-bottom: 10px;">Rechnungsadresse</h3>
+            <p style="margin: 10px 0;">
+              ${billingAddr.companyName ? `<strong>${billingAddr.companyName}</strong><br>` : ''}
+              ${billingAddr.customerName || ''}<br>
+              ${billingAddr.address || ''}<br>
+              ${billingAddr.postalCode || ''} ${billingAddr.city || ''}<br>
+              ${billingAddr.country || ''}
+            </p>
+          ` : ''}
+
+          ${shippingAddr && (shippingAddr.address !== billingAddr?.address) ? `
+            <h3 style="margin-top: 30px; border-bottom: 2px solid #b8860b; padding-bottom: 10px;">Lieferadresse</h3>
+            <p style="margin: 10px 0;">
+              ${shippingAddr.companyName ? `<strong>${shippingAddr.companyName}</strong><br>` : ''}
+              ${shippingAddr.customerName || ''}<br>
+              ${shippingAddr.address || ''}<br>
+              ${shippingAddr.postalCode || ''} ${shippingAddr.city || ''}<br>
+              ${shippingAddr.country || ''}
+            </p>
+          ` : ''}
+
+          ${data?.notes ? `
+            <h3 style="margin-top: 30px; border-bottom: 2px solid #b8860b; padding-bottom: 10px;">Ihre Anmerkungen</h3>
+            <p style="margin: 10px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">${data.notes}</p>
+          ` : ''}
+
+          <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 30px 0; border-left: 4px solid #b8860b;">
+            <p style="margin: 0; font-size: 14px;">
+              <strong>Hinweis:</strong> Diese Anfrage ist unverbindlich und stellt keine Bestellung dar. 
+              Sie erhalten von uns ein individuelles Angebot mit den endgültigen Preisen und Lieferzeiten.
+            </p>
+          </div>
+
+          <p>Sie können den Status Ihrer Anfrage jederzeit in Ihrem Kundenportal einsehen:</p>
+          <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Meine Anfragen ansehen</a></p>
+          <br>
+          <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
+        `,
+      };
+    }
       
     case 'order_confirmed':
       return {
@@ -111,7 +242,9 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
           <p>Ihre Anfrage ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} befindet sich nun in Bearbeitung.</p>
+          ${data?.newStatus ? `<p><strong>Neuer Status:</strong> ${data.newStatus}</p>` : ''}
           <p>Wir werden Sie über den Fortschritt informieren.</p>
+          <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Status ansehen</a></p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
         `,
@@ -123,7 +256,9 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
           <p>Ihre Bestellung ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} wurde versendet.</p>
+          ${data?.newStatus ? `<p><strong>Neuer Status:</strong> ${data.newStatus}</p>` : ''}
           <p>Die Lieferung sollte in den nächsten Tagen bei Ihnen eintreffen.</p>
+          <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Status ansehen</a></p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
         `,
@@ -135,6 +270,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
           <p>Ihre Bestellung ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} wurde erfolgreich abgeschlossen.</p>
+          ${data?.newStatus ? `<p><strong>Status:</strong> ${data.newStatus}</p>` : ''}
           <p>Vielen Dank für Ihr Vertrauen!</p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
@@ -147,6 +283,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
           <p>Ihre Anfrage ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} wurde storniert.</p>
+          ${data?.newStatus ? `<p><strong>Status:</strong> ${data.newStatus}</p>` : ''}
           ${data?.reason ? `<p><strong>Grund:</strong> ${data.reason}</p>` : ''}
           <p>Bei Fragen stehen wir Ihnen gerne zur Verfügung.</p>
           <br>
@@ -189,22 +326,6 @@ const getFooter = () => `
     E-Mail: info@kley-kanzlei.com
   </p>
 `;
-
-const getNotificationTypeLabel = (type: NotificationType): string => {
-  const labels: Record<NotificationType, string> = {
-    welcome: 'Willkommen',
-    status_approved: 'Konto freigeschaltet',
-    status_rejected: 'Konto abgelehnt',
-    status_pending: 'Konto in Prüfung',
-    order_confirmed: 'Angebot erstellt',
-    order_processing: 'Anfrage in Bearbeitung',
-    order_shipped: 'Versandbestätigung',
-    order_delivered: 'Lieferung abgeschlossen',
-    order_cancelled: 'Stornierung',
-    document_uploaded: 'Neues Dokument',
-  };
-  return labels[type] || type;
-};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {

@@ -38,6 +38,7 @@ const notificationTypeLabels: Record<string, string> = {
   status_approved: 'Freigeschaltet',
   status_rejected: 'Abgelehnt',
   status_pending: 'In Prüfung',
+  order_created: 'Anfrage erhalten',
   order_confirmed: 'Angebot erstellt',
   order_processing: 'In Bearbeitung',
   order_shipped: 'Versendet',
