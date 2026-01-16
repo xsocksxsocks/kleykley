@@ -562,7 +562,7 @@ const Warenkorb: React.FC = () => {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>Ihr Angebot</CardTitle>
+                <CardTitle>Ihr unverbindliches Angebot</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Discount Code Input */}
@@ -659,7 +659,7 @@ const Warenkorb: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Die endgültigen Preise, Lieferzeiten sowie ggf. weitere Hinweise erhalten Sie in Ihrem individuellen unverbindlichen Angebot.
+                  Die endgültigen Preise, Lieferzeiten sowie ggf. weitere Hinweise erhalten Sie in Ihrem individuellen unverbindlichen Angebot. Das Anfordern eines Angebotes stellt keine Bestellung dar und ist für Sie völlig unverbindlich.
                 </p>
 
                 {showCheckout && (
