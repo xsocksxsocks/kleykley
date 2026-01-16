@@ -9,6 +9,14 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
+// Routes that actually exist as pages
+const validRoutes = new Set([
+  '/portal',
+  '/portal/profil',
+  '/portal/anfragen',
+  '/portal/warenkorb',
+]);
+
 const routeLabels: Record<string, string> = {
   '/portal': 'Portal',
   '/portal/profil': 'Profil',
@@ -23,12 +31,13 @@ export function PortalBreadcrumb() {
   const pathSegments = location.pathname.split('/').filter(Boolean);
   
   // Build breadcrumb items
-  const breadcrumbs: { path: string; label: string; isLast: boolean }[] = [];
+  const breadcrumbs: { path: string; label: string; isLast: boolean; isValidRoute: boolean }[] = [];
   
   let currentPath = '';
   pathSegments.forEach((segment, index) => {
     currentPath += `/${segment}`;
     const isLast = index === pathSegments.length - 1;
+    const isValidRoute = validRoutes.has(currentPath);
     
     // Get label from route labels or capitalize the segment
     let label = routeLabels[currentPath];
@@ -42,7 +51,7 @@ export function PortalBreadcrumb() {
       }
     }
     
-    breadcrumbs.push({ path: currentPath, label, isLast });
+    breadcrumbs.push({ path: currentPath, label, isLast, isValidRoute });
   });
 
   // Don't show breadcrumb on the main portal page
@@ -64,11 +73,11 @@ export function PortalBreadcrumb() {
               </BreadcrumbLink>
             </BreadcrumbItem>
             
-            {breadcrumbs.slice(1).map((crumb, index) => (
+            {breadcrumbs.slice(1).map((crumb) => (
               <span key={crumb.path} className="contents">
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  {crumb.isLast ? (
+                  {crumb.isLast || !crumb.isValidRoute ? (
                     <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
