@@ -49,12 +49,12 @@ const statusLabels: Record<Order['status'], string> = {
 };
 
 const statusColors: Record<Order['status'], string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
-  processing: 'bg-purple-100 text-purple-800',
-  shipped: 'bg-indigo-100 text-indigo-800',
-  delivered: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
+  pending: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400',
+  confirmed: 'bg-blue-500/20 text-blue-700 dark:text-blue-400',
+  processing: 'bg-purple-500/20 text-purple-700 dark:text-purple-400',
+  shipped: 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-400',
+  delivered: 'bg-green-500/20 text-green-700 dark:text-green-400',
+  cancelled: 'bg-red-500/20 text-red-700 dark:text-red-400',
 };
 
 interface OrderWithDetails extends Order {
@@ -409,7 +409,7 @@ const AnfrageDetail: React.FC = () => {
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
                   rows={4}
-                  className="bg-white"
+                  className="bg-background"
                 />
                 <Button 
                   onClick={handleSaveAdminNotes} 
