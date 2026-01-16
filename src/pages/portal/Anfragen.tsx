@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, ChevronDown, ChevronUp, Percent } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const statusLabels: Record<Order['status'], string> = {
@@ -146,16 +146,35 @@ const Anfragen: React.FC = () => {
                       <div>
                         <h4 className="font-medium mb-2">Angefragte Produkte</h4>
                         <div className="space-y-2">
-                          {order.order_items.map((item) => (
-                            <div key={item.id} className="flex justify-between text-sm">
-                              <span>
-                                {item.quantity}x {item.product_name}
-                              </span>
-                              <span>
-                                {formatCurrency(item.total_price)} netto
-                              </span>
-                            </div>
-                          ))}
+                          {order.order_items.map((item) => {
+                            const hasDiscount = item.discount_percentage && item.discount_percentage > 0;
+                            return (
+                              <div key={item.id} className="flex justify-between text-sm items-center">
+                                <div className="flex items-center gap-2">
+                                  <span>{item.quantity}x {item.product_name}</span>
+                                  {hasDiscount && (
+                                    <Badge className="bg-red-500 text-white text-xs">
+                                      -{item.discount_percentage}%
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-right">
+                                  {hasDiscount && item.original_unit_price ? (
+                                    <>
+                                      <span className="text-muted-foreground line-through text-xs mr-2">
+                                        {formatCurrency(item.original_unit_price * item.quantity)}
+                                      </span>
+                                      <span className="text-red-600 font-medium">
+                                        {formatCurrency(item.total_price)} netto
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span>{formatCurrency(item.total_price)} netto</span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                       {order.company_name && (

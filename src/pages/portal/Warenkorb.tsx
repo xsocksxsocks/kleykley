@@ -130,6 +130,8 @@ const Warenkorb: React.FC = () => {
           quantity: item.quantity,
           unit_price: discountedUnitPrice,
           total_price: discountedUnitPrice * item.quantity,
+          original_unit_price: item.product.price,
+          discount_percentage: discountPercentage,
         };
       });
 
