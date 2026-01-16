@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { CartItem, Product, calculateDiscountedPrice } from '@/types/shop';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Vehicle {
   id: string;
@@ -41,6 +42,7 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  validateCart: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -64,6 +66,103 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const saved = localStorage.getItem('cart_vehicles');
     return saved ? JSON.parse(saved) : [];
   });
+
+  // Validate cart items against database
+  const validateCart = useCallback(async () => {
+    if (items.length === 0 && vehicleItems.length === 0) return;
+
+    // Validate products
+    if (items.length > 0) {
+      const productIds = items.map(item => item.product.id);
+      const { data: existingProducts } = await supabase
+        .from('products')
+        .select('id, stock_quantity, is_active, price, discount_percentage, name')
+        .in('id', productIds);
+
+      const existingProductIds = new Set(existingProducts?.map(p => p.id) || []);
+      const removedProducts: string[] = [];
+      
+      setItems(prev => {
+        const validItems = prev.filter(item => {
+          const exists = existingProductIds.has(item.product.id);
+          if (!exists) {
+            removedProducts.push(item.product.name);
+          }
+          return exists;
+        }).map(item => {
+          // Update product data from database
+          const dbProduct = existingProducts?.find(p => p.id === item.product.id);
+          if (dbProduct) {
+            const updatedProduct = {
+              ...item.product,
+              stock_quantity: dbProduct.stock_quantity,
+              is_active: dbProduct.is_active,
+              price: dbProduct.price,
+              discount_percentage: dbProduct.discount_percentage,
+              name: dbProduct.name,
+            };
+            // Adjust quantity if exceeds new stock
+            const newQuantity = Math.min(item.quantity, dbProduct.stock_quantity);
+            return { product: updatedProduct, quantity: newQuantity > 0 ? newQuantity : 1 };
+          }
+          return item;
+        }).filter(item => {
+          // Remove if stock is 0 or product is inactive
+          const dbProduct = existingProducts?.find(p => p.id === item.product.id);
+          return dbProduct && dbProduct.stock_quantity > 0 && dbProduct.is_active;
+        });
+        
+        return validItems;
+      });
+
+      if (removedProducts.length > 0) {
+        toast({
+          title: 'Warenkorb aktualisiert',
+          description: `${removedProducts.length} Produkt(e) wurden entfernt, da sie nicht mehr verfügbar sind.`,
+        });
+      }
+    }
+
+    // Validate vehicles
+    if (vehicleItems.length > 0) {
+      const vehicleIds = vehicleItems.map(item => item.vehicle.id);
+      const { data: existingVehicles } = await supabase
+        .from('cars_for_sale')
+        .select('id, is_sold, deleted_at')
+        .in('id', vehicleIds);
+
+      const validVehicleIds = new Set(
+        existingVehicles
+          ?.filter(v => !v.is_sold && !v.deleted_at)
+          .map(v => v.id) || []
+      );
+      
+      const removedVehicles: string[] = [];
+      
+      setVehicleItems(prev => {
+        const validItems = prev.filter(item => {
+          const isValid = validVehicleIds.has(item.vehicle.id);
+          if (!isValid) {
+            removedVehicles.push(`${item.vehicle.brand} ${item.vehicle.model}`);
+          }
+          return isValid;
+        });
+        return validItems;
+      });
+
+      if (removedVehicles.length > 0) {
+        toast({
+          title: 'Warenkorb aktualisiert',
+          description: `${removedVehicles.length} Fahrzeug(e) wurden entfernt, da sie nicht mehr verfügbar sind.`,
+        });
+      }
+    }
+  }, [items, vehicleItems, toast]);
+
+  // Validate cart on mount and when user navigates
+  useEffect(() => {
+    validateCart();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
@@ -189,6 +288,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         totalItems,
         totalPrice,
+        validateCart,
       }}
     >
       {children}
