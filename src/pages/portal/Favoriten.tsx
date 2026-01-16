@@ -205,7 +205,7 @@ const Favoriten = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute top-2 right-2 bg-white/80 hover:bg-white text-red-500"
+                          className="absolute top-2 right-2 bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card text-red-500"
                           onClick={() => handleRemoveFavorite('product', product.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -283,7 +283,7 @@ const Favoriten = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute top-2 right-2 bg-white/80 hover:bg-white text-red-500"
+                          className="absolute top-2 right-2 bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card text-red-500"
                           onClick={() => handleRemoveFavorite('vehicle', vehicle.id)}
                         >
                           <Trash2 className="h-4 w-4" />
