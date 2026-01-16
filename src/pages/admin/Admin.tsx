@@ -770,16 +770,16 @@ const Admin: React.FC = () => {
                       <div className="space-y-2">
                         <Label htmlFor="category">Kategorie</Label>
                         <Select
-                          value={productForm.category_id}
+                          value={productForm.category_id || "none"}
                           onValueChange={(value) =>
-                            setProductForm({ ...productForm, category_id: value })
+                            setProductForm({ ...productForm, category_id: value === "none" ? "" : value })
                           }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Kategorie wählen" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Keine Kategorie</SelectItem>
+                            <SelectItem value="none">Keine Kategorie</SelectItem>
                             {categories.map((cat) => (
                               <SelectItem key={cat.id} value={cat.id}>
                                 {cat.name}
