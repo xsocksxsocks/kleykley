@@ -2,12 +2,12 @@ import React, { ReactNode } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Settings, FileText, User, Home, Heart, FolderOpen, ChevronDown } from 'lucide-react';
+import { LogOut, Settings, FileText, User, Home, Heart, FolderOpen, ChevronDown, Moon, Sun } from 'lucide-react';
 import { PortalFooter } from './PortalFooter';
 import { CartDropdown } from './CartDropdown';
 import { PortalBreadcrumb } from './PortalBreadcrumb';
-import { ThemeToggle } from './ThemeToggle';
 import logoImage from '@/assets/logo-kley.png';
+import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -24,6 +24,7 @@ interface PortalLayoutProps {
 
 export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = true }) => {
   const { user, isAdmin, isApproved, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -128,14 +129,17 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                     </>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <div className="flex items-center justify-between w-full cursor-pointer">
-                      <span className="flex items-center gap-2">
-                        Design
-                      </span>
-                      <ThemeToggle />
-                    </div>
-                  </DropdownMenuItem>
+                  {theme === 'dark' ? (
+                    <DropdownMenuItem onClick={() => setTheme('light')} className="flex items-center gap-2 cursor-pointer">
+                      <Sun className="h-4 w-4" />
+                      Heller Modus
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => setTheme('dark')} className="flex items-center gap-2 cursor-pointer">
+                      <Moon className="h-4 w-4" />
+                      Dunkler Modus
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2 text-destructive cursor-pointer">
                     <LogOut className="h-4 w-4" />
