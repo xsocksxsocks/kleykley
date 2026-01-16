@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart, Vehicle } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +36,7 @@ const Portal: React.FC = () => {
   const { user, profile, isAdmin, isApproved, loading, signOut } = useAuth();
   const { addToCart, addVehicleToCart, vehicleItems } = useCart();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   
   const [products, setProducts] = useState<ExtendedProduct[]>([]);
@@ -47,7 +48,18 @@ const Portal: React.FC = () => {
   const [vehicleSearchQuery, setVehicleSearchQuery] = useState('');
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingVehicles, setLoadingVehicles] = useState(true);
-  const [activeTab, setActiveTab] = useState('products');
+  
+  // Get initial tab from URL param or default to 'products'
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabFromUrl === 'vehicles' ? 'vehicles' : 'products');
+  
+  // Update tab when URL param changes
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'vehicles' || tab === 'products') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!loading && !user) {
