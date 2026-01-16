@@ -34,11 +34,10 @@ import {
   Calendar,
   Package,
   Car,
-  StickyNote,
-  Save,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { OrderHistorySection } from '@/components/admin/OrderHistorySection';
+import { OrderNotesSection } from '@/components/admin/OrderNotesSection';
 
 const statusLabels: Record<Order['status'], string> = {
   pending: 'Neu',
@@ -73,8 +72,6 @@ const AnfrageDetail: React.FC = () => {
 
   const [order, setOrder] = useState<OrderWithDetails | null>(null);
   const [loadingData, setLoadingData] = useState(true);
-  const [adminNotes, setAdminNotes] = useState('');
-  const [savingNotes, setSavingNotes] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -110,7 +107,6 @@ const AnfrageDetail: React.FC = () => {
         }
 
         setOrder(data as OrderWithDetails);
-        setAdminNotes((data as OrderWithDetails).admin_notes || '');
       } catch (error) {
         console.error('Error fetching order:', error);
         toast({
@@ -181,40 +177,6 @@ const AnfrageDetail: React.FC = () => {
         description: 'Status konnte nicht aktualisiert werden.',
         variant: 'destructive',
       });
-    }
-  };
-
-  const handleSaveAdminNotes = async () => {
-    if (!order) return;
-
-    setSavingNotes(true);
-    const now = new Date().toISOString();
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ 
-          admin_notes: adminNotes,
-          admin_notes_updated_at: now
-        })
-        .eq('id', order.id);
-
-      if (error) throw error;
-
-      setOrder((prev) => prev ? { ...prev, admin_notes: adminNotes, admin_notes_updated_at: now } : null);
-
-      toast({
-        title: 'Notiz gespeichert',
-        description: 'Die Admin-Notiz wurde erfolgreich gespeichert.',
-      });
-    } catch (error) {
-      console.error('Error saving admin notes:', error);
-      toast({
-        title: 'Fehler',
-        description: 'Notiz konnte nicht gespeichert werden.',
-        variant: 'destructive',
-      });
-    } finally {
-      setSavingNotes(false);
     }
   };
 
@@ -415,46 +377,8 @@ const AnfrageDetail: React.FC = () => {
             {/* Order History */}
             <OrderHistorySection orderId={order.id} />
 
-            {/* Admin Notes - Only visible to admins */}
-            <Card className="border-amber-200 bg-amber-50/50">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-amber-800">
-                    <StickyNote className="h-5 w-5" />
-                    Interne Notizen (nur für Admins)
-                  </CardTitle>
-                </div>
-                {order.admin_notes_updated_at && (
-                  <p className="text-xs text-amber-600 mt-1">
-                    Zuletzt bearbeitet: {new Date(order.admin_notes_updated_at).toLocaleDateString('de-DE', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Textarea
-                  placeholder="Interne Notizen zu dieser Anfrage..."
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  rows={4}
-                  className="bg-background"
-                />
-                <Button 
-                  onClick={handleSaveAdminNotes} 
-                  disabled={savingNotes}
-                  size="sm"
-                  className="w-full"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {savingNotes ? 'Speichern...' : 'Notiz speichern'}
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Admin Notes - Thread-style */}
+            <OrderNotesSection orderId={order.id} />
           </div>
 
           {/* Sidebar - Customer Info */}
