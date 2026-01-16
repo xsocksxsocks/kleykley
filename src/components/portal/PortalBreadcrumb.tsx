@@ -17,6 +17,8 @@ const validRoutes = new Set([
   '/portal/profil',
   '/portal/anfragen',
   '/portal/warenkorb',
+  '/portal/favoriten',
+  '/portal/dokumente',
 ]);
 
 const routeLabels: Record<string, string> = {
@@ -24,6 +26,8 @@ const routeLabels: Record<string, string> = {
   '/portal/profil': 'Profil',
   '/portal/anfragen': 'Meine Angebote',
   '/portal/warenkorb': 'Warenkorb',
+  '/portal/favoriten': 'Favoriten',
+  '/portal/dokumente': 'Dokumente',
   '/portal/produkt': 'Produkte',
   '/portal/fahrzeug': 'Fahrzeuge',
 };

@@ -81,8 +81,6 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
               {canAccessShop && (
                 <CartDropdown isActive={isOnWarenkorb} />
               )}
-              
-              <ThemeToggle />
 
               {/* User Menu Dropdown - far right */}
               <DropdownMenu>
@@ -129,6 +127,15 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                       </DropdownMenuItem>
                     </>
                   )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <div className="flex items-center justify-between w-full cursor-pointer">
+                      <span className="flex items-center gap-2">
+                        Design
+                      </span>
+                      <ThemeToggle />
+                    </div>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2 text-destructive cursor-pointer">
                     <LogOut className="h-4 w-4" />
