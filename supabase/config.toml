@@ -5,8 +5,6 @@ verify_jwt = false
 
 [functions.extract-products-from-pdf]
 verify_jwt = false
-max_body_size = 15728640
-max_execution_time = 300
 
 [functions.send-contact-email]
 verify_jwt = false
