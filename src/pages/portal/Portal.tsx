@@ -149,9 +149,9 @@ const Portal: React.FC = () => {
   }
 
   // Rejected view
-  if (profile?.approval_status === 'rejected' && !isAdmin) {
+  if (profile && profile.approval_status === 'rejected' && !isAdmin) {
     return (
-      <PortalLayout showNav={false}>
+      <PortalLayout showNav={true}>
         <div className="container mx-auto px-4 py-16">
           <Card className="max-w-md mx-auto text-center">
             <CardHeader>
@@ -186,9 +186,9 @@ const Portal: React.FC = () => {
   }
 
   // Pending approval view
-  if (!isApproved && !isAdmin) {
+  if (profile && profile.approval_status === 'pending' && !isAdmin) {
     return (
-      <PortalLayout showNav={false}>
+      <PortalLayout showNav={true}>
         <div className="container mx-auto px-4 py-16">
           <Card className="max-w-md mx-auto text-center">
             <CardHeader>
@@ -220,7 +220,6 @@ const Portal: React.FC = () => {
         </div>
       </PortalLayout>
     );
-  }
 
   return (
     <PortalLayout>
