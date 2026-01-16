@@ -93,15 +93,21 @@ export type Database = {
         Row: {
           billing_address: string | null
           billing_city: string | null
+          billing_country: string | null
           billing_postal_code: string | null
           company_name: string | null
           created_at: string
+          customer_name: string | null
           id: string
           notes: string | null
           order_number: string
           phone: string | null
           shipping_address: string | null
           shipping_city: string | null
+          shipping_company_name: string | null
+          shipping_country: string | null
+          shipping_customer_name: string | null
+          shipping_phone: string | null
           shipping_postal_code: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
@@ -112,15 +118,21 @@ export type Database = {
         Insert: {
           billing_address?: string | null
           billing_city?: string | null
+          billing_country?: string | null
           billing_postal_code?: string | null
           company_name?: string | null
           created_at?: string
+          customer_name?: string | null
           id?: string
           notes?: string | null
           order_number: string
           phone?: string | null
           shipping_address?: string | null
           shipping_city?: string | null
+          shipping_company_name?: string | null
+          shipping_country?: string | null
+          shipping_customer_name?: string | null
+          shipping_phone?: string | null
           shipping_postal_code?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
@@ -131,15 +143,21 @@ export type Database = {
         Update: {
           billing_address?: string | null
           billing_city?: string | null
+          billing_country?: string | null
           billing_postal_code?: string | null
           company_name?: string | null
           created_at?: string
+          customer_name?: string | null
           id?: string
           notes?: string | null
           order_number?: string
           phone?: string | null
           shipping_address?: string | null
           shipping_city?: string | null
+          shipping_company_name?: string | null
+          shipping_country?: string | null
+          shipping_customer_name?: string | null
+          shipping_phone?: string | null
           shipping_postal_code?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
@@ -255,6 +273,7 @@ export type Database = {
           approved_at: string | null
           city: string | null
           company_name: string | null
+          country: string | null
           created_at: string
           deletion_requested_at: string | null
           deletion_scheduled_at: string | null
@@ -273,6 +292,7 @@ export type Database = {
           approved_at?: string | null
           city?: string | null
           company_name?: string | null
+          country?: string | null
           created_at?: string
           deletion_requested_at?: string | null
           deletion_scheduled_at?: string | null
@@ -291,6 +311,7 @@ export type Database = {
           approved_at?: string | null
           city?: string | null
           company_name?: string | null
+          country?: string | null
           created_at?: string
           deletion_requested_at?: string | null
           deletion_scheduled_at?: string | null

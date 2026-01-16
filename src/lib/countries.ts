@@ -1,0 +1,32 @@
+export const EU_COUNTRIES = [
+  { code: 'DE', name: 'Deutschland' },
+  { code: 'AT', name: 'Österreich' },
+  { code: 'BE', name: 'Belgien' },
+  { code: 'BG', name: 'Bulgarien' },
+  { code: 'HR', name: 'Kroatien' },
+  { code: 'CY', name: 'Zypern' },
+  { code: 'CZ', name: 'Tschechien' },
+  { code: 'DK', name: 'Dänemark' },
+  { code: 'EE', name: 'Estland' },
+  { code: 'FI', name: 'Finnland' },
+  { code: 'FR', name: 'Frankreich' },
+  { code: 'GR', name: 'Griechenland' },
+  { code: 'HU', name: 'Ungarn' },
+  { code: 'IE', name: 'Irland' },
+  { code: 'IT', name: 'Italien' },
+  { code: 'LV', name: 'Lettland' },
+  { code: 'LT', name: 'Litauen' },
+  { code: 'LU', name: 'Luxemburg' },
+  { code: 'MT', name: 'Malta' },
+  { code: 'NL', name: 'Niederlande' },
+  { code: 'PL', name: 'Polen' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'RO', name: 'Rumänien' },
+  { code: 'SK', name: 'Slowakei' },
+  { code: 'SI', name: 'Slowenien' },
+  { code: 'ES', name: 'Spanien' },
+  { code: 'SE', name: 'Schweden' },
+] as const;
+
+export type EUCountryCode = typeof EU_COUNTRIES[number]['code'];
+export type EUCountryName = typeof EU_COUNTRIES[number]['name'];

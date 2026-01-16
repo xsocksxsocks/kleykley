@@ -18,7 +18,8 @@ interface AuthContextType {
     phone?: string,
     address?: string,
     city?: string,
-    postalCode?: string
+    postalCode?: string,
+    country?: string
   ) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -125,7 +126,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     phone?: string,
     address?: string,
     city?: string,
-    postalCode?: string
+    postalCode?: string,
+    country?: string
   ) => {
     const redirectUrl = `${window.location.origin}/`;
     
@@ -141,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           address: address,
           city: city,
           postal_code: postalCode,
+          country: country,
         },
       },
     });
@@ -155,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           address: address,
           city: city,
           postal_code: postalCode,
+          country: country,
         })
         .eq('id', data.user.id);
     }

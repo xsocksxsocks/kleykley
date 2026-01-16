@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { PortalLayout } from '@/components/portal/PortalLayout';
-import { formatCurrency, calculateTax, calculateGrossPrice, calculateDiscountedPrice } from '@/types/shop';
+import { formatCurrency, calculateTax, calculateDiscountedPrice } from '@/types/shop';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,12 +12,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Minus, Plus, Trash2, FileText, Percent } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Minus, Plus, Trash2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { EU_COUNTRIES } from '@/lib/countries';
 
 const Warenkorb: React.FC = () => {
   const { user, profile, isApproved, isAdmin, loading } = useAuth();
-  const { items, updateQuantity, removeFromCart, clearCart, totalPrice } = useCart();
+  const { items, updateQuantity, removeFromCart, clearCart } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -32,27 +40,35 @@ const Warenkorb: React.FC = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [useDifferentShipping, setUseDifferentShipping] = useState(false);
   const [billingData, setBillingData] = useState({
+    customerName: profile?.full_name || '',
     companyName: profile?.company_name || '',
     phone: profile?.phone || '',
     address: profile?.address || '',
     city: profile?.city || '',
     postalCode: profile?.postal_code || '',
+    country: (profile as any)?.country || 'Deutschland',
   });
   const [shippingData, setShippingData] = useState({
+    customerName: '',
+    companyName: '',
+    phone: '',
     address: '',
     city: '',
     postalCode: '',
+    country: 'Deutschland',
   });
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
     if (profile) {
       setBillingData({
+        customerName: profile.full_name || '',
         companyName: profile.company_name || '',
         phone: profile.phone || '',
         address: profile.address || '',
         city: profile.city || '',
         postalCode: profile.postal_code || '',
+        country: (profile as any)?.country || 'Deutschland',
       });
     }
   }, [profile]);
@@ -84,6 +100,14 @@ const Warenkorb: React.FC = () => {
 
   const totals = calculateTotals();
 
+  const isBillingComplete = billingData.customerName && billingData.companyName && billingData.phone && 
+    billingData.address && billingData.city && billingData.postalCode && billingData.country;
+  
+  const isShippingComplete = !useDifferentShipping || (
+    shippingData.customerName && shippingData.companyName && shippingData.phone &&
+    shippingData.address && shippingData.city && shippingData.postalCode && shippingData.country
+  );
+
   const handleOrder = async () => {
     if (!user || !isApproved) {
       toast({
@@ -109,15 +133,21 @@ const Warenkorb: React.FC = () => {
       const orderData: any = {
         user_id: user.id,
         total_amount: totals.netTotal,
+        customer_name: billingData.customerName,
         company_name: billingData.companyName,
         phone: billingData.phone,
         billing_address: billingData.address,
         billing_city: billingData.city,
         billing_postal_code: billingData.postalCode,
+        billing_country: billingData.country,
         use_different_shipping: useDifferentShipping,
+        shipping_customer_name: useDifferentShipping ? shippingData.customerName : billingData.customerName,
+        shipping_company_name: useDifferentShipping ? shippingData.companyName : billingData.companyName,
+        shipping_phone: useDifferentShipping ? shippingData.phone : billingData.phone,
         shipping_address: useDifferentShipping ? shippingData.address : billingData.address,
         shipping_city: useDifferentShipping ? shippingData.city : billingData.city,
         shipping_postal_code: useDifferentShipping ? shippingData.postalCode : billingData.postalCode,
+        shipping_country: useDifferentShipping ? shippingData.country : billingData.country,
         notes: notes || null,
         order_number: '',
       };
@@ -314,13 +344,24 @@ const Warenkorb: React.FC = () => {
                 {showCheckout && (
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="font-medium">Rechnungsadresse</h3>
-                    <div className="space-y-2">
-                      <Label htmlFor="companyName">Firma</Label>
-                      <Input
-                        id="companyName"
-                        value={billingData.companyName}
-                        onChange={(e) => setBillingData({ ...billingData, companyName: e.target.value })}
-                      />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-2 col-span-2">
+                        <Label htmlFor="customerName">Vor- und Nachname *</Label>
+                        <Input
+                          id="customerName"
+                          value={billingData.customerName}
+                          onChange={(e) => setBillingData({ ...billingData, customerName: e.target.value })}
+                          placeholder="Max Mustermann"
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-2">
+                        <Label htmlFor="companyName">Firma *</Label>
+                        <Input
+                          id="companyName"
+                          value={billingData.companyName}
+                          onChange={(e) => setBillingData({ ...billingData, companyName: e.target.value })}
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Telefon *</Label>
@@ -333,7 +374,7 @@ const Warenkorb: React.FC = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="billingAddress">Straße und Hausnummer</Label>
+                      <Label htmlFor="billingAddress">Straße und Hausnummer *</Label>
                       <Input
                         id="billingAddress"
                         value={billingData.address}
@@ -342,7 +383,7 @@ const Warenkorb: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-2">
-                        <Label htmlFor="billingPostal">PLZ</Label>
+                        <Label htmlFor="billingPostal">PLZ *</Label>
                         <Input
                           id="billingPostal"
                           value={billingData.postalCode}
@@ -350,13 +391,31 @@ const Warenkorb: React.FC = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="billingCity">Stadt</Label>
+                        <Label htmlFor="billingCity">Stadt *</Label>
                         <Input
                           id="billingCity"
                           value={billingData.city}
                           onChange={(e) => setBillingData({ ...billingData, city: e.target.value })}
                         />
                       </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="billingCountry">Land *</Label>
+                      <Select
+                        value={billingData.country}
+                        onValueChange={(value) => setBillingData({ ...billingData, country: value })}
+                      >
+                        <SelectTrigger id="billingCountry">
+                          <SelectValue placeholder="Land wählen" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EU_COUNTRIES.map((country) => (
+                            <SelectItem key={country.code} value={country.name}>
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="flex items-center space-x-2 pt-2">
@@ -374,7 +433,34 @@ const Warenkorb: React.FC = () => {
                       <div className="space-y-4 pl-6 border-l-2">
                         <h4 className="font-medium">Lieferadresse</h4>
                         <div className="space-y-2">
-                          <Label htmlFor="shippingAddress">Straße und Hausnummer</Label>
+                          <Label htmlFor="shippingCustomerName">Vor- und Nachname *</Label>
+                          <Input
+                            id="shippingCustomerName"
+                            value={shippingData.customerName}
+                            onChange={(e) => setShippingData({ ...shippingData, customerName: e.target.value })}
+                            placeholder="Max Mustermann"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="shippingCompanyName">Firma *</Label>
+                          <Input
+                            id="shippingCompanyName"
+                            value={shippingData.companyName}
+                            onChange={(e) => setShippingData({ ...shippingData, companyName: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="shippingPhone">Telefon *</Label>
+                          <Input
+                            id="shippingPhone"
+                            type="tel"
+                            value={shippingData.phone}
+                            onChange={(e) => setShippingData({ ...shippingData, phone: e.target.value })}
+                            placeholder="+49 123 456789"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="shippingAddress">Straße und Hausnummer *</Label>
                           <Input
                             id="shippingAddress"
                             value={shippingData.address}
@@ -383,7 +469,7 @@ const Warenkorb: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-2">
-                            <Label htmlFor="shippingPostal">PLZ</Label>
+                            <Label htmlFor="shippingPostal">PLZ *</Label>
                             <Input
                               id="shippingPostal"
                               value={shippingData.postalCode}
@@ -391,13 +477,31 @@ const Warenkorb: React.FC = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="shippingCity">Stadt</Label>
+                            <Label htmlFor="shippingCity">Stadt *</Label>
                             <Input
                               id="shippingCity"
                               value={shippingData.city}
                               onChange={(e) => setShippingData({ ...shippingData, city: e.target.value })}
                             />
                           </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="shippingCountry">Land *</Label>
+                          <Select
+                            value={shippingData.country}
+                            onValueChange={(value) => setShippingData({ ...shippingData, country: value })}
+                          >
+                            <SelectTrigger id="shippingCountry">
+                              <SelectValue placeholder="Land wählen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {EU_COUNTRIES.map((country) => (
+                                <SelectItem key={country.code} value={country.name}>
+                                  {country.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                     )}
@@ -421,7 +525,7 @@ const Warenkorb: React.FC = () => {
                     <Button
                       className="w-full"
                       onClick={handleOrder}
-                      disabled={isOrdering || !billingData.address || !billingData.city || !billingData.postalCode || !billingData.phone}
+                      disabled={isOrdering || !isBillingComplete || !isShippingComplete}
                     >
                       {isOrdering ? 'Wird gesendet...' : 'Angebotsanfrage senden'}
                     </Button>
