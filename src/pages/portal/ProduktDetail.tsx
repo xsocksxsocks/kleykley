@@ -180,8 +180,7 @@ const ProduktDetail: React.FC = () => {
     }
     
     toast({
-      title: 'Zur Anfrage hinzugefügt',
-      description: `${quantity}x ${product.name} wurde hinzugefügt.`,
+      title: 'Zum Angebot hinzugefügt',
     });
   };
 

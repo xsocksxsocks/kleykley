@@ -91,8 +91,7 @@ const Portal: React.FC = () => {
   const handleAddToCart = (product: Product) => {
     addToCart(product);
     toast({
-      title: 'Zur Anfrage hinzugefügt',
-      description: `${product.name} wurde hinzugefügt.`,
+      title: 'Zum Angebot hinzugefügt',
     });
   };
 
