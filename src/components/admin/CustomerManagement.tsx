@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Profile, Order, OrderItem } from '@/types/shop';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -334,7 +335,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
 
       setEditDialogOpen(false);
     } catch (error) {
-      console.error('Error updating customer:', error);
+      logError('CustomerManagement:updateCustomer', error);
       toast({
         title: 'Fehler',
         description: 'Kundendaten konnten nicht gespeichert werden.',
@@ -361,7 +362,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
 
       // Documents feature removed - no longer fetching documents
     } catch (error) {
-      console.error('Error fetching customer history:', error);
+      logError('CustomerManagement:fetchHistory', error);
       toast({
         title: 'Fehler',
         description: 'Kundenhistorie konnte nicht geladen werden.',

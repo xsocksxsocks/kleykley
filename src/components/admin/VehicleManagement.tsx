@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -115,7 +116,7 @@ const VehicleManagement: React.FC = () => {
       if (error) throw error;
       setCars((data as CarForSale[]) || []);
     } catch (error) {
-      console.error('Error fetching cars:', error);
+      logError('VehicleManagement:fetchCars', error);
       toast({
         title: 'Fehler',
         description: 'Fahrzeuge konnten nicht geladen werden.',
@@ -297,7 +298,7 @@ const VehicleManagement: React.FC = () => {
       setDialogOpen(false);
       resetForm();
     } catch (error) {
-      console.error('Error saving car:', error);
+      logError('VehicleManagement:saveCar', error);
       toast({
         title: 'Fehler',
         description: 'Fahrzeug konnte nicht gespeichert werden.',
@@ -324,7 +325,7 @@ const VehicleManagement: React.FC = () => {
         title: 'Fahrzeug gelöscht',
       });
     } catch (error) {
-      console.error('Error deleting car:', error);
+      logError('VehicleManagement:deleteCar', error);
       toast({
         title: 'Fehler',
         description: 'Fahrzeug konnte nicht gelöscht werden.',

@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -157,7 +158,7 @@ export const ProductImageUpload: React.FC<ProductImageUploadProps> = ({
         description: `${files.length} Bild(er) erfolgreich hochgeladen.`,
       });
     } catch (error) {
-      console.error('Error uploading images:', error);
+      logError('ProductImageUpload:uploadImages', error);
       toast({
         title: 'Fehler',
         description: 'Bilder konnten nicht hochgeladen werden.',
@@ -197,7 +198,7 @@ export const ProductImageUpload: React.FC<ProductImageUploadProps> = ({
         description: 'Das Bild wurde erfolgreich gelöscht.',
       });
     } catch (error) {
-      console.error('Error deleting image:', error);
+      logError('ProductImageUpload:deleteImage', error);
       toast({
         title: 'Fehler',
         description: 'Bild konnte nicht gelöscht werden.',
@@ -232,7 +233,7 @@ export const ProductImageUpload: React.FC<ProductImageUploadProps> = ({
               .eq('id', img.id);
           }
         } catch (error) {
-          console.error('Error updating sort order:', error);
+          logError('ProductImageUpload:updateSortOrder', error);
           toast({
             title: 'Fehler',
             description: 'Reihenfolge konnte nicht gespeichert werden.',

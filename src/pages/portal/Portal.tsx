@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart, Vehicle } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Product, ProductImage, formatCurrency, calculateDiscountedPrice } from '@/types/shop';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
@@ -107,7 +108,7 @@ const Portal: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (productsError) {
-        console.error('Error fetching products:', productsError);
+        logError('Portal:fetchProducts', productsError);
         toast({
           title: 'Fehler',
           description: 'Produkte konnten nicht geladen werden.',
@@ -139,7 +140,7 @@ const Portal: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (vehiclesError) {
-        console.error('Error fetching vehicles:', vehiclesError);
+        logError('Portal:fetchVehicles', vehiclesError);
         toast({
           title: 'Fehler',
           description: 'Fahrzeuge konnten nicht geladen werden.',

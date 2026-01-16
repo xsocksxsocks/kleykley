@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { logError } from '@/lib/errorLogger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -159,7 +160,7 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
       resetForm();
       onCategoriesChange();
     } catch (error) {
-      console.error('Error saving category:', error);
+      logError('CategoryManagement:saveCategory', error);
       toast({
         title: 'Fehler',
         description: 'Kategorie konnte nicht gespeichert werden.',
@@ -205,7 +206,7 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
       setCategoryToDelete(null);
       onCategoriesChange();
     } catch (error) {
-      console.error('Error deleting category:', error);
+      logError('CategoryManagement:deleteCategory', error);
       toast({
         title: 'Fehler',
         description: 'Kategorie konnte nicht gelöscht werden.',

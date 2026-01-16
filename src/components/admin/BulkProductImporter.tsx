@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -269,7 +270,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
         description: `${extractedProducts.length} Produkte gefunden${duplicateCount > 0 ? ` (${duplicateCount} Duplikate erkannt)` : ''}${newCats.length > 0 ? `, ${newCats.length} neue Kategorien` : ''}.`,
       });
     } catch (error: any) {
-      console.error('Extraction error:', error);
+      logError('BulkProductImporter:extract', error);
       toast({
         title: 'Fehler bei der Extraktion',
         description: error.message || 'Produkte konnten nicht extrahiert werden.',
@@ -495,7 +496,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
             .eq('id', product.existingProductId);
 
           if (error) {
-            console.error('Error updating product:', error);
+            logError('BulkProductImporter:updateProduct', error);
             errorCount++;
             report.push({
               name: product.name,
@@ -597,7 +598,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
         onImportComplete();
       }
     } catch (error: any) {
-      console.error('Import error:', error);
+      logError('BulkProductImporter:import', error);
       toast({
         title: 'Fehler beim Import',
         description: error.message || 'Produkte konnten nicht importiert werden.',

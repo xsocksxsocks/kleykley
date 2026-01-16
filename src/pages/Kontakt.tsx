@@ -7,6 +7,7 @@ import { Mail, MapPin, Clock, Phone } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/lib/errorLogger";
 
 const Kontakt = () => {
   const { toast } = useToast();
@@ -36,7 +37,7 @@ const Kontakt = () => {
       });
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {
-      console.error("Error sending email:", error);
+      logError("Kontakt:sendEmail", error);
       toast({
         title: "Fehler",
         description: "Ihre Nachricht konnte leider nicht gesendet werden. Bitte versuchen Sie es später erneut.",

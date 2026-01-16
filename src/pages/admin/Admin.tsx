@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Profile, Product, Order, OrderItem } from '@/types/shop';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -236,7 +237,7 @@ const Admin: React.FC = () => {
         if (ordersError) throw ordersError;
         setOrders((ordersData as OrderWithItems[]) || []);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        logError('Admin:fetchData', error);
         toast({
           title: 'Fehler',
           description: 'Daten konnten nicht geladen werden.',
@@ -366,7 +367,7 @@ const Admin: React.FC = () => {
       setProductDialogOpen(false);
       resetProductForm();
     } catch (error) {
-      console.error('Error saving product:', error);
+      logError('Admin:saveProduct', error);
       toast({
         title: 'Fehler',
         description: 'Produkt konnte nicht gespeichert werden.',
@@ -393,7 +394,7 @@ const Admin: React.FC = () => {
         description: 'Das Produkt wurde erfolgreich gelöscht.',
       });
     } catch (error) {
-      console.error('Error deleting product:', error);
+      logError('Admin:deleteProduct', error);
       toast({
         title: 'Fehler',
         description: 'Produkt konnte nicht gelöscht werden.',
@@ -462,7 +463,7 @@ const Admin: React.FC = () => {
         description: `Anfrage wurde auf "${statusLabels[status]}" gesetzt. E-Mail wurde gesendet.`,
       });
     } catch (error) {
-      console.error('Error updating order status:', error);
+      logError('Admin:updateOrderStatus', error);
       toast({
         title: 'Fehler',
         description: 'Status konnte nicht aktualisiert werden.',
@@ -571,7 +572,7 @@ const Admin: React.FC = () => {
         description: `"${data.name}" wurde hinzugefügt.`,
       });
     } catch (error: any) {
-      console.error('Error adding category:', error);
+      logError('Admin:addCategory', error);
       toast({
         title: 'Fehler',
         description: error.message?.includes('duplicate') 
@@ -600,7 +601,7 @@ const Admin: React.FC = () => {
         description: 'Die Kategorie wurde entfernt.',
       });
     } catch (error) {
-      console.error('Error deleting category:', error);
+      logError('Admin:deleteCategory', error);
       toast({
         title: 'Fehler',
         description: 'Kategorie konnte nicht gelöscht werden.',

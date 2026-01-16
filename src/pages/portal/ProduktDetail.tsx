@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -110,7 +111,7 @@ const ProduktDetail: React.FC = () => {
         .maybeSingle();
 
       if (productError) {
-        console.error('Error fetching product:', productError);
+        logError('ProduktDetail:fetchProduct', productError);
         toast({
           title: 'Fehler',
           description: 'Produkt konnte nicht geladen werden.',

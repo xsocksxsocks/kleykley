@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Profile, Order, OrderItem, formatCurrency, calculateGrossPrice } from '@/types/shop';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -108,7 +109,7 @@ const AnfrageDetail: React.FC = () => {
 
         setOrder(data as OrderWithDetails);
       } catch (error) {
-        console.error('Error fetching order:', error);
+        logError('AnfrageDetail:fetchOrder', error);
         toast({
           title: 'Fehler',
           description: 'Daten konnten nicht geladen werden.',
@@ -171,7 +172,7 @@ const AnfrageDetail: React.FC = () => {
         description: `Anfrage wurde auf "${statusLabels[status]}" gesetzt. E-Mail wurde gesendet.`,
       });
     } catch (error) {
-      console.error('Error updating order status:', error);
+      logError('AnfrageDetail:updateStatus', error);
       toast({
         title: 'Fehler',
         description: 'Status konnte nicht aktualisiert werden.',

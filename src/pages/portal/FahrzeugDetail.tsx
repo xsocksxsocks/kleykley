@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart, Vehicle } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,7 +55,7 @@ const FahrzeugDetail: React.FC = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching vehicle:', error);
+        logError('FahrzeugDetail:fetchVehicle', error);
         toast({
           title: 'Fehler',
           description: 'Fahrzeug konnte nicht geladen werden.',
