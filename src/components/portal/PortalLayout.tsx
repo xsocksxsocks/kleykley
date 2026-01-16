@@ -1,11 +1,13 @@
 import React, { ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { LogOut, Settings, FileText, User, Home } from 'lucide-react';
 import { PortalFooter } from './PortalFooter';
 import { CartDropdown } from './CartDropdown';
+import { PortalBreadcrumb } from './PortalBreadcrumb';
 import logoImage from '@/assets/logo-kley.png';
+import { cn } from '@/lib/utils';
 
 interface PortalLayoutProps {
   children: ReactNode;
@@ -15,6 +17,8 @@ interface PortalLayoutProps {
 export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = true }) => {
   const { user, isAdmin, isApproved, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isOnPortalHome = location.pathname === '/portal';
 
   const handleSignOut = async () => {
     await signOut();
@@ -44,7 +48,15 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                   </Link>
                 </Button>
               )}
-              <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild 
+                className={cn(
+                  "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
+                  isOnPortalHome && "bg-gold/20 text-gold border-gold/50"
+                )}
+              >
                 <Link to="/portal">
                   <Home className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Portal</span>
@@ -75,6 +87,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
           </div>
         </header>
       )}
+
+      {showNav && user && <PortalBreadcrumb />}
 
       <main className="flex-1">
         {children}
