@@ -175,13 +175,14 @@ const ProduktDetail: React.FC = () => {
       updated_at: product.updated_at,
     };
     
-    for (let i = 0; i < quantity; i++) {
-      addToCart(cartProduct);
-    }
+    // Add product with desired quantity (addToCart handles the quantity now)
+    const success = addToCart(cartProduct, quantity);
     
-    toast({
-      title: 'Zum Angebot hinzugefügt',
-    });
+    if (success) {
+      toast({
+        title: 'Zum Angebot hinzugefügt',
+      });
+    }
   };
 
   const nextImage = () => {

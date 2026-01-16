@@ -89,10 +89,12 @@ const Portal: React.FC = () => {
   }, [user, isApproved, isAdmin, toast]);
 
   const handleAddToCart = (product: Product) => {
-    addToCart(product);
-    toast({
-      title: 'Zum Angebot hinzugefügt',
-    });
+    const success = addToCart(product);
+    if (success) {
+      toast({
+        title: 'Zum Angebot hinzugefügt',
+      });
+    }
   };
 
   const getProductImage = (product: Product): string | null => {
