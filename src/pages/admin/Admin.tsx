@@ -1032,10 +1032,10 @@ const Admin: React.FC = () => {
                     <span className="text-sm text-muted-foreground">Filter:</span>
                     <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
                       <SelectTrigger className="w-44">
-                        <SelectValue placeholder="Alle Status" />
+                        <SelectValue placeholder="Alle" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Alle Status</SelectItem>
+                        <SelectItem value="all">Alle</SelectItem>
                         <SelectItem value="pending">Neu</SelectItem>
                         <SelectItem value="confirmed">Angebot erstellt</SelectItem>
                         <SelectItem value="processing">In Bearbeitung</SelectItem>
