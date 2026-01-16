@@ -71,9 +71,9 @@ const SortableImage: React.FC<SortableImageProps> = ({ image, onDelete }) => {
         <button
           {...attributes}
           {...listeners}
-          className="p-2 bg-white rounded-full cursor-grab active:cursor-grabbing"
+          className="p-2 bg-background rounded-full cursor-grab active:cursor-grabbing"
         >
-          <GripVertical className="h-4 w-4 text-gray-700" />
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
         </button>
         <button
           onClick={() => onDelete(image.id)}

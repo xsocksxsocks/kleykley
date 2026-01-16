@@ -41,10 +41,10 @@ const documentTypeIcons: Record<string, React.ComponentType<{ className?: string
 };
 
 const documentTypeColors: Record<string, string> = {
-  invoice: 'bg-green-100 text-green-800',
-  contract: 'bg-blue-100 text-blue-800',
-  certificate: 'bg-purple-100 text-purple-800',
-  other: 'bg-gray-100 text-gray-800',
+  invoice: 'bg-green-500/20 text-green-700 dark:text-green-400',
+  contract: 'bg-blue-500/20 text-blue-700 dark:text-blue-400',
+  certificate: 'bg-purple-500/20 text-purple-700 dark:text-purple-400',
+  other: 'bg-muted text-muted-foreground',
 };
 
 const Dokumente = () => {
