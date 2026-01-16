@@ -30,7 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Car, Bike, Truck, Upload, X, Star, CheckCircle, Clock } from 'lucide-react';
+import { Plus, Edit, Trash2, Car, Bike, Truck, Upload, X, Star, CheckCircle, Clock, FileJson } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { VEHICLE_BRANDS, VEHICLE_TYPE_LABELS } from '@/lib/vehicleBrands';
 
@@ -73,6 +73,7 @@ const VehicleManagement: React.FC = () => {
   const [editingCar, setEditingCar] = useState<CarForSale | null>(null);
   const [filterType, setFilterType] = useState<string>('all');
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [importingJson, setImportingJson] = useState(false);
   
   const [form, setForm] = useState({
     brand: '',
@@ -327,6 +328,88 @@ const VehicleManagement: React.FC = () => {
     }
   };
 
+  const handleJsonImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImportingJson(true);
+
+    try {
+      const text = await file.text();
+      const jsonData = JSON.parse(text);
+      
+      // Handle both array and single object
+      const vehiclesArray = Array.isArray(jsonData) ? jsonData : [jsonData];
+      
+      if (vehiclesArray.length === 0) {
+        throw new Error('Keine Fahrzeuge in der Datei gefunden.');
+      }
+
+      // Validate and transform data
+      const validVehicles = vehiclesArray.map((vehicle: any, index: number) => {
+        // Required fields validation
+        if (!vehicle.brand) throw new Error(`Fahrzeug ${index + 1}: Marke fehlt`);
+        if (!vehicle.model) throw new Error(`Fahrzeug ${index + 1}: Modell fehlt`);
+        if (!vehicle.first_registration_date) throw new Error(`Fahrzeug ${index + 1}: Erstzulassung fehlt`);
+        if (vehicle.mileage === undefined) throw new Error(`Fahrzeug ${index + 1}: Kilometerstand fehlt`);
+        if (!vehicle.fuel_type) throw new Error(`Fahrzeug ${index + 1}: Kraftstoffart fehlt`);
+        if (!vehicle.transmission) throw new Error(`Fahrzeug ${index + 1}: Getriebe fehlt`);
+        if (vehicle.price === undefined) throw new Error(`Fahrzeug ${index + 1}: Preis fehlt`);
+
+        return {
+          brand: vehicle.brand,
+          model: vehicle.model,
+          first_registration_date: vehicle.first_registration_date,
+          mileage: parseInt(vehicle.mileage) || 0,
+          fuel_type: vehicle.fuel_type,
+          transmission: vehicle.transmission,
+          color: vehicle.color || null,
+          power_hp: vehicle.power_hp ? parseInt(vehicle.power_hp) : null,
+          previous_owners: parseInt(vehicle.previous_owners) || 1,
+          price: parseFloat(vehicle.price) || 0,
+          description: vehicle.description || null,
+          description_en: vehicle.description_en || null,
+          features: Array.isArray(vehicle.features) ? vehicle.features : null,
+          features_en: Array.isArray(vehicle.features_en) ? vehicle.features_en : null,
+          images: Array.isArray(vehicle.images) ? vehicle.images : [],
+          vehicle_type: vehicle.vehicle_type || 'Fahrzeug',
+          vat_deductible: vehicle.vat_deductible === true,
+          is_featured: vehicle.is_featured === true,
+          is_sold: vehicle.is_sold === true,
+          is_reserved: vehicle.is_reserved === true,
+        };
+      });
+
+      // Insert into database
+      const { data, error } = await supabase
+        .from('cars_for_sale')
+        .insert(validVehicles)
+        .select();
+
+      if (error) throw error;
+
+      // Add to local state
+      setCars((prev) => [...(data as CarForSale[]), ...prev]);
+
+      toast({
+        title: 'Import erfolgreich',
+        description: `${validVehicles.length} Fahrzeug(e) wurden importiert.`,
+      });
+
+      // Reset file input
+      e.target.value = '';
+    } catch (error: any) {
+      console.error('Error importing JSON:', error);
+      toast({
+        title: 'Import fehlgeschlagen',
+        description: error.message || 'Die JSON-Datei konnte nicht importiert werden.',
+        variant: 'destructive',
+      });
+    } finally {
+      setImportingJson(false);
+    }
+  };
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'Fahrzeug':
@@ -374,6 +457,27 @@ const VehicleManagement: React.FC = () => {
               <SelectItem value="Baumaschine">Baumaschinen</SelectItem>
             </SelectContent>
           </Select>
+          
+          {/* JSON Import Button */}
+          <div>
+            <Label htmlFor="json-import" className="cursor-pointer">
+              <Button variant="outline" asChild disabled={importingJson}>
+                <span>
+                  <FileJson className="h-4 w-4 mr-2" />
+                  {importingJson ? 'Importiert...' : 'JSON Import'}
+                </span>
+              </Button>
+            </Label>
+            <Input
+              id="json-import"
+              type="file"
+              accept=".json,application/json"
+              className="hidden"
+              onChange={handleJsonImport}
+              disabled={importingJson}
+            />
+          </div>
+          
           <Dialog open={dialogOpen} onOpenChange={(open) => {
             setDialogOpen(open);
             if (!open) resetForm();
