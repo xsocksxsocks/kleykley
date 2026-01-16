@@ -48,9 +48,11 @@ import {
   RefreshCw,
   Eye,
   Tag,
+  Car,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ProductImageUpload } from '@/components/admin/ProductImageUpload';
+import VehicleManagement from '@/components/admin/VehicleManagement';
 
 interface ProductImage {
   id: string;
@@ -598,6 +600,10 @@ const Admin: React.FC = () => {
               <Tag className="h-4 w-4" />
               Kategorien
             </TabsTrigger>
+            <TabsTrigger value="vehicles" className="flex items-center gap-2">
+              <Car className="h-4 w-4" />
+              Fahrzeuge
+            </TabsTrigger>
             <TabsTrigger value="orders" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Anfragen
@@ -1010,6 +1016,10 @@ const Admin: React.FC = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="vehicles">
+            <VehicleManagement />
           </TabsContent>
 
           <TabsContent value="orders">
