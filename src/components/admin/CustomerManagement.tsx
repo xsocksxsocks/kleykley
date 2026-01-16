@@ -37,9 +37,7 @@ import {
   Edit,
   Eye,
   FileText,
-  FolderOpen,
   Search,
-  Download,
   TrendingUp,
   Calendar,
   Euro,
@@ -54,14 +52,7 @@ interface OrderWithItems extends Order {
   order_items: OrderItem[];
 }
 
-interface UserDocument {
-  id: string;
-  name: string;
-  document_type: string;
-  file_url: string;
-  file_size: number | null;
-  uploaded_at: string;
-}
+// UserDocument interface removed - documents feature no longer used
 
 interface CustomerManagementProps {
   customers: Profile[];
@@ -87,12 +78,7 @@ const statusColors: Record<Order['status'], string> = {
   cancelled: 'bg-red-500/20 text-red-700 dark:text-red-400',
 };
 
-const documentTypeLabels: Record<string, string> = {
-  invoice: 'Rechnung',
-  contract: 'Vertrag',
-  certificate: 'Zertifikat',
-  other: 'Sonstiges',
-};
+// documentTypeLabels removed - documents feature no longer used
 
 export const CustomerManagement: React.FC<CustomerManagementProps> = ({
   customers,
@@ -107,7 +93,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [blockReason, setBlockReason] = useState('');
   const [customerOrders, setCustomerOrders] = useState<OrderWithItems[]>([]);
-  const [customerDocuments, setCustomerDocuments] = useState<UserDocument[]>([]);
+  // Documents feature removed - state no longer needed
   const [loadingHistory, setLoadingHistory] = useState(false);
   
   const [editForm, setEditForm] = useState({
@@ -373,15 +359,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
       if (ordersError) throw ordersError;
       setCustomerOrders((ordersData as OrderWithItems[]) || []);
 
-      // Fetch documents
-      const { data: docsData, error: docsError } = await supabase
-        .from('user_documents')
-        .select('*')
-        .eq('user_id', customer.id)
-        .order('uploaded_at', { ascending: false });
-
-      if (docsError) throw docsError;
-      setCustomerDocuments((docsData as UserDocument[]) || []);
+      // Documents feature removed - no longer fetching documents
     } catch (error) {
       console.error('Error fetching customer history:', error);
       toast({
@@ -822,10 +800,6 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
                 <FileText className="h-4 w-4" />
                 Anfragen ({customerOrders.length})
               </TabsTrigger>
-              <TabsTrigger value="documents" className="flex items-center gap-2">
-                <FolderOpen className="h-4 w-4" />
-                Dokumente ({customerDocuments.length})
-              </TabsTrigger>
             </TabsList>
             <ScrollArea className="h-[400px] mt-4">
               <TabsContent value="orders" className="mt-0">
@@ -861,52 +835,6 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
                             <Badge className={statusColors[order.status]}>
                               {statusLabels[order.status]}
                             </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </TabsContent>
-              <TabsContent value="documents" className="mt-0">
-                {loadingHistory ? (
-                  <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  </div>
-                ) : customerDocuments.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    Keine Dokumente vorhanden.
-                  </p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Typ</TableHead>
-                        <TableHead>Größe</TableHead>
-                        <TableHead>Hochgeladen</TableHead>
-                        <TableHead>Aktion</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {customerDocuments.map((doc) => (
-                        <TableRow key={doc.id}>
-                          <TableCell className="font-medium">{doc.name}</TableCell>
-                          <TableCell>
-                            {documentTypeLabels[doc.document_type] || doc.document_type}
-                          </TableCell>
-                          <TableCell>{formatFileSize(doc.file_size)}</TableCell>
-                          <TableCell>{formatDate(doc.uploaded_at)}</TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              asChild
-                            >
-                              <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
-                                <Download className="h-4 w-4" />
-                              </a>
-                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}

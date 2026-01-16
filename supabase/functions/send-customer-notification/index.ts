@@ -66,6 +66,17 @@ interface NotificationRequest {
   };
 }
 
+// HTML escape function to prevent XSS in email content
+const escapeHtml = (text: string | undefined | null): string => {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('de-DE', {
     style: 'currency',
@@ -74,7 +85,7 @@ const formatCurrency = (value: number): string => {
 };
 
 const getEmailContent = (type: NotificationType, customerName: string, data?: NotificationRequest['data']) => {
-  const name = customerName || 'Kunde';
+  const name = escapeHtml(customerName) || 'Kunde';
   
   switch (type) {
     case 'welcome':
@@ -113,7 +124,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
           <p>Leider konnten wir Ihre Registrierung im Kundenportal derzeit nicht freischalten.</p>
-          ${data?.reason ? `<p><strong>Grund:</strong> ${data.reason}</p>` : ''}
+          ${data?.reason ? `<p><strong>Grund:</strong> ${escapeHtml(data.reason)}</p>` : ''}
           <p>Bei Fragen wenden Sie sich bitte an unseren Kundenservice.</p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
@@ -136,7 +147,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
       const items = data?.orderItems || [];
       const itemsHtml = items.map(item => `
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">${item.productName}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">${escapeHtml(item.productName)}</td>
           <td style="padding: 10px; border-bottom: 1px solid #e5e5e5; text-align: center;">${item.quantity}</td>
           <td style="padding: 10px; border-bottom: 1px solid #e5e5e5; text-align: right;">${formatCurrency(item.unitPrice)}</td>
           <td style="padding: 10px; border-bottom: 1px solid #e5e5e5; text-align: right;">${formatCurrency(item.totalPrice)}</td>
@@ -151,13 +162,13 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
       const grossTotal = netTotal + vatAmount;
 
       return {
-        subject: `Ihre Angebotsanfrage ${data?.orderNumber || ''} wurde empfangen`,
+        subject: `Ihre Angebotsanfrage ${escapeHtml(data?.orderNumber) || ''} wurde empfangen`,
         html: `
           <h2>Vielen Dank für Ihre Angebotsanfrage, ${name}!</h2>
           <p>Wir haben Ihre unverbindliche Angebotsanfrage erhalten und werden diese schnellstmöglich bearbeiten.</p>
           
           <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0;"><strong>Anfragenummer:</strong> ${data?.orderNumber || '-'}</p>
+            <p style="margin: 0;"><strong>Anfragenummer:</strong> ${escapeHtml(data?.orderNumber) || '-'}</p>
           </div>
 
           <h3 style="margin-top: 30px; border-bottom: 2px solid #b8860b; padding-bottom: 10px;">Angefragte Positionen</h3>
@@ -178,7 +189,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
           <div style="margin-top: 20px; text-align: right; border-top: 1px solid #e5e5e5; padding-top: 15px;">
             ${data?.discountAmount && data.discountAmount > 0 ? `
               <p style="margin: 5px 0; color: #22c55e;">
-                <strong>Rabatt${data?.discountCode ? ` (${data.discountCode})` : ''}:</strong> -${formatCurrency(data.discountAmount)}
+                <strong>Rabatt${data?.discountCode ? ` (${escapeHtml(data.discountCode)})` : ''}:</strong> -${formatCurrency(data.discountAmount)}
               </p>
             ` : ''}
             <p style="margin: 5px 0;"><strong>Zwischensumme (netto):</strong> ${formatCurrency(netTotal)}</p>
@@ -189,28 +200,28 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
           ${billingAddr ? `
             <h3 style="margin-top: 30px; border-bottom: 2px solid #b8860b; padding-bottom: 10px;">Rechnungsadresse</h3>
             <p style="margin: 10px 0;">
-              ${billingAddr.companyName ? `<strong>${billingAddr.companyName}</strong><br>` : ''}
-              ${billingAddr.customerName || ''}<br>
-              ${billingAddr.address || ''}<br>
-              ${billingAddr.postalCode || ''} ${billingAddr.city || ''}<br>
-              ${billingAddr.country || ''}
+              ${billingAddr.companyName ? `<strong>${escapeHtml(billingAddr.companyName)}</strong><br>` : ''}
+              ${escapeHtml(billingAddr.customerName) || ''}<br>
+              ${escapeHtml(billingAddr.address) || ''}<br>
+              ${escapeHtml(billingAddr.postalCode) || ''} ${escapeHtml(billingAddr.city) || ''}<br>
+              ${escapeHtml(billingAddr.country) || ''}
             </p>
           ` : ''}
 
           ${shippingAddr && (shippingAddr.address !== billingAddr?.address) ? `
             <h3 style="margin-top: 30px; border-bottom: 2px solid #b8860b; padding-bottom: 10px;">Lieferadresse</h3>
             <p style="margin: 10px 0;">
-              ${shippingAddr.companyName ? `<strong>${shippingAddr.companyName}</strong><br>` : ''}
-              ${shippingAddr.customerName || ''}<br>
-              ${shippingAddr.address || ''}<br>
-              ${shippingAddr.postalCode || ''} ${shippingAddr.city || ''}<br>
-              ${shippingAddr.country || ''}
+              ${shippingAddr.companyName ? `<strong>${escapeHtml(shippingAddr.companyName)}</strong><br>` : ''}
+              ${escapeHtml(shippingAddr.customerName) || ''}<br>
+              ${escapeHtml(shippingAddr.address) || ''}<br>
+              ${escapeHtml(shippingAddr.postalCode) || ''} ${escapeHtml(shippingAddr.city) || ''}<br>
+              ${escapeHtml(shippingAddr.country) || ''}
             </p>
           ` : ''}
 
           ${data?.notes ? `
             <h3 style="margin-top: 30px; border-bottom: 2px solid #b8860b; padding-bottom: 10px;">Ihre Anmerkungen</h3>
-            <p style="margin: 10px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">${data.notes}</p>
+            <p style="margin: 10px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">${escapeHtml(data.notes).replace(/\n/g, '<br>')}</p>
           ` : ''}
 
           <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 30px 0; border-left: 4px solid #b8860b;">
@@ -230,10 +241,10 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
       
     case 'order_confirmed':
       return {
-        subject: `Angebot erstellt - ${data?.orderNumber || 'Ihre Anfrage'}`,
+        subject: `Angebot erstellt - ${escapeHtml(data?.orderNumber) || 'Ihre Anfrage'}`,
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
-          <p>Wir haben Ihre Angebotsanfrage ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} bearbeitet und ein Angebot für Sie erstellt.</p>
+          <p>Wir haben Ihre Angebotsanfrage ${data?.orderNumber ? `<strong>${escapeHtml(data.orderNumber)}</strong>` : ''} bearbeitet und ein Angebot für Sie erstellt.</p>
           <p>Sie können das Angebot in Ihrem Kundenportal unter "Meine Angebote" einsehen.</p>
           <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Angebot ansehen</a></p>
           <br>
@@ -243,11 +254,11 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
       
     case 'order_processing':
       return {
-        subject: `Anfrage in Bearbeitung - ${data?.orderNumber || 'Ihre Anfrage'}`,
+        subject: `Anfrage in Bearbeitung - ${escapeHtml(data?.orderNumber) || 'Ihre Anfrage'}`,
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
-          <p>Ihre Anfrage ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} befindet sich nun in Bearbeitung.</p>
-          ${data?.newStatus ? `<p><strong>Neuer Status:</strong> ${data.newStatus}</p>` : ''}
+          <p>Ihre Anfrage ${data?.orderNumber ? `<strong>${escapeHtml(data.orderNumber)}</strong>` : ''} befindet sich nun in Bearbeitung.</p>
+          ${data?.newStatus ? `<p><strong>Neuer Status:</strong> ${escapeHtml(data.newStatus)}</p>` : ''}
           <p>Wir werden Sie über den Fortschritt informieren.</p>
           <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Status ansehen</a></p>
           <br>
@@ -257,11 +268,11 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
       
     case 'order_shipped':
       return {
-        subject: `Versandbestätigung - ${data?.orderNumber || 'Ihre Bestellung'}`,
+        subject: `Versandbestätigung - ${escapeHtml(data?.orderNumber) || 'Ihre Bestellung'}`,
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
-          <p>Ihre Bestellung ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} wurde versendet.</p>
-          ${data?.newStatus ? `<p><strong>Neuer Status:</strong> ${data.newStatus}</p>` : ''}
+          <p>Ihre Bestellung ${data?.orderNumber ? `<strong>${escapeHtml(data.orderNumber)}</strong>` : ''} wurde versendet.</p>
+          ${data?.newStatus ? `<p><strong>Neuer Status:</strong> ${escapeHtml(data.newStatus)}</p>` : ''}
           <p>Die Versandabwicklung erfolgt gemäß den vereinbarten Konditionen. Sollten Sie noch keine detaillierten Versandinformationen erhalten haben, werden wir Ihnen diese in Kürze zukommen lassen.</p>
           <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Status ansehen</a></p>
           <br>
@@ -271,11 +282,11 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
       
     case 'order_delivered':
       return {
-        subject: `Lieferung abgeschlossen - ${data?.orderNumber || 'Ihre Bestellung'}`,
+        subject: `Lieferung abgeschlossen - ${escapeHtml(data?.orderNumber) || 'Ihre Bestellung'}`,
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
-          <p>Ihre Bestellung ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} wurde erfolgreich abgeschlossen.</p>
-          ${data?.newStatus ? `<p><strong>Status:</strong> ${data.newStatus}</p>` : ''}
+          <p>Ihre Bestellung ${data?.orderNumber ? `<strong>${escapeHtml(data.orderNumber)}</strong>` : ''} wurde erfolgreich abgeschlossen.</p>
+          ${data?.newStatus ? `<p><strong>Status:</strong> ${escapeHtml(data.newStatus)}</p>` : ''}
           <p>Vielen Dank für Ihr Vertrauen!</p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
@@ -284,12 +295,12 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
       
     case 'order_cancelled':
       return {
-        subject: `Stornierung - ${data?.orderNumber || 'Ihre Anfrage'}`,
+        subject: `Stornierung - ${escapeHtml(data?.orderNumber) || 'Ihre Anfrage'}`,
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
-          <p>Ihre Anfrage ${data?.orderNumber ? `<strong>${data.orderNumber}</strong>` : ''} wurde storniert.</p>
-          ${data?.newStatus ? `<p><strong>Status:</strong> ${data.newStatus}</p>` : ''}
-          ${data?.reason ? `<p><strong>Grund:</strong> ${data.reason}</p>` : ''}
+          <p>Ihre Anfrage ${data?.orderNumber ? `<strong>${escapeHtml(data.orderNumber)}</strong>` : ''} wurde storniert.</p>
+          ${data?.newStatus ? `<p><strong>Status:</strong> ${escapeHtml(data.newStatus)}</p>` : ''}
+          ${data?.reason ? `<p><strong>Grund:</strong> ${escapeHtml(data.reason)}</p>` : ''}
           <p>Bei Fragen stehen wir Ihnen gerne zur Verfügung.</p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
@@ -301,7 +312,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
         subject: 'Neues Dokument verfügbar',
         html: `
           <h2>Sehr geehrte/r ${name},</h2>
-          <p>Ein neues Dokument wurde für Sie bereitgestellt${data?.documentName ? `: <strong>${data.documentName}</strong>` : ''}.</p>
+          <p>Ein neues Dokument wurde für Sie bereitgestellt${data?.documentName ? `: <strong>${escapeHtml(data.documentName)}</strong>` : ''}.</p>
           <p>Sie können das Dokument in Ihrem Kundenportal unter "Dokumente" einsehen und herunterladen.</p>
           <p><a href="https://kleykley.lovable.app/portal/dokumente" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Dokumente ansehen</a></p>
           <br>
@@ -345,10 +356,16 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { type, customerEmail, customerName, data }: NotificationRequest = await req.json();
 
-    console.log("Sending notification:", { type, customerEmail, customerName });
+    console.log("Sending notification:", { type, customerEmail: customerEmail?.substring(0, 30), customerName: customerName?.substring(0, 20) });
 
     if (!customerEmail) {
       throw new Error("Customer email is required");
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerEmail)) {
+      throw new Error("Invalid email address");
     }
 
     const { subject, html } = getEmailContent(type, customerName, data);

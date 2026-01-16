@@ -164,6 +164,19 @@ const Profil: React.FC = () => {
 
     setIsLoading(true);
     try {
+      // First verify the current password by attempting to sign in
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: passwordData.currentPassword,
+      });
+
+      if (authError) {
+        setErrors({ currentPassword: 'Aktuelles Passwort ist falsch' });
+        setIsLoading(false);
+        return;
+      }
+
+      // Now update the password
       const { error } = await supabase.auth.updateUser({
         password: passwordData.newPassword,
       });
@@ -429,6 +442,17 @@ const Profil: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword">Aktuelles Passwort</Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                      disabled={isLoading}
+                    />
+                    {errors.currentPassword && <p className="text-sm text-destructive">{errors.currentPassword}</p>}
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="newPassword">Neues Passwort</Label>
                     <Input
