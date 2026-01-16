@@ -178,6 +178,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_notes: string | null
           billing_address: string | null
           billing_city: string | null
           billing_country: string | null
@@ -203,6 +204,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_notes?: string | null
           billing_address?: string | null
           billing_city?: string | null
           billing_country?: string | null
@@ -228,6 +230,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_notes?: string | null
           billing_address?: string | null
           billing_city?: string | null
           billing_country?: string | null
