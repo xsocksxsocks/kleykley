@@ -40,6 +40,7 @@ export type Database = {
           transmission: string
           updated_at: string
           vat_deductible: boolean | null
+          vehicle_number: string | null
           vehicle_type: string | null
         }
         Insert: {
@@ -67,6 +68,7 @@ export type Database = {
           transmission: string
           updated_at?: string
           vat_deductible?: boolean | null
+          vehicle_number?: string | null
           vehicle_type?: string | null
         }
         Update: {
@@ -94,6 +96,7 @@ export type Database = {
           transmission?: string
           updated_at?: string
           vat_deductible?: boolean | null
+          vehicle_number?: string | null
           vehicle_type?: string | null
         }
         Relationships: []
@@ -304,6 +307,7 @@ export type Database = {
           is_recommended: boolean
           name: string
           price: number
+          product_number: string | null
           stock_quantity: number
           tax_rate: number
           updated_at: string
@@ -320,6 +324,7 @@ export type Database = {
           is_recommended?: boolean
           name: string
           price: number
+          product_number?: string | null
           stock_quantity?: number
           tax_rate?: number
           updated_at?: string
@@ -336,6 +341,7 @@ export type Database = {
           is_recommended?: boolean
           name?: string
           price?: number
+          product_number?: string | null
           stock_quantity?: number
           tax_rate?: number
           updated_at?: string
