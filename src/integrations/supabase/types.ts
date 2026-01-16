@@ -253,6 +253,8 @@ export type Database = {
           city: string | null
           company_name: string | null
           created_at: string
+          deletion_requested_at: string | null
+          deletion_scheduled_at: string | null
           email: string
           full_name: string | null
           id: string
@@ -269,6 +271,8 @@ export type Database = {
           city?: string | null
           company_name?: string | null
           created_at?: string
+          deletion_requested_at?: string | null
+          deletion_scheduled_at?: string | null
           email: string
           full_name?: string | null
           id: string
@@ -285,6 +289,8 @@ export type Database = {
           city?: string | null
           company_name?: string | null
           created_at?: string
+          deletion_requested_at?: string | null
+          deletion_scheduled_at?: string | null
           email?: string
           full_name?: string | null
           id?: string
@@ -322,14 +328,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_deletion_date: {
+        Args: { request_time: string }
+        Returns: string
+      }
       calculate_scheduled_approval_time: {
         Args: { registration_time: string }
         Returns: string
       }
+      cancel_account_deletion: { Args: { user_id: string }; Returns: undefined }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_approved_customer: { Args: { _user_id: string }; Returns: boolean }
       process_auto_approvals: { Args: never; Returns: number }
+      request_account_deletion: {
+        Args: { user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       approval_status: "pending" | "approved" | "rejected"

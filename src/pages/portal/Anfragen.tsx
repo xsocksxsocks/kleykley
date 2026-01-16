@@ -33,7 +33,7 @@ interface OrderWithItems extends Order {
 }
 
 const Anfragen: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isApproved, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -45,7 +45,11 @@ const Anfragen: React.FC = () => {
     if (!loading && !user) {
       navigate('/portal/auth');
     }
-  }, [user, loading, navigate]);
+    // Redirect non-approved users
+    if (!loading && user && !isApproved && !isAdmin) {
+      navigate('/portal');
+    }
+  }, [user, loading, isApproved, isAdmin, navigate]);
 
   useEffect(() => {
     const fetchOrders = async () => {

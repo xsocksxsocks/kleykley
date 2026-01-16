@@ -13,13 +13,16 @@ interface PortalLayoutProps {
 }
 
 export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = true }) => {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, isApproved, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/portal/auth');
   };
+
+  // Show cart and orders only for approved users or admins
+  const canAccessShop = isApproved || isAdmin;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -47,13 +50,17 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                   <span className="hidden sm:inline">Profil</span>
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
-                <Link to="/portal/anfragen">
-                  <FileText className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Meine Angebote</span>
-                </Link>
-              </Button>
-              <CartDropdown />
+              {canAccessShop && (
+                <>
+                  <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
+                    <Link to="/portal/anfragen">
+                      <FileText className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Meine Angebote</span>
+                    </Link>
+                  </Button>
+                  <CartDropdown />
+                </>
+              )}
               <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-cream hover:bg-gold/10 hover:text-gold">
                 <LogOut className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Abmelden</span>

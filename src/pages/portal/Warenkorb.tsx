@@ -16,10 +16,17 @@ import { Minus, Plus, Trash2, FileText, Percent } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Warenkorb: React.FC = () => {
-  const { user, profile, isApproved } = useAuth();
+  const { user, profile, isApproved, isAdmin, loading } = useAuth();
   const { items, updateQuantity, removeFromCart, clearCart, totalPrice } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redirect non-approved users
+  useEffect(() => {
+    if (!loading && user && !isApproved && !isAdmin) {
+      navigate('/portal');
+    }
+  }, [loading, user, isApproved, isAdmin, navigate]);
   
   const [isOrdering, setIsOrdering] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
