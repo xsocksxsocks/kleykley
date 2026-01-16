@@ -9,7 +9,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car, Heart, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { FavoriteButton } from '@/components/portal/FavoriteButton';
@@ -19,6 +29,7 @@ interface Category {
   id: string;
   name: string;
   sort_order: number;
+  parent_id: string | null;
 }
 
 interface ExtendedProduct extends Product {
@@ -46,6 +57,7 @@ const Portal: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedParentCategory, setSelectedParentCategory] = useState<string | null>(null);
   const [selectedVehicleType, setSelectedVehicleType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [vehicleSearchQuery, setVehicleSearchQuery] = useState('');
@@ -182,10 +194,34 @@ const Portal: React.FC = () => {
     return cat?.name || null;
   };
 
+  // Get parent categories (those without parent_id)
+  const parentCategories = useMemo(() => {
+    return categories.filter(c => c.parent_id === null).sort((a, b) => a.sort_order - b.sort_order);
+  }, [categories]);
+
+  // Get subcategories for a parent
+  const getSubcategories = (parentId: string) => {
+    return categories.filter(c => c.parent_id === parentId).sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  // Get all category IDs under a parent (including subcategories)
+  const getCategoryIdsForParent = (parentId: string): string[] => {
+    const subcats = categories.filter(c => c.parent_id === parentId);
+    return subcats.map(c => c.id);
+  };
+
   // Filter products by category and search
   const filteredProducts = products.filter((p) => {
+    // If a specific subcategory is selected
     if (selectedCategory && p.category_id !== selectedCategory) {
       return false;
+    }
+    // If only a parent category is selected, show all products in its subcategories
+    if (!selectedCategory && selectedParentCategory) {
+      const subcategoryIds = getCategoryIdsForParent(selectedParentCategory);
+      if (!subcategoryIds.includes(p.category_id || '')) {
+        return false;
+      }
     }
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -218,7 +254,7 @@ const Portal: React.FC = () => {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, selectedParentCategory, searchQuery]);
 
   // Reset vehicle page when filters change
   useEffect(() => {
@@ -403,25 +439,77 @@ const Portal: React.FC = () => {
                 )}
               </div>
 
-              {categories.length > 0 && (
+              {parentCategories.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   <Button
-                    variant={selectedCategory === null ? 'default' : 'outline'}
+                    variant={selectedCategory === null && selectedParentCategory === null ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setSelectedCategory(null)}
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      setSelectedParentCategory(null);
+                    }}
                   >
-                    Alle
+                    Alle Kategorien
                   </Button>
-                  {categories.map((category) => (
-                    <Button
-                      key={category.id}
-                      variant={selectedCategory === category.id ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSelectedCategory(category.id)}
-                    >
-                      {category.name}
-                    </Button>
-                  ))}
+                  {parentCategories.map((parentCat) => {
+                    const subcats = getSubcategories(parentCat.id);
+                    const isParentSelected = selectedParentCategory === parentCat.id;
+                    const hasSelectedSubcat = subcats.some(sub => sub.id === selectedCategory);
+                    
+                    if (subcats.length === 0) {
+                      return (
+                        <Button
+                          key={parentCat.id}
+                          variant={isParentSelected ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => {
+                            setSelectedParentCategory(parentCat.id);
+                            setSelectedCategory(null);
+                          }}
+                        >
+                          {parentCat.name}
+                        </Button>
+                      );
+                    }
+                    
+                    return (
+                      <DropdownMenu key={parentCat.id}>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant={isParentSelected || hasSelectedSubcat ? 'default' : 'outline'}
+                            size="sm"
+                            className="gap-1"
+                          >
+                            {parentCat.name}
+                            <ChevronDown className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedParentCategory(parentCat.id);
+                              setSelectedCategory(null);
+                            }}
+                            className={isParentSelected && !selectedCategory ? 'bg-accent' : ''}
+                          >
+                            Alle in {parentCat.name}
+                          </DropdownMenuItem>
+                          {subcats.map((subcat) => (
+                            <DropdownMenuItem
+                              key={subcat.id}
+                              onClick={() => {
+                                setSelectedParentCategory(parentCat.id);
+                                setSelectedCategory(subcat.id);
+                              }}
+                              className={selectedCategory === subcat.id ? 'bg-accent' : ''}
+                            >
+                              {subcat.name}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -437,23 +525,24 @@ const Portal: React.FC = () => {
                   <h3 className="text-lg font-medium mb-2">
                     {searchQuery 
                       ? 'Keine Treffer gefunden' 
-                      : selectedCategory 
+                      : (selectedCategory || selectedParentCategory)
                         ? 'Keine Produkte in dieser Kategorie' 
                         : 'Keine Produkte verfügbar'}
                   </h3>
                   <p className="text-muted-foreground">
                     {searchQuery 
                       ? `Keine Produkte gefunden für "${searchQuery}".`
-                      : selectedCategory 
+                      : (selectedCategory || selectedParentCategory)
                         ? 'Wählen Sie eine andere Kategorie oder zeigen Sie alle Produkte an.'
                         : 'Aktuell sind keine Produkte im Portal verfügbar.'}
                   </p>
-                  {(selectedCategory || searchQuery) && (
+                  {(selectedCategory || selectedParentCategory || searchQuery) && (
                     <Button 
                       variant="outline" 
                       className="mt-4"
                       onClick={() => {
                         setSelectedCategory(null);
+                        setSelectedParentCategory(null);
                         setSearchQuery('');
                       }}
                     >
