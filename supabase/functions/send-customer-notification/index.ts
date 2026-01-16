@@ -182,8 +182,8 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
               </p>
             ` : ''}
             <p style="margin: 5px 0;"><strong>Zwischensumme (netto):</strong> ${formatCurrency(netTotal)}</p>
-            <p style="margin: 5px 0; color: #666;">MwSt. (19%):</strong> ${formatCurrency(vatAmount)}</p>
-            <p style="margin: 10px 0; font-size: 18px; font-weight: bold; color: #b8860b;"><strong>Gesamtbetrag (brutto):</strong> ${formatCurrency(grossTotal)}</p>
+            <p style="margin: 5px 0; color: #666;"><strong>MwSt. (19%):</strong> ${formatCurrency(vatAmount)}</p>
+            <p style="margin: 10px 0;"><strong>Gesamtbetrag (brutto):</strong> ${formatCurrency(grossTotal)}</p>
           </div>
 
           ${billingAddr ? `
