@@ -10,7 +10,6 @@ interface ExtractedProduct {
   description: string | null;
   price: number | null;
   category: string | null;
-  imageBase64: string | null;
 }
 
 serve(async (req) => {
@@ -39,27 +38,22 @@ serve(async (req) => {
 
     console.log('Starting PDF product extraction...');
 
-const systemPrompt = `Du bist ein Experte für die Extraktion von Produktdaten aus PDF-Dokumenten wie Katalogen und Preislisten.
+    const systemPrompt = `Du bist ein Experte für die Extraktion von Produktdaten aus PDF-Dokumenten wie Katalogen und Preislisten.
 
 Deine Aufgabe ist es, alle Produkte aus dem bereitgestellten PDF zu extrahieren und strukturiert zurückzugeben.
 
 Für jedes Produkt extrahiere:
-- name: Der vollständige Produktname
-- description: Eine Beschreibung des Produkts (kann null sein)
+- name: Der vollständige Produktname (inkl. Artikelnummer falls vorhanden)
+- description: Eine Beschreibung des Produkts mit technischen Details (kann null sein)
 - price: Der Preis als Zahl ohne Währungssymbol (z.B. 49.99). Wenn kein Preis angegeben ist, setze null
 - category: Eine passende Kategorie für das Produkt basierend auf dem Kontext (kann null sein)
-- imageBase64: Falls ein Produktbild im PDF vorhanden ist, extrahiere es als base64-String. Falls kein Bild vorhanden ist, setze null.
-
-WICHTIG für Bilder:
-- Wenn du ein Produktbild im PDF siehst, extrahiere es als base64-kodierten String
-- Das Bild sollte dem jeweiligen Produkt zugeordnet werden
-- Falls kein eindeutiges Bild zum Produkt existiert, setze imageBase64 auf null
 
 Achte besonders auf:
 - Artikelnummern und Produktbezeichnungen
 - Preisangaben (brutto/netto, Stückpreis, Staffelpreise - nimm den Einzelpreis)
 - Kategorien oder Abschnittsüberschriften
 - Technische Spezifikationen als Teil der Beschreibung
+- Maße, Gewichte, Materialien
 
 Gib die Produkte als JSON-Array zurück.`;
 
@@ -105,11 +99,10 @@ Gib die Produkte als JSON-Array zurück.`;
                     items: {
                       type: 'object',
                       properties: {
-                        name: { type: 'string', description: 'Produktname' },
-                        description: { type: 'string', nullable: true, description: 'Produktbeschreibung' },
+                        name: { type: 'string', description: 'Produktname mit Artikelnummer' },
+                        description: { type: 'string', nullable: true, description: 'Produktbeschreibung mit technischen Details' },
                         price: { type: 'number', nullable: true, description: 'Preis als Zahl' },
-                        category: { type: 'string', nullable: true, description: 'Produktkategorie' },
-                        imageBase64: { type: 'string', nullable: true, description: 'Base64-kodiertes Produktbild aus dem PDF' }
+                        category: { type: 'string', nullable: true, description: 'Produktkategorie' }
                       },
                       required: ['name']
                     }
@@ -179,27 +172,11 @@ Gib die Produkte als JSON-Array zurück.`;
 
     console.log(`Extracted ${products.length} products`);
 
-    // Extract images from products (already extracted from PDF by AI)
-    const productImages: { productName: string; base64: string }[] = [];
-    
-    for (const product of products) {
-      if (product.imageBase64) {
-        productImages.push({ 
-          productName: product.name, 
-          base64: product.imageBase64.startsWith('data:') 
-            ? product.imageBase64 
-            : `data:image/png;base64,${product.imageBase64}` 
-        });
-      }
-    }
-
-    console.log(`Extracted ${productImages.length} images from PDF`);
-
     return new Response(
       JSON.stringify({ 
         success: true, 
         products,
-        images: productImages,
+        images: [], // No image extraction - images must be uploaded manually
         count: products.length 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
