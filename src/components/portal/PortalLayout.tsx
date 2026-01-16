@@ -1,11 +1,10 @@
 import React, { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, LogOut, Settings, FileText, User } from 'lucide-react';
+import { LogOut, Settings, FileText, User } from 'lucide-react';
 import { PortalFooter } from './PortalFooter';
+import { CartDropdown } from './CartDropdown';
 import logoImage from '@/assets/logo-kley.png';
 
 interface PortalLayoutProps {
@@ -14,8 +13,7 @@ interface PortalLayoutProps {
 }
 
 export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = true }) => {
-  const { user, profile, isAdmin, signOut } = useAuth();
-  const { totalItems } = useCart();
+  const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -55,17 +53,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                   <span className="hidden sm:inline">Meine Angebote</span>
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
-                <Link to="/portal/warenkorb">
-                  <ShoppingCart className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Warenkorb</span>
-                  {totalItems > 0 && (
-                    <Badge variant="secondary" className="ml-1 sm:ml-2 bg-gold text-navy-dark">
-                      {totalItems}
-                    </Badge>
-                  )}
-                </Link>
-              </Button>
+              <CartDropdown />
               <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-cream hover:bg-gold/10 hover:text-gold">
                 <LogOut className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Abmelden</span>
