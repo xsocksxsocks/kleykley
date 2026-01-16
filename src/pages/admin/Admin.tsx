@@ -52,7 +52,16 @@ import {
   LayoutDashboard,
   FolderOpen,
   Percent,
+  Download,
+  Upload,
+  ChevronDown,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { ProductImageUpload } from '@/components/admin/ProductImageUpload';
 import VehicleManagement from '@/components/admin/VehicleManagement';
@@ -652,151 +661,227 @@ const Admin: React.FC = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Produktverwaltung</CardTitle>
-                <Dialog open={productDialogOpen} onOpenChange={(open) => {
-                  setProductDialogOpen(open);
-                  if (!open) resetProductForm();
-                }}>
-                  <DialogTrigger asChild>
-                    <Button onClick={() => resetProductForm()}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Produkt hinzufügen
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editingProduct ? 'Produkt bearbeiten' : 'Neues Produkt'}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <ScrollArea className="max-h-[70vh] pr-4">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Name *</Label>
-                        <Input
-                          id="name"
-                          value={productForm.name}
-                          onChange={(e) =>
-                            setProductForm({ ...productForm, name: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="description">Beschreibung</Label>
-                        <Textarea
-                          id="description"
-                          value={productForm.description}
-                          onChange={(e) =>
-                            setProductForm({ ...productForm, description: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="price">Preis (€) *</Label>
-                          <Input
-                            id="price"
-                            type="number"
-                            step="0.01"
-                            value={productForm.price}
-                            onChange={(e) =>
-                              setProductForm({ ...productForm, price: e.target.value })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="stock">Verfügbar</Label>
-                          <Input
-                            id="stock"
-                            type="number"
-                            value={productForm.stock_quantity}
-                            onChange={(e) =>
-                              setProductForm({ ...productForm, stock_quantity: e.target.value })
-                            }
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="category">Kategorie</Label>
-                        <Select
-                          value={productForm.category_id || "none"}
-                          onValueChange={(value) =>
-                            setProductForm({ ...productForm, category_id: value === "none" ? "" : value })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Kategorie wählen" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Keine Kategorie</SelectItem>
-                            {categories.map((cat) => (
-                              <SelectItem key={cat.id} value={cat.id}>
-                                {cat.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="recommended">Empfohlen</Label>
-                        <Switch
-                          id="recommended"
-                          checked={productForm.is_recommended}
-                          onCheckedChange={(checked) =>
-                            setProductForm({ ...productForm, is_recommended: checked })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="discount">Rabatt (%)</Label>
-                        <Input
-                          id="discount"
-                          type="number"
-                          min="0"
-                          max="100"
-                          step="1"
-                          placeholder="0"
-                          value={productForm.discount_percentage}
-                          onChange={(e) =>
-                            setProductForm({ ...productForm, discount_percentage: e.target.value })
-                          }
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Prozentualer Rabatt auf den Verkaufspreis (0-100%)
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="active">Aktiv</Label>
-                        <Switch
-                          id="active"
-                          checked={productForm.is_active}
-                          onCheckedChange={(checked) =>
-                            setProductForm({ ...productForm, is_active: checked })
-                          }
-                        />
-                      </div>
-                      
-                      {/* Image Upload Section */}
-                      {editingProduct && (
-                        <div className="border-t pt-4">
-                          <ProductImageUpload
-                            productId={editingProduct.id}
-                            images={productImages}
-                            onImagesChange={setProductImages}
-                          />
-                        </div>
-                      )}
-                      
-                      <Button
-                        className="w-full"
-                        onClick={handleSaveProduct}
-                        disabled={!productForm.name || !productForm.price}
-                      >
-                        {editingProduct ? 'Speichern' : 'Erstellen'}
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">
+                        <FileText className="h-4 w-4 mr-2" />
+                        JSON
+                        <ChevronDown className="h-4 w-4 ml-2" />
                       </Button>
-                    </div>
-                    </ScrollArea>
-                  </DialogContent>
-                </Dialog>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => {
+                        const exportData = products.map(p => ({
+                          name: p.name,
+                          description: p.description,
+                          price: p.price,
+                          category_id: (p as any).category_id,
+                          stock_quantity: p.stock_quantity,
+                          is_active: p.is_active,
+                          is_recommended: (p as any).is_recommended,
+                          discount_percentage: (p as any).discount_percentage,
+                        }));
+                        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `produkte-${new Date().toISOString().split('T')[0]}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        toast({ title: 'Export erfolgreich', description: `${products.length} Produkte exportiert.` });
+                      }}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Exportieren
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'application/json';
+                        input.onchange = async (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0];
+                          if (!file) return;
+                          try {
+                            const text = await file.text();
+                            const importedProducts = JSON.parse(text);
+                            if (!Array.isArray(importedProducts)) {
+                              toast({ title: 'Fehler', description: 'Ungültiges JSON-Format.', variant: 'destructive' });
+                              return;
+                            }
+                            let successCount = 0;
+                            for (const product of importedProducts) {
+                              const { error } = await supabase.from('products').insert({
+                                name: product.name,
+                                description: product.description || null,
+                                price: product.price || 0,
+                                category_id: product.category_id || null,
+                                stock_quantity: product.stock_quantity || 0,
+                                is_active: product.is_active ?? true,
+                                is_recommended: product.is_recommended ?? false,
+                                discount_percentage: product.discount_percentage || 0,
+                              });
+                              if (!error) successCount++;
+                            }
+                            toast({ title: 'Import erfolgreich', description: `${successCount} Produkte importiert.` });
+                            const { data: productsData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+                            if (productsData) setProducts(productsData as Product[]);
+                          } catch (err) {
+                            toast({ title: 'Fehler', description: 'JSON konnte nicht gelesen werden.', variant: 'destructive' });
+                          }
+                        };
+                        input.click();
+                      }}>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Importieren
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Dialog open={productDialogOpen} onOpenChange={(open) => {
+                    setProductDialogOpen(open);
+                    if (!open) resetProductForm();
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => resetProductForm()}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Produkt hinzufügen
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>
+                          {editingProduct ? 'Produkt bearbeiten' : 'Neues Produkt'}
+                        </DialogTitle>
+                      </DialogHeader>
+                      <ScrollArea className="max-h-[70vh] pr-4">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Name *</Label>
+                          <Input
+                            id="name"
+                            value={productForm.name}
+                            onChange={(e) =>
+                              setProductForm({ ...productForm, name: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="description">Beschreibung</Label>
+                          <Textarea
+                            id="description"
+                            value={productForm.description}
+                            onChange={(e) =>
+                              setProductForm({ ...productForm, description: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="price">Preis (€) *</Label>
+                            <Input
+                              id="price"
+                              type="number"
+                              step="0.01"
+                              value={productForm.price}
+                              onChange={(e) =>
+                                setProductForm({ ...productForm, price: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="stock">Verfügbar</Label>
+                            <Input
+                              id="stock"
+                              type="number"
+                              value={productForm.stock_quantity}
+                              onChange={(e) =>
+                                setProductForm({ ...productForm, stock_quantity: e.target.value })
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="category">Kategorie</Label>
+                          <Select
+                            value={productForm.category_id || "none"}
+                            onValueChange={(value) =>
+                              setProductForm({ ...productForm, category_id: value === "none" ? "" : value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Kategorie wählen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Keine Kategorie</SelectItem>
+                              {categories.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id}>
+                                  {cat.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="recommended">Empfohlen</Label>
+                          <Switch
+                            id="recommended"
+                            checked={productForm.is_recommended}
+                            onCheckedChange={(checked) =>
+                              setProductForm({ ...productForm, is_recommended: checked })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="discount">Rabatt (%)</Label>
+                          <Input
+                            id="discount"
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="1"
+                            placeholder="0"
+                            value={productForm.discount_percentage}
+                            onChange={(e) =>
+                              setProductForm({ ...productForm, discount_percentage: e.target.value })
+                            }
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Prozentualer Rabatt auf den Verkaufspreis (0-100%)
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="active">Aktiv</Label>
+                          <Switch
+                            id="active"
+                            checked={productForm.is_active}
+                            onCheckedChange={(checked) =>
+                              setProductForm({ ...productForm, is_active: checked })
+                            }
+                          />
+                        </div>
+                        
+                        {/* Image Upload Section */}
+                        {editingProduct && (
+                          <div className="border-t pt-4">
+                            <ProductImageUpload
+                              productId={editingProduct.id}
+                              images={productImages}
+                              onImagesChange={setProductImages}
+                            />
+                          </div>
+                        )}
+                        
+                        <Button
+                          className="w-full"
+                          onClick={handleSaveProduct}
+                          disabled={!productForm.name || !productForm.price}
+                        >
+                          {editingProduct ? 'Speichern' : 'Erstellen'}
+                        </Button>
+                      </div>
+                      </ScrollArea>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </CardHeader>
               <CardContent>
                 {loadingData ? (
