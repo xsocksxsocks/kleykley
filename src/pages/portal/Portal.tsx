@@ -8,7 +8,7 @@ import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Clock, Package, Star, Search, X, Eye } from 'lucide-react';
+import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
@@ -145,6 +145,43 @@ const Portal: React.FC = () => {
 
   if (!user) {
     return null;
+  }
+
+  // Rejected view
+  if (profile?.approval_status === 'rejected' && !isAdmin) {
+    return (
+      <PortalLayout showNav={false}>
+        <div className="container mx-auto px-4 py-16">
+          <Card className="max-w-md mx-auto text-center">
+            <CardHeader>
+              <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <XCircle className="h-8 w-8 text-red-600" />
+              </div>
+              <CardTitle>Konto abgelehnt</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Leider konnten wir Ihre Registrierung nicht genehmigen. Falls Sie Fragen haben 
+                oder der Meinung sind, dass es sich um einen Fehler handelt, kontaktieren Sie uns bitte.
+              </p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Wir helfen Ihnen gerne weiter.
+              </p>
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={async () => {
+                  await signOut();
+                  navigate('/portal/auth');
+                }}
+              >
+                Abmelden
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PortalLayout>
+    );
   }
 
   // Pending approval view
@@ -322,11 +359,20 @@ const Portal: React.FC = () => {
                         Netto zzgl. {product.tax_rate}% MwSt.
                       </p>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      {product.stock_quantity > 0
-                        ? `${product.stock_quantity} verfügbar`
-                        : 'Auf Anfrage'}
-                    </p>
+                    {product.stock_quantity > 0 && product.stock_quantity <= 5 ? (
+                      <p className="text-sm text-amber-600 mt-2 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Nur noch {product.stock_quantity} verfügbar
+                      </p>
+                    ) : product.stock_quantity > 0 ? (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {product.stock_quantity} verfügbar
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Auf Anfrage
+                      </p>
+                    )}
                   </CardContent>
                   <CardFooter className="flex gap-2">
                     <Button
