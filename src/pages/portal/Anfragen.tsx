@@ -151,7 +151,9 @@ const Anfragen: React.FC = () => {
                         <h4 className="font-medium mb-2">Angefragte Produkte</h4>
                         <div className="space-y-2">
                           {order.order_items.map((item) => {
-                            const hasDiscount = item.discount_percentage && item.discount_percentage > 0;
+                            const hasDiscount = item.discount_percentage !== null && 
+                                               item.discount_percentage !== undefined && 
+                                               item.discount_percentage > 0;
                             return (
                               <div key={item.id} className="flex justify-between text-sm items-center">
                                 <div className="flex items-center gap-2">
