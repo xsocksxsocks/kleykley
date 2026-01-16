@@ -716,6 +716,73 @@ const Admin: React.FC = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Produktverwaltung</CardTitle>
                 <div className="flex items-center gap-2">
+                  {/* CSV Export for Invoice Platform */}
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      // Build CSV with invoice platform format
+                      const headers = [
+                        'Artikelnummer',
+                        'Name',
+                        'Einheit',
+                        'Bestand',
+                        'Bestand aktiviert',
+                        'Umsatzsteuer',
+                        'Einkaufspreis',
+                        'Verkaufspreis',
+                        'Kategorie',
+                        'Beschreibung'
+                      ];
+                      
+                      const rows = products.map(p => {
+                        const category = categories.find(c => c.id === (p as any).category_id);
+                        return [
+                          p.product_number || '',
+                          p.name,
+                          'Stück', // Default unit
+                          p.stock_quantity.toString(),
+                          p.is_active ? 'Ja' : 'Nein',
+                          `${p.tax_rate}%`,
+                          '', // Einkaufspreis - not stored
+                          p.price.toFixed(2).replace('.', ','),
+                          category?.name || '',
+                          (p.description || '').replace(/"/g, '""') // Escape quotes
+                        ];
+                      });
+                      
+                      // Build CSV content with proper escaping
+                      const csvContent = [
+                        headers.join(';'),
+                        ...rows.map(row => 
+                          row.map(cell => {
+                            // Wrap in quotes if contains semicolon, newline, or quotes
+                            if (cell.includes(';') || cell.includes('\n') || cell.includes('"')) {
+                              return `"${cell}"`;
+                            }
+                            return cell;
+                          }).join(';')
+                        )
+                      ].join('\n');
+                      
+                      // Add BOM for Excel UTF-8 compatibility
+                      const bom = '\uFEFF';
+                      const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `produkte-export-${new Date().toISOString().split('T')[0]}.csv`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast({ 
+                        title: 'CSV Export erfolgreich', 
+                        description: `${products.length} Produkte für Rechnungsplattform exportiert.` 
+                      });
+                    }}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    CSV Export
+                  </Button>
+                  
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline">

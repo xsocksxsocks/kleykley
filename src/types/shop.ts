@@ -46,8 +46,11 @@ export interface Product {
   price: number;
   image_url: string | null;
   category: string | null;
+  category_id?: string | null;
+  product_number?: string | null;
   stock_quantity: number;
   is_active: boolean;
+  is_recommended?: boolean;
   tax_rate: number;
   discount_percentage?: number;
   created_at: string;
