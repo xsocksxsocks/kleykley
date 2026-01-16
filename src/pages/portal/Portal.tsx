@@ -23,6 +23,7 @@ interface ExtendedProduct extends Product {
   category_id?: string | null;
   is_recommended?: boolean;
   discount_percentage?: number;
+  product_number?: string | null;
 }
 
 const VEHICLE_TYPES = [
@@ -461,6 +462,9 @@ const Portal: React.FC = () => {
                             </div>
                           )}
                           <CardTitle className="text-lg hover:text-primary transition-colors">{product.name}</CardTitle>
+                          {(product as any).product_number && (
+                            <p className="text-xs text-muted-foreground mt-1">Art.-Nr.: {(product as any).product_number}</p>
+                          )}
                         </CardHeader>
                       </Link>
                       <CardContent className="flex-1">
@@ -658,6 +662,9 @@ const Portal: React.FC = () => {
                             </div>
                           )}
                           <CardTitle className="text-lg hover:text-primary transition-colors">{vehicle.brand} {vehicle.model}</CardTitle>
+                          {(vehicle as any).vehicle_number && (
+                            <p className="text-xs text-muted-foreground mt-1">Fzg.-Nr.: {(vehicle as any).vehicle_number}</p>
+                          )}
                         </CardHeader>
                       </Link>
                       <CardContent className="flex-1">

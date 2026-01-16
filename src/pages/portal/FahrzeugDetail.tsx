@@ -214,6 +214,9 @@ const FahrzeugDetail: React.FC = () => {
                 {vehicle.brand} {vehicle.model}
               </h1>
               <p className="text-muted-foreground">{vehicle.vehicle_type || 'Fahrzeug'}</p>
+              {(vehicle as any).vehicle_number && (
+                <p className="text-sm text-muted-foreground mt-1">Fzg.-Nr.: {(vehicle as any).vehicle_number}</p>
+              )}
             </div>
 
             {/* Price */}

@@ -48,6 +48,7 @@ interface ProductData {
   tax_rate: number;
   is_recommended: boolean;
   discount_percentage: number;
+  product_number: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -316,6 +317,9 @@ const ProduktDetail: React.FC = () => {
                 </Badge>
               )}
               <h1 className="text-3xl font-bold">{product.name}</h1>
+              {product.product_number && (
+                <p className="text-sm text-muted-foreground mt-1">Art.-Nr.: {product.product_number}</p>
+              )}
             </div>
 
             {/* Price */}
