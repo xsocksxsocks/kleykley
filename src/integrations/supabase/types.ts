@@ -255,6 +255,47 @@ export type Database = {
           },
         ]
       }
+      order_history: {
+        Row: {
+          changed_by: string | null
+          changed_by_name: string | null
+          created_at: string
+          id: string
+          new_status: string
+          notes: string | null
+          old_status: string | null
+          order_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          changed_by_name?: string | null
+          created_at?: string
+          id?: string
+          new_status: string
+          notes?: string | null
+          old_status?: string | null
+          order_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          changed_by_name?: string | null
+          created_at?: string
+          id?: string
+          new_status?: string
+          notes?: string | null
+          old_status?: string | null
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -513,6 +554,8 @@ export type Database = {
           address: string | null
           approval_status: Database["public"]["Enums"]["approval_status"]
           approved_at: string | null
+          blocked_at: string | null
+          blocked_reason: string | null
           city: string | null
           company_name: string | null
           country: string | null
@@ -522,6 +565,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          is_blocked: boolean | null
           phone: string | null
           postal_code: string | null
           registered_at: string
@@ -532,6 +576,8 @@ export type Database = {
           address?: string | null
           approval_status?: Database["public"]["Enums"]["approval_status"]
           approved_at?: string | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           city?: string | null
           company_name?: string | null
           country?: string | null
@@ -541,6 +587,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          is_blocked?: boolean | null
           phone?: string | null
           postal_code?: string | null
           registered_at?: string
@@ -551,6 +598,8 @@ export type Database = {
           address?: string | null
           approval_status?: Database["public"]["Enums"]["approval_status"]
           approved_at?: string | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           city?: string | null
           company_name?: string | null
           country?: string | null
@@ -560,6 +609,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          is_blocked?: boolean | null
           phone?: string | null
           postal_code?: string | null
           registered_at?: string
@@ -654,6 +704,7 @@ export type Database = {
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_approved_customer: { Args: { _user_id: string }; Returns: boolean }
+      is_blocked_customer: { Args: { _user_id: string }; Returns: boolean }
       process_auto_approvals: { Args: never; Returns: number }
       request_account_deletion: {
         Args: { user_id: string }

@@ -43,7 +43,10 @@ import {
   TrendingUp,
   Calendar,
   Euro,
+  Ban,
+  ShieldCheck,
 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { EU_COUNTRIES } from '@/lib/countries';
 
@@ -101,6 +104,8 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
   const [selectedCustomer, setSelectedCustomer] = useState<Profile | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [blockReason, setBlockReason] = useState('');
   const [customerOrders, setCustomerOrders] = useState<OrderWithItems[]>([]);
   const [customerDocuments, setCustomerDocuments] = useState<UserDocument[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -389,6 +394,89 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
     }
   };
 
+  const handleToggleBlock = async (customer: Profile) => {
+    if (customer.is_blocked) {
+      // Unblock immediately
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            is_blocked: false,
+            blocked_at: null,
+            blocked_reason: null,
+          })
+          .eq('id', customer.id);
+
+        if (error) throw error;
+
+        setCustomers((prev) =>
+          prev.map((c) =>
+            c.id === customer.id
+              ? { ...c, is_blocked: false, blocked_at: null, blocked_reason: null }
+              : c
+          )
+        );
+
+        toast({
+          title: 'Kunde entsperrt',
+          description: `${customer.full_name || customer.company_name || 'Kunde'} wurde entsperrt.`,
+        });
+      } catch (error) {
+        console.error('Error unblocking customer:', error);
+        toast({
+          title: 'Fehler',
+          description: 'Kunde konnte nicht entsperrt werden.',
+          variant: 'destructive',
+        });
+      }
+    } else {
+      // Open dialog to block with reason
+      setSelectedCustomer(customer);
+      setBlockReason('');
+      setBlockDialogOpen(true);
+    }
+  };
+
+  const handleConfirmBlock = async () => {
+    if (!selectedCustomer) return;
+
+    try {
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          is_blocked: true,
+          blocked_at: now,
+          blocked_reason: blockReason || null,
+        })
+        .eq('id', selectedCustomer.id);
+
+      if (error) throw error;
+
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === selectedCustomer.id
+            ? { ...c, is_blocked: true, blocked_at: now, blocked_reason: blockReason || null }
+            : c
+        )
+      );
+
+      toast({
+        title: 'Kunde gesperrt',
+        description: `${selectedCustomer.full_name || selectedCustomer.company_name || 'Kunde'} wurde gesperrt.`,
+      });
+
+      setBlockDialogOpen(false);
+    } catch (error) {
+      console.error('Error blocking customer:', error);
+      toast({
+        title: 'Fehler',
+        description: 'Kunde konnte nicht gesperrt werden.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('de-DE', {
       day: '2-digit',
@@ -456,9 +544,17 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
               </TableHeader>
               <TableBody>
                 {filteredCustomers.map((customer) => (
-                  <TableRow key={customer.id}>
+                  <TableRow key={customer.id} className={customer.is_blocked ? 'bg-red-500/5' : ''}>
                     <TableCell className="font-medium">
-                      {customer.full_name || '-'}
+                      <div className="flex items-center gap-2">
+                        {customer.full_name || '-'}
+                        {customer.is_blocked && (
+                          <Badge variant="destructive" className="text-xs">
+                            <Ban className="h-3 w-3 mr-1" />
+                            Gesperrt
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>{customer.company_name || '-'}</TableCell>
                     <TableCell>{customer.email}</TableCell>
@@ -490,7 +586,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-2 items-center flex-wrap">
                         <Select
                           value={customer.approval_status}
                           onValueChange={(value: 'pending' | 'approved' | 'rejected') => 
@@ -521,6 +617,19 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
                             </SelectItem>
                           </SelectContent>
                         </Select>
+                        <Button
+                          size="sm"
+                          variant={customer.is_blocked ? 'default' : 'outline'}
+                          onClick={() => handleToggleBlock(customer)}
+                          title={customer.is_blocked ? 'Entsperren' : 'Sperren'}
+                          className={customer.is_blocked ? 'bg-green-600 hover:bg-green-700' : 'text-red-600 hover:text-red-700'}
+                        >
+                          {customer.is_blocked ? (
+                            <ShieldCheck className="h-4 w-4" />
+                          ) : (
+                            <Ban className="h-4 w-4" />
+                          )}
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
@@ -807,6 +916,51 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
               </TabsContent>
             </ScrollArea>
           </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Block Customer Dialog */}
+      <Dialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Ban className="h-5 w-5" />
+              Kunde sperren
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Möchten Sie <strong>{selectedCustomer?.full_name || selectedCustomer?.company_name || 'diesen Kunden'}</strong> sperren?
+              Gesperrte Kunden können sich nicht mehr anmelden und keine Anfragen senden.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="block_reason">Grund (optional)</Label>
+              <Textarea
+                id="block_reason"
+                placeholder="Grund für die Sperrung..."
+                value={blockReason}
+                onChange={(e) => setBlockReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setBlockDialogOpen(false)}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={handleConfirmBlock}
+              >
+                <Ban className="h-4 w-4 mr-2" />
+                Sperren
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

@@ -14,8 +14,22 @@ export interface Profile {
   scheduled_approval_at: string | null;
   deletion_requested_at: string | null;
   deletion_scheduled_at: string | null;
+  is_blocked?: boolean;
+  blocked_at?: string | null;
+  blocked_reason?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface OrderHistory {
+  id: string;
+  order_id: string;
+  old_status: string | null;
+  new_status: string;
+  changed_by: string | null;
+  changed_by_name: string | null;
+  notes: string | null;
+  created_at: string;
 }
 
 export interface UserRole {
