@@ -601,27 +601,37 @@ const Portal: React.FC = () => {
                   
                   return (
                     <Card key={vehicle.id} className="flex flex-col relative">
-                      {(vehicle.is_featured || vehicle.is_reserved || hasDiscount) && (
-                        <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-                          {vehicle.is_featured && (
-                            <Badge className="bg-gold text-navy-dark flex items-center gap-1">
-                              <Star className="h-3 w-3 fill-current" />
-                              Empfohlen
-                            </Badge>
-                          )}
-                          {hasDiscount && (
-                            <Badge className="bg-red-500 text-white flex items-center gap-1">
-                              <Percent className="h-3 w-3" />
-                              -{vehicle.discount_percentage}%
-                            </Badge>
-                          )}
-                          {vehicle.is_reserved && (
-                            <Badge className="bg-amber-500 text-white">
-                              Reserviert
-                            </Badge>
-                          )}
-                        </div>
-                      )}
+                      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                        {vehicle.is_sold && (
+                          <Badge className="bg-destructive text-destructive-foreground">
+                            Verkauft
+                          </Badge>
+                        )}
+                        {vehicle.is_reserved && !vehicle.is_sold && (
+                          <Badge className="bg-amber-500 text-white">
+                            Reserviert
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                        {vehicle.is_featured && (
+                          <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-current" />
+                            Empfohlen
+                          </Badge>
+                        )}
+                        {hasDiscount && (
+                          <Badge className="bg-red-500 text-white flex items-center gap-1">
+                            <Percent className="h-3 w-3" />
+                            -{vehicle.discount_percentage}%
+                          </Badge>
+                        )}
+                        {vehicle.vat_deductible && (
+                          <Badge variant="outline" className="bg-background/80 text-xs">
+                            MwSt. ausweisbar
+                          </Badge>
+                        )}
+                      </div>
                       <Link to={`/portal/fahrzeug/${vehicle.id}`} className="block">
                         <CardHeader>
                           {vehicle.images && vehicle.images.length > 0 ? (
@@ -662,7 +672,7 @@ const Portal: React.FC = () => {
                             </p>
                           )}
                           <p className="text-xs text-muted-foreground">
-                            {vehicle.vat_deductible ? 'Netto zzgl. MwSt.' : 'Brutto'}
+                            Netto zzgl. MwSt.
                           </p>
                         </div>
                       </CardContent>
@@ -683,7 +693,7 @@ const Portal: React.FC = () => {
                           disabled={vehicle.is_sold || inCart}
                         >
                           <ShoppingCart className="h-4 w-4 mr-2" />
-                          {inCart ? 'In Anfrage' : 'Hinzufügen'}
+                          {inCart ? 'Im Angebot' : 'Hinzufügen'}
                         </Button>
                       </CardFooter>
                     </Card>
