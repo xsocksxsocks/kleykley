@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { OrderHistory } from '@/types/shop';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +45,7 @@ export const OrderHistorySection: React.FC<OrderHistorySectionProps> = ({ orderI
         if (error) throw error;
         setHistory(data as OrderHistory[]);
       } catch (error) {
-        console.error('Error fetching order history:', error);
+        logError('OrderHistorySection:fetchHistory', error);
       } finally {
         setLoading(false);
       }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -132,7 +133,7 @@ const Profil: React.FC = () => {
         description: 'Ihre Daten wurden erfolgreich gespeichert.',
       });
     } catch (error) {
-      console.error('Error updating profile:', error);
+      logError('Profil:updateProfile', error);
       toast({
         title: 'Fehler',
         description: 'Profil konnte nicht aktualisiert werden.',
@@ -194,7 +195,7 @@ const Profil: React.FC = () => {
         description: 'Ihr Passwort wurde erfolgreich aktualisiert.',
       });
     } catch (error: any) {
-      console.error('Error changing password:', error);
+      logError('Profil:changePassword', error);
       toast({
         title: 'Fehler',
         description: error.message || 'Passwort konnte nicht geändert werden.',
@@ -225,7 +226,7 @@ const Profil: React.FC = () => {
       await signOut();
       navigate('/portal/auth');
     } catch (error) {
-      console.error('Error requesting deletion:', error);
+      logError('Profil:requestDeletion', error);
       toast({
         title: 'Fehler',
         description: 'Löschung konnte nicht beantragt werden.',
@@ -252,7 +253,7 @@ const Profil: React.FC = () => {
         description: 'Ihr Konto bleibt bestehen.',
       });
     } catch (error) {
-      console.error('Error canceling deletion:', error);
+      logError('Profil:cancelDeletion', error);
       toast({
         title: 'Fehler',
         description: 'Löschung konnte nicht abgebrochen werden.',

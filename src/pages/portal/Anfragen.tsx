@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Order, OrderItem, formatCurrency } from '@/types/shop';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
@@ -65,7 +66,7 @@ const Anfragen: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching orders:', error);
+        logError('Anfragen:fetchOrders', error);
         toast({
           title: 'Fehler',
           description: 'Anfragen konnten nicht geladen werden.',

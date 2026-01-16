@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, UserRole } from '@/types/shop';
+import { logError, logDebug } from '@/lib/errorLogger';
 
 interface AuthContextType {
   user: User | null;
@@ -53,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (profileError) {
-        console.error('Error fetching profile:', profileError);
+        logError('AuthContext:fetchProfile', profileError);
         return;
       }
 
@@ -70,13 +71,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (roleError) {
-        console.error('Error fetching role:', roleError);
+        logError('AuthContext:fetchRole', roleError);
         return;
       }
 
       setIsAdmin(!!roleData);
     } catch (error) {
-      console.error('Error in fetchProfile:', error);
+      logError('AuthContext:fetchProfile', error);
     }
   };
 
@@ -205,9 +206,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             customerName: fullName || companyName || 'Kunde',
           },
         });
-        console.log('Welcome email sent');
+        logDebug('AuthContext', 'Welcome email sent');
       } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError);
+        logError('AuthContext:sendWelcomeEmail', emailError);
       }
     }
     

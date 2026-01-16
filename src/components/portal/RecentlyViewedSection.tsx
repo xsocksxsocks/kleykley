@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -75,7 +76,7 @@ export const RecentlyViewedSection: React.FC = () => {
           setVehicles(sortedVehicles);
         }
       } catch (error) {
-        console.error('Error fetching recently viewed items:', error);
+        logError('RecentlyViewedSection:fetchItems', error);
       } finally {
         setLoading(false);
       }

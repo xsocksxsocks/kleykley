@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -88,7 +89,7 @@ export const DiscountCodeManagement: React.FC = () => {
       if (error) throw error;
       setCodes((data as DiscountCode[]) || []);
     } catch (error) {
-      console.error('Error fetching discount codes:', error);
+      logError('DiscountCodeManagement:fetchCodes', error);
       toast({
         title: 'Fehler',
         description: 'Rabattcodes konnten nicht geladen werden.',
@@ -194,7 +195,7 @@ export const DiscountCodeManagement: React.FC = () => {
       setDialogOpen(false);
       resetForm();
     } catch (error: any) {
-      console.error('Error saving discount code:', error);
+      logError('DiscountCodeManagement:saveCode', error);
       toast({
         title: 'Fehler',
         description: error.message?.includes('duplicate')
@@ -219,7 +220,7 @@ export const DiscountCodeManagement: React.FC = () => {
         title: 'Rabattcode gelöscht',
       });
     } catch (error) {
-      console.error('Error deleting discount code:', error);
+      logError('DiscountCodeManagement:deleteCode', error);
       toast({
         title: 'Fehler',
         description: 'Rabattcode konnte nicht gelöscht werden.',

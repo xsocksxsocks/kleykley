@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -65,7 +66,7 @@ export const EmailLogViewer: React.FC = () => {
       if (error) throw error;
       setLogs((data as EmailLog[]) || []);
     } catch (error) {
-      console.error('Error fetching email logs:', error);
+      logError('EmailLogViewer:fetchLogs', error);
     } finally {
       setLoading(false);
     }

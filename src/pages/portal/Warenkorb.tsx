@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart, Vehicle } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { formatCurrency, calculateTax, calculateDiscountedPrice } from '@/types/shop';
 import { Button } from '@/components/ui/button';
@@ -213,7 +214,7 @@ const Warenkorb: React.FC = () => {
           : `${formatCurrency(data.discount_value)} Rabatt`,
       });
     } catch (error) {
-      console.error('Error validating discount code:', error);
+      logError('Warenkorb:validateDiscountCode', error);
       setDiscountError('Fehler bei der Validierung');
     } finally {
       setIsValidatingCode(false);
@@ -398,7 +399,7 @@ const Warenkorb: React.FC = () => {
       });
       navigate('/portal/anfragen');
     } catch (error) {
-      console.error('Error creating request:', error);
+      logError('Warenkorb:createRequest', error);
       toast({
         title: 'Fehler',
         description: 'Die Anfrage konnte nicht gesendet werden.',

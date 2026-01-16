@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -69,7 +70,7 @@ export const OrderNotesSection: React.FC<OrderNotesSectionProps> = ({ orderId })
       if (error) throw error;
       setNotes(data || []);
     } catch (error) {
-      console.error('Error fetching notes:', error);
+      logError('OrderNotesSection:fetchNotes', error);
     } finally {
       setLoading(false);
     }
@@ -103,7 +104,7 @@ export const OrderNotesSection: React.FC<OrderNotesSectionProps> = ({ orderId })
         description: 'Die interne Notiz wurde erfolgreich gespeichert.',
       });
     } catch (error) {
-      console.error('Error adding note:', error);
+      logError('OrderNotesSection:addNote', error);
       toast({
         title: 'Fehler',
         description: 'Notiz konnte nicht gespeichert werden.',
@@ -140,7 +141,7 @@ export const OrderNotesSection: React.FC<OrderNotesSectionProps> = ({ orderId })
         description: 'Die Notiz wurde erfolgreich bearbeitet.',
       });
     } catch (error) {
-      console.error('Error updating note:', error);
+      logError('OrderNotesSection:updateNote', error);
       toast({
         title: 'Fehler',
         description: 'Notiz konnte nicht aktualisiert werden.',
@@ -167,7 +168,7 @@ export const OrderNotesSection: React.FC<OrderNotesSectionProps> = ({ orderId })
         description: 'Die Notiz wurde erfolgreich entfernt.',
       });
     } catch (error) {
-      console.error('Error deleting note:', error);
+      logError('OrderNotesSection:deleteNote', error);
       toast({
         title: 'Fehler',
         description: 'Notiz konnte nicht gelöscht werden.',

@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -90,7 +91,7 @@ const Favoriten = () => {
           setVehicles([]);
         }
       } catch (error) {
-        console.error('Error fetching favorite items:', error);
+        logError('Favoriten:fetchItems', error);
       } finally {
         setLoadingData(false);
       }

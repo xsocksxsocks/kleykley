@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/errorLogger';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -36,7 +37,7 @@ export function useFavorites() {
         item_type: item.item_type as 'product' | 'vehicle',
       })));
     } catch (error) {
-      console.error('Error fetching favorites:', error);
+      logError('useFavorites:fetchFavorites', error);
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export function useFavorites() {
       if (error.code === '23505') {
         toast.info('Bereits in Favoriten');
       } else {
-        console.error('Error adding favorite:', error);
+        logError('useFavorites:addFavorite', error);
         toast.error('Fehler beim Hinzufügen');
       }
       return false;
@@ -103,7 +104,7 @@ export function useFavorites() {
       toast.success('Aus Favoriten entfernt');
       return true;
     } catch (error) {
-      console.error('Error removing favorite:', error);
+      logError('useFavorites:removeFavorite', error);
       toast.error('Fehler beim Entfernen');
       return false;
     }
