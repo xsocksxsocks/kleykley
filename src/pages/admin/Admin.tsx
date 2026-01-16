@@ -136,6 +136,7 @@ const Admin: React.FC = () => {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState('customers');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   
   // Product form state
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -1025,16 +1026,35 @@ const Admin: React.FC = () => {
           <TabsContent value="orders">
             <Card>
               <CardHeader>
-                <CardTitle>Angebotsanfragen</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Angebotsanfragen</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Filter:</span>
+                    <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
+                      <SelectTrigger className="w-44">
+                        <SelectValue placeholder="Alle Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Alle Status</SelectItem>
+                        <SelectItem value="pending">Neu</SelectItem>
+                        <SelectItem value="confirmed">Angebot erstellt</SelectItem>
+                        <SelectItem value="processing">In Bearbeitung</SelectItem>
+                        <SelectItem value="shipped">Versendet</SelectItem>
+                        <SelectItem value="delivered">Abgeschlossen</SelectItem>
+                        <SelectItem value="cancelled">Storniert</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 {loadingData ? (
                   <div className="flex justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                   </div>
-                ) : orders.length === 0 ? (
+                ) : orders.filter(o => orderStatusFilter === 'all' || o.status === orderStatusFilter).length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    Keine Anfragen vorhanden.
+                    {orderStatusFilter === 'all' ? 'Keine Anfragen vorhanden.' : `Keine Anfragen mit Status "${statusLabels[orderStatusFilter as Order['status']]}".`}
                   </p>
                 ) : (
                   <Table>
@@ -1049,7 +1069,9 @@ const Admin: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {orders.map((order) => (
+                      {orders
+                        .filter(o => orderStatusFilter === 'all' || o.status === orderStatusFilter)
+                        .map((order) => (
                         <TableRow key={order.id}>
                           <TableCell className="font-medium">
                             {order.order_number}
