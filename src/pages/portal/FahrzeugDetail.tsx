@@ -120,9 +120,9 @@ const FahrzeugDetail: React.FC = () => {
     ? vehicle.images[selectedImageIndex] 
     : null;
 
-  const hasDiscount = vehicle.discount_percentage && vehicle.discount_percentage > 0;
+  const hasDiscount = (vehicle.discount_percentage ?? 0) > 0;
   const discountedPrice = hasDiscount 
-    ? calculateDiscountedPrice(vehicle.price, vehicle.discount_percentage!) 
+    ? calculateDiscountedPrice(vehicle.price, vehicle.discount_percentage!)
     : vehicle.price;
 
   return (
