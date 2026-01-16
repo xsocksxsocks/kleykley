@@ -55,6 +55,7 @@ import {
   Download,
   Upload,
   ChevronDown,
+  Loader2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -174,6 +175,11 @@ const Admin: React.FC = () => {
   const [categories, setCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  
+  // JSON Import Preview state
+  const [jsonImportPreviewOpen, setJsonImportPreviewOpen] = useState(false);
+  const [jsonImportData, setJsonImportData] = useState<any[]>([]);
+  const [jsonImporting, setJsonImporting] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -708,23 +714,8 @@ const Admin: React.FC = () => {
                               toast({ title: 'Fehler', description: 'Ungültiges JSON-Format.', variant: 'destructive' });
                               return;
                             }
-                            let successCount = 0;
-                            for (const product of importedProducts) {
-                              const { error } = await supabase.from('products').insert({
-                                name: product.name,
-                                description: product.description || null,
-                                price: product.price || 0,
-                                category_id: product.category_id || null,
-                                stock_quantity: product.stock_quantity || 0,
-                                is_active: product.is_active ?? true,
-                                is_recommended: product.is_recommended ?? false,
-                                discount_percentage: product.discount_percentage || 0,
-                              });
-                              if (!error) successCount++;
-                            }
-                            toast({ title: 'Import erfolgreich', description: `${successCount} Produkte importiert.` });
-                            const { data: productsData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-                            if (productsData) setProducts(productsData as Product[]);
+                            setJsonImportData(importedProducts);
+                            setJsonImportPreviewOpen(true);
                           } catch (err) {
                             toast({ title: 'Fehler', description: 'JSON konnte nicht gelesen werden.', variant: 'destructive' });
                           }
@@ -976,6 +967,100 @@ const Admin: React.FC = () => {
                 }}
               />
             </div>
+
+            {/* JSON Import Preview Dialog */}
+            <Dialog open={jsonImportPreviewOpen} onOpenChange={setJsonImportPreviewOpen}>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+                <DialogHeader>
+                  <DialogTitle>JSON Import Vorschau</DialogTitle>
+                </DialogHeader>
+                <div className="text-sm text-muted-foreground mb-4">
+                  {jsonImportData.length} Produkte werden importiert
+                </div>
+                <ScrollArea className="flex-1 max-h-[400px] border rounded-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Beschreibung</TableHead>
+                        <TableHead className="text-right">Preis</TableHead>
+                        <TableHead className="text-right">Menge</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {jsonImportData.map((product, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{product.name || '-'}</TableCell>
+                          <TableCell className="max-w-[200px] truncate text-muted-foreground">
+                            {product.description || '-'}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {product.price ? `${product.price.toLocaleString('de-DE')} €` : '-'}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {product.stock_quantity ?? 0}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={product.is_active !== false ? 'default' : 'secondary'}>
+                              {product.is_active !== false ? 'Aktiv' : 'Inaktiv'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setJsonImportPreviewOpen(false)}>
+                    Abbrechen
+                  </Button>
+                  <Button
+                    disabled={jsonImporting}
+                    onClick={async () => {
+                      setJsonImporting(true);
+                      try {
+                        let successCount = 0;
+                        for (const product of jsonImportData) {
+                          const { error } = await supabase.from('products').insert({
+                            name: product.name,
+                            description: product.description || null,
+                            price: product.price || 0,
+                            category_id: product.category_id || null,
+                            stock_quantity: product.stock_quantity || 0,
+                            is_active: product.is_active ?? true,
+                            is_recommended: product.is_recommended ?? false,
+                            discount_percentage: product.discount_percentage || 0,
+                          });
+                          if (!error) successCount++;
+                        }
+                        toast({ title: 'Import erfolgreich', description: `${successCount} Produkte importiert.` });
+                        const { data: productsData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+                        if (productsData) setProducts(productsData as Product[]);
+                        setJsonImportPreviewOpen(false);
+                        setJsonImportData([]);
+                      } catch (err) {
+                        toast({ title: 'Fehler', description: 'Import fehlgeschlagen.', variant: 'destructive' });
+                      } finally {
+                        setJsonImporting(false);
+                      }
+                    }}
+                  >
+                    {jsonImporting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Importiere...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        {jsonImportData.length} Produkte importieren
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           <TabsContent value="categories">

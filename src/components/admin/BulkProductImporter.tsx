@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
 import {
   Table,
   TableBody,
@@ -41,6 +42,7 @@ interface ExtractedProduct {
   description: string | null;
   price: number | null;
   category: string | null;
+  stock_quantity: number | null;
   selected: boolean;
   editing: boolean;
 }
@@ -62,7 +64,10 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
   const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [extracting, setExtracting] = useState(false);
+  const [extractionProgress, setExtractionProgress] = useState(0);
+  const [extractionStatus, setExtractionStatus] = useState('');
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
   const [products, setProducts] = useState<ExtractedProduct[]>([]);
   const [editingProduct, setEditingProduct] = useState<ExtractedProduct | null>(null);
 
@@ -93,12 +98,22 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
     if (!file) return;
 
     setExtracting(true);
+    setExtractionProgress(0);
+    setExtractionStatus('Konvertiere PDF...');
+    
     try {
+      setExtractionProgress(10);
       const base64 = await convertToBase64(file);
+      
+      setExtractionProgress(20);
+      setExtractionStatus('Sende an KI zur Analyse...');
 
       const { data, error } = await supabase.functions.invoke('extract-products-from-pdf', {
         body: { pdfBase64: base64 },
       });
+
+      setExtractionProgress(80);
+      setExtractionStatus('Verarbeite Ergebnisse...');
 
       if (error) throw error;
 
@@ -112,10 +127,13 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
         description: p.description || null,
         price: p.price || null,
         category: p.category || null,
+        stock_quantity: p.stock_quantity || null,
         selected: true,
         editing: false,
       }));
 
+      setExtractionProgress(100);
+      setExtractionStatus('Fertig!');
       setProducts(extractedProducts);
 
       toast({
@@ -131,6 +149,8 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
       });
     } finally {
       setExtracting(false);
+      setExtractionProgress(0);
+      setExtractionStatus('');
     }
   };
 
@@ -176,11 +196,18 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
     }
 
     setImporting(true);
+    setImportProgress(0);
+    
     try {
       let successCount = 0;
       let errorCount = 0;
 
-      for (const product of selectedProducts) {
+      for (let i = 0; i < selectedProducts.length; i++) {
+        const product = selectedProducts[i];
+        
+        // Update progress
+        setImportProgress(Math.round(((i + 1) / selectedProducts.length) * 100));
+        
         // Find category ID if category name matches
         const categoryMatch = categories.find(
           (c) => c.name.toLowerCase() === product.category?.toLowerCase()
@@ -191,7 +218,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
           description: product.description,
           price: product.price || 0,
           category_id: categoryMatch?.id || null,
-          stock_quantity: 0,
+          stock_quantity: product.stock_quantity || 0,
           is_active: true,
         };
 
@@ -225,6 +252,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
       });
     } finally {
       setImporting(false);
+      setImportProgress(0);
     }
   };
 
@@ -280,6 +308,17 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
               {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
             </div>
           )}
+
+          {/* Extraction Progress */}
+          {extracting && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{extractionStatus}</span>
+                <span className="font-medium">{extractionProgress}%</span>
+              </div>
+              <Progress value={extractionProgress} className="h-2" />
+            </div>
+          )}
         </div>
 
         {/* Extracted Products */}
@@ -325,6 +364,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
                     <TableHead>Name</TableHead>
                     <TableHead>Beschreibung</TableHead>
                     <TableHead>Kategorie</TableHead>
+                    <TableHead className="text-right">Menge</TableHead>
                     <TableHead className="text-right">Preis</TableHead>
                     <TableHead className="w-[100px]">Aktionen</TableHead>
                   </TableRow>
@@ -387,6 +427,19 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
                           <TableCell>
                             <Input
                               type="number"
+                              value={editingProduct.stock_quantity || ''}
+                              onChange={(e) =>
+                                setEditingProduct({
+                                  ...editingProduct,
+                                  stock_quantity: e.target.value ? parseInt(e.target.value) : null,
+                                })
+                              }
+                              className="h-8 w-20 text-right"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
                               step="0.01"
                               value={editingProduct.price || ''}
                               onChange={(e) =>
@@ -433,6 +486,9 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
                             )}
                           </TableCell>
                           <TableCell className="text-right">
+                            {product.stock_quantity !== null ? product.stock_quantity : '-'}
+                          </TableCell>
+                          <TableCell className="text-right">
                             {product.price !== null ? formatCurrency(product.price) : '-'}
                           </TableCell>
                           <TableCell>
@@ -463,29 +519,33 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
               </Table>
             </ScrollArea>
 
-            {/* Import Button */}
-            <div className="flex items-center justify-between pt-4 border-t">
-              <div className="text-sm text-muted-foreground">
-                {selectedCount} von {products.length} Produkten werden importiert
+            {/* Import Progress */}
+            {importing && (
+              <div className="space-y-2 pt-4 border-t">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Importiere Produkte...</span>
+                  <span className="font-medium">{importProgress}%</span>
+                </div>
+                <Progress value={importProgress} className="h-2" />
               </div>
-              <Button
-                onClick={handleImport}
-                disabled={selectedCount === 0 || importing}
-                className="min-w-[180px]"
-              >
-                {importing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Importiere...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    {selectedCount} Produkte importieren
-                  </>
-                )}
-              </Button>
-            </div>
+            )}
+
+            {/* Import Button */}
+            {!importing && (
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  {selectedCount} von {products.length} Produkten werden importiert
+                </div>
+                <Button
+                  onClick={handleImport}
+                  disabled={selectedCount === 0 || importing}
+                  className="min-w-[180px]"
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  {selectedCount} Produkte importieren
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
@@ -495,7 +555,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
             <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Lade eine PDF-Datei hoch und klicke auf "Extrahieren"</p>
             <p className="text-sm mt-2">
-              Die KI erkennt automatisch Produkte, Preise und Beschreibungen.
+              Die KI erkennt automatisch Produkte, Preise, Mengen und Beschreibungen.
             </p>
           </div>
         )}

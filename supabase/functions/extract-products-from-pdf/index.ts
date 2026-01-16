@@ -10,6 +10,7 @@ interface ExtractedProduct {
   description: string | null;
   price: number | null;
   category: string | null;
+  stock_quantity: number | null;
 }
 
 serve(async (req) => {
@@ -47,10 +48,12 @@ Für jedes Produkt extrahiere:
 - description: Eine Beschreibung des Produkts (kann null sein)
 - price: Der Preis als Zahl ohne Währungssymbol (z.B. 49.99). Wenn kein Preis angegeben ist, setze null
 - category: Eine passende Kategorie für das Produkt basierend auf dem Kontext (kann null sein)
+- stock_quantity: Die verfügbare Menge/Stückzahl aus der Spalte "Menge", "Anzahl", "Stück", "Bestand" oder ähnlich. Wenn keine Menge angegeben ist, setze null
 
 Achte besonders auf:
 - Artikelnummern und Produktbezeichnungen
 - Preisangaben (brutto/netto, Stückpreis, Staffelpreise - nimm den Einzelpreis)
+- Mengenangaben und Verfügbarkeit
 - Kategorien oder Abschnittsüberschriften
 - Technische Spezifikationen als Teil der Beschreibung
 
@@ -101,7 +104,8 @@ Gib die Produkte als JSON-Array zurück.`;
                         name: { type: 'string', description: 'Produktname' },
                         description: { type: 'string', nullable: true, description: 'Produktbeschreibung' },
                         price: { type: 'number', nullable: true, description: 'Preis als Zahl' },
-                        category: { type: 'string', nullable: true, description: 'Produktkategorie' }
+                        category: { type: 'string', nullable: true, description: 'Produktkategorie' },
+                        stock_quantity: { type: 'number', nullable: true, description: 'Verfügbare Menge/Stückzahl' }
                       },
                       required: ['name']
                     }
