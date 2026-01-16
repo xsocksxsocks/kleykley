@@ -81,6 +81,49 @@ interface OrderWithItems extends Order {
   profiles?: Profile;
 }
 
+// Component to display product thumbnail from product_images
+const ProductThumbnail: React.FC<{ productId: string; fallbackUrl?: string | null }> = ({ productId, fallbackUrl }) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMainImage = async () => {
+      const { data, error } = await supabase
+        .from('product_images')
+        .select('image_url')
+        .eq('product_id', productId)
+        .order('sort_order', { ascending: true })
+        .limit(1)
+        .single();
+      
+      if (!error && data) {
+        setImageUrl(data.image_url);
+      } else if (fallbackUrl) {
+        setImageUrl(fallbackUrl);
+      }
+      setLoading(false);
+    };
+    
+    fetchMainImage();
+  }, [productId, fallbackUrl]);
+
+  if (loading) {
+    return <div className="w-10 h-10 bg-muted rounded animate-pulse" />;
+  }
+
+  if (!imageUrl) {
+    return (
+      <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
+        <Package className="h-5 w-5 text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <img src={imageUrl} alt="Produkt" className="w-10 h-10 object-cover rounded" />
+  );
+};
+
 const Admin: React.FC = () => {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
@@ -105,8 +148,6 @@ const Admin: React.FC = () => {
     is_active: true,
   });
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
-  const [imageDialogOpen, setImageDialogOpen] = useState(false);
-  const [selectedProductForImages, setSelectedProductForImages] = useState<Product | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -353,9 +394,10 @@ const Admin: React.FC = () => {
       stock_quantity: '',
       is_active: true,
     });
+    setProductImages([]);
   };
 
-  const openEditProduct = (product: Product) => {
+  const openEditProduct = async (product: Product) => {
     setEditingProduct(product);
     setProductForm({
       name: product.name,
@@ -366,11 +408,6 @@ const Admin: React.FC = () => {
       stock_quantity: product.stock_quantity.toString(),
       is_active: product.is_active,
     });
-    setProductDialogOpen(true);
-  };
-
-  const openImageDialog = async (product: Product) => {
-    setSelectedProductForImages(product);
     
     // Fetch images for this product
     const { data, error } = await supabase
@@ -385,7 +422,12 @@ const Admin: React.FC = () => {
       setProductImages([]);
     }
     
-    setImageDialogOpen(true);
+    setProductDialogOpen(true);
+  };
+
+  const openNewProduct = () => {
+    resetProductForm();
+    setProductDialogOpen(true);
   };
 
   const triggerAutoApproval = async () => {
@@ -584,12 +626,18 @@ const Admin: React.FC = () => {
                   if (!open) resetProductForm();
                 }}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button onClick={() => resetProductForm()}>
                       <Plus className="h-4 w-4 mr-2" />
                       Produkt hinzufügen
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingProduct ? 'Produkt bearbeiten' : 'Neues Produkt'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <ScrollArea className="max-h-[70vh] pr-4">
                     <DialogHeader>
                       <DialogTitle>
                         {editingProduct ? 'Produkt bearbeiten' : 'Neues Produkt'}
@@ -651,16 +699,6 @@ const Admin: React.FC = () => {
                           }
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="image">Bild-URL</Label>
-                        <Input
-                          id="image"
-                          value={productForm.image_url}
-                          onChange={(e) =>
-                            setProductForm({ ...productForm, image_url: e.target.value })
-                          }
-                        />
-                      </div>
                       <div className="flex items-center justify-between">
                         <Label htmlFor="active">Aktiv</Label>
                         <Switch
@@ -671,6 +709,18 @@ const Admin: React.FC = () => {
                           }
                         />
                       </div>
+                      
+                      {/* Image Upload Section */}
+                      {editingProduct && (
+                        <div className="border-t pt-4">
+                          <ProductImageUpload
+                            productId={editingProduct.id}
+                            images={productImages}
+                            onImagesChange={setProductImages}
+                          />
+                        </div>
+                      )}
+                      
                       <Button
                         className="w-full"
                         onClick={handleSaveProduct}
@@ -679,6 +729,7 @@ const Admin: React.FC = () => {
                         {editingProduct ? 'Speichern' : 'Erstellen'}
                       </Button>
                     </div>
+                    </ScrollArea>
                   </DialogContent>
                 </Dialog>
               </CardHeader>
@@ -695,6 +746,7 @@ const Admin: React.FC = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-16">Bild</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Kategorie</TableHead>
                         <TableHead>Preis</TableHead>
@@ -706,6 +758,9 @@ const Admin: React.FC = () => {
                     <TableBody>
                       {products.map((product) => (
                         <TableRow key={product.id}>
+                          <TableCell>
+                            <ProductThumbnail productId={product.id} fallbackUrl={product.image_url} />
+                          </TableCell>
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>{product.category || '-'}</TableCell>
                           <TableCell>
@@ -722,14 +777,6 @@ const Admin: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openImageDialog(product)}
-                                title="Bilder verwalten"
-                              >
-                                <Image className="h-4 w-4" />
-                              </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -845,26 +892,6 @@ const Admin: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Image Management Dialog */}
-        <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>
-                Bilder verwalten: {selectedProductForImages?.name}
-              </DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="max-h-[60vh]">
-              {selectedProductForImages && (
-                <ProductImageUpload
-                  productId={selectedProductForImages.id}
-                  images={productImages}
-                  onImagesChange={setProductImages}
-                />
-              )}
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
       </main>
     </div>
   );
