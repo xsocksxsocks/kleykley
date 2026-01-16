@@ -73,6 +73,7 @@ import { CustomerManagement } from '@/components/admin/CustomerManagement';
 import { DiscountCodeManagement } from '@/components/admin/DiscountCodeManagement';
 import { BulkProductImporter } from '@/components/admin/BulkProductImporter';
 import { EmailLogViewer } from '@/components/admin/EmailLogViewer';
+import { CategoryManagement } from '@/components/admin/CategoryManagement';
 
 interface ProductImage {
   id: string;
@@ -174,7 +175,7 @@ const Admin: React.FC = () => {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   
   // Categories state
-  const [categories, setCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string; sort_order: number; parent_id: string | null }[]>([]);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   
@@ -731,11 +732,15 @@ const Admin: React.FC = () => {
                         'Einkaufspreis',
                         'Verkaufspreis',
                         'Kategorie',
+                        'Ober-Kategorie',
                         'Beschreibung'
                       ];
                       
                       const rows = products.map(p => {
                         const category = categories.find(c => c.id === (p as any).category_id);
+                        const parentCategory = category?.parent_id 
+                          ? categories.find(c => c.id === category.parent_id) 
+                          : null;
                         return [
                           p.product_number || '',
                           p.name,
@@ -746,6 +751,7 @@ const Admin: React.FC = () => {
                           '', // Einkaufspreis - not stored
                           p.price.toFixed(2).replace('.', ','),
                           category?.name || '',
+                          parentCategory?.name || '',
                           (p.description || '').replace(/"/g, '""') // Escape quotes
                         ];
                       });
@@ -793,16 +799,25 @@ const Admin: React.FC = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={() => {
-                        const exportData = products.map(p => ({
-                          name: p.name,
-                          description: p.description,
-                          price: p.price,
-                          category_id: (p as any).category_id,
-                          stock_quantity: p.stock_quantity,
-                          is_active: p.is_active,
-                          is_recommended: (p as any).is_recommended,
-                          discount_percentage: (p as any).discount_percentage,
-                        }));
+                        // Enhanced export with category names
+                        const exportData = products.map(p => {
+                          const category = categories.find(c => c.id === (p as any).category_id);
+                          const parentCategory = category?.parent_id 
+                            ? categories.find(c => c.id === category.parent_id) 
+                            : null;
+                          return {
+                            name: p.name,
+                            description: p.description,
+                            price: p.price,
+                            category_name: category?.name || null,
+                            parent_category_name: parentCategory?.name || null,
+                            stock_quantity: p.stock_quantity,
+                            is_active: p.is_active,
+                            is_recommended: (p as any).is_recommended,
+                            discount_percentage: (p as any).discount_percentage,
+                            tax_rate: p.tax_rate,
+                          };
+                        });
                         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
@@ -1137,21 +1152,74 @@ const Admin: React.FC = () => {
                       try {
                         let successCount = 0;
                         for (const product of jsonImportData) {
+                          // Find or create category based on names
+                          let categoryId = product.category_id || null;
+                          
+                          // If we have category names instead of IDs, resolve them
+                          if (!categoryId && product.category_name) {
+                            // First, find or create parent category if specified
+                            let parentId: string | null = null;
+                            if (product.parent_category_name) {
+                              const existingParent = categories.find(
+                                c => c.name.toLowerCase() === product.parent_category_name.toLowerCase() && c.parent_id === null
+                              );
+                              if (existingParent) {
+                                parentId = existingParent.id;
+                              } else {
+                                // Create parent category
+                                const { data: newParent } = await supabase
+                                  .from('categories')
+                                  .insert({ name: product.parent_category_name, parent_id: null, sort_order: 99 })
+                                  .select()
+                                  .single();
+                                if (newParent) {
+                                  parentId = newParent.id;
+                                  // Add to local categories
+                                  categories.push({ ...newParent, parent_id: null });
+                                }
+                              }
+                            }
+                            
+                            // Find or create the actual category
+                            const existingCategory = categories.find(
+                              c => c.name.toLowerCase() === product.category_name.toLowerCase() && 
+                                   (parentId ? c.parent_id === parentId : true)
+                            );
+                            if (existingCategory) {
+                              categoryId = existingCategory.id;
+                            } else {
+                              // Create category under parent
+                              const { data: newCategory } = await supabase
+                                .from('categories')
+                                .insert({ name: product.category_name, parent_id: parentId, sort_order: 0 })
+                                .select()
+                                .single();
+                              if (newCategory) {
+                                categoryId = newCategory.id;
+                                categories.push(newCategory);
+                              }
+                            }
+                          }
+                          
                           const { error } = await supabase.from('products').insert({
                             name: product.name,
                             description: product.description || null,
                             price: product.price || 0,
-                            category_id: product.category_id || null,
+                            category_id: categoryId,
                             stock_quantity: product.stock_quantity || 0,
                             is_active: product.is_active ?? true,
                             is_recommended: product.is_recommended ?? false,
                             discount_percentage: product.discount_percentage || 0,
+                            tax_rate: product.tax_rate || 19,
                           });
                           if (!error) successCount++;
                         }
                         toast({ title: 'Import erfolgreich', description: `${successCount} Produkte importiert.` });
+                        // Refresh products and categories
                         const { data: productsData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
                         if (productsData) setProducts(productsData as Product[]);
+                        const { data: categoriesData } = await supabase.from('categories').select('*').order('sort_order', { ascending: true });
+                        if (categoriesData) setCategories(categoriesData);
                         setJsonImportPreviewOpen(false);
                         setJsonImportData([]);
                       } catch (err) {
@@ -1179,83 +1247,16 @@ const Admin: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="categories">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Kategorienverwaltung</CardTitle>
-                <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Kategorie hinzufügen
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Neue Kategorie</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="categoryName">Name</Label>
-                        <Input
-                          id="categoryName"
-                          value={newCategoryName}
-                          onChange={(e) => setNewCategoryName(e.target.value)}
-                          placeholder="z.B. Elektronik"
-                        />
-                      </div>
-                      <Button
-                        className="w-full"
-                        onClick={handleAddCategory}
-                        disabled={!newCategoryName.trim()}
-                      >
-                        Erstellen
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardHeader>
-              <CardContent>
-                {categories.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    Keine Kategorien vorhanden.
-                  </p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Produkte</TableHead>
-                        <TableHead>Aktionen</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {categories.map((category) => {
-                        const productCount = products.filter(
-                          (p) => (p as any).category_id === category.id
-                        ).length;
-                        return (
-                          <TableRow key={category.id}>
-                            <TableCell className="font-medium">{category.name}</TableCell>
-                            <TableCell>{productCount} Produkte</TableCell>
-                            <TableCell>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteCategory(category.id)}
-                                disabled={productCount > 0}
-                                title={productCount > 0 ? 'Kategorie enthält Produkte' : 'Löschen'}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+            <CategoryManagement 
+              categories={categories}
+              onCategoriesChange={async () => {
+                const { data } = await supabase
+                  .from('categories')
+                  .select('*')
+                  .order('sort_order', { ascending: true });
+                if (data) setCategories(data);
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="vehicles">
@@ -1384,6 +1385,7 @@ const Admin: React.FC = () => {
           <TabsContent value="emails">
             <EmailLogViewer />
           </TabsContent>
+
         </Tabs>
       </main>
     </div>
