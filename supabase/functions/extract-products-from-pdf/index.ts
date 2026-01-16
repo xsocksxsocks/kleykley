@@ -41,13 +41,15 @@ serve(async (req) => {
 
 const systemPrompt = `Du bist ein Experte für die Extraktion von Produktdaten aus PDF-Dokumenten wie Katalogen und Preislisten.
 
-Deine Aufgabe ist es, alle Produkte aus dem bereitgestellten PDF zu extrahieren und strukturiert zurückzugeben.
+WICHTIG: Du MUSST ALLE Produkte aus dem GESAMTEN Dokument extrahieren - KEIN EINZIGES Produkt darf fehlen!
+Gehe Seite für Seite, Zeile für Zeile durch das gesamte Dokument und erfasse JEDES einzelne Produkt.
+Es können 100+ Produkte sein - extrahiere sie ALLE vollständig ohne Ausnahme.
 
 Für jedes Produkt extrahiere:
-- name: Der vollständige Produktname
+- name: Der vollständige Produktname (inkl. Artikelnummer falls vorhanden)
 - description: Eine Beschreibung des Produkts (kann null sein)
 - price: Der Preis als Zahl ohne Währungssymbol (z.B. 49.99). Wenn kein Preis angegeben ist, setze null
-- category: Eine passende Kategorie für das Produkt basierend auf dem Kontext (kann null sein)
+- category: Eine passende Kategorie für das Produkt basierend auf dem Kontext/Abschnittsüberschriften (kann null sein)
 - stock_quantity: Die verfügbare Menge/Stückzahl aus der Spalte "Menge", "Anzahl", "Stück", "Bestand" oder ähnlich. Wenn keine Menge angegeben ist, setze null
 
 Achte besonders auf:
@@ -56,8 +58,9 @@ Achte besonders auf:
 - Mengenangaben und Verfügbarkeit
 - Kategorien oder Abschnittsüberschriften
 - Technische Spezifikationen als Teil der Beschreibung
+- Tabellen mit mehreren Produkten pro Zeile
 
-Gib die Produkte als JSON-Array zurück.`;
+KRITISCH: Überprüfe am Ende, dass du wirklich ALLE Produkte aus ALLEN Seiten erfasst hast. Überspringe NICHTS!`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
