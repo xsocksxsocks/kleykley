@@ -8,7 +8,8 @@ import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Clock, Package, Star } from 'lucide-react';
+import { ShoppingCart, Clock, Package, Star, Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
 interface Category {
@@ -31,6 +32,7 @@ const Portal: React.FC = () => {
   const [products, setProducts] = useState<ExtendedProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loadingProducts, setLoadingProducts] = useState(true);
 
   useEffect(() => {
@@ -107,10 +109,24 @@ const Portal: React.FC = () => {
     return cat?.name || null;
   };
 
-  // Filter products by category
-  const filteredProducts = selectedCategory
-    ? products.filter((p) => p.category_id === selectedCategory)
-    : products;
+  // Filter products by category and search
+  const filteredProducts = products.filter((p) => {
+    // Category filter
+    if (selectedCategory && p.category_id !== selectedCategory) {
+      return false;
+    }
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesName = p.name.toLowerCase().includes(query);
+      const matchesDescription = p.description?.toLowerCase().includes(query);
+      const matchesCategory = getCategoryName(p.category_id)?.toLowerCase().includes(query);
+      if (!matchesName && !matchesDescription && !matchesCategory) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   // Sort: recommended first
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -181,28 +197,51 @@ const Portal: React.FC = () => {
           </p>
         </div>
 
-        {/* Category Filter */}
-        {categories.length > 0 && (
-          <div className="mb-6 flex flex-wrap gap-2">
-            <Button
-              variant={selectedCategory === null ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedCategory(null)}
-            >
-              Alle
-            </Button>
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
+        {/* Search and Category Filter */}
+        <div className="mb-6 space-y-4">
+          {/* Search Input */}
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Produkte suchen..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                {category.name}
-              </Button>
-            ))}
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
-        )}
+
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={selectedCategory === null ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory(null)}
+              >
+                Alle
+              </Button>
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category.id)}
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {loadingProducts ? (
           <div className="flex justify-center py-16">
@@ -213,20 +252,29 @@ const Portal: React.FC = () => {
             <CardContent>
               <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-2">
-                {selectedCategory ? 'Keine Produkte in dieser Kategorie' : 'Keine Produkte verfügbar'}
+                {searchQuery 
+                  ? 'Keine Treffer gefunden' 
+                  : selectedCategory 
+                    ? 'Keine Produkte in dieser Kategorie' 
+                    : 'Keine Produkte verfügbar'}
               </h3>
               <p className="text-muted-foreground">
-                {selectedCategory 
-                  ? 'Wählen Sie eine andere Kategorie oder zeigen Sie alle Produkte an.'
-                  : 'Aktuell sind keine Produkte im Portal verfügbar.'}
+                {searchQuery 
+                  ? `Keine Produkte gefunden für "${searchQuery}".`
+                  : selectedCategory 
+                    ? 'Wählen Sie eine andere Kategorie oder zeigen Sie alle Produkte an.'
+                    : 'Aktuell sind keine Produkte im Portal verfügbar.'}
               </p>
-              {selectedCategory && (
+              {(selectedCategory || searchQuery) && (
                 <Button 
                   variant="outline" 
                   className="mt-4"
-                  onClick={() => setSelectedCategory(null)}
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSearchQuery('');
+                  }}
                 >
-                  Alle Produkte anzeigen
+                  Filter zurücksetzen
                 </Button>
               )}
             </CardContent>
