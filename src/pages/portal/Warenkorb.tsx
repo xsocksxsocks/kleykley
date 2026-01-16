@@ -19,9 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Minus, Plus, Trash2, FileText, Car } from 'lucide-react';
+import { Minus, Plus, Trash2, FileText, Car, Tag, X, Check, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { EU_COUNTRIES } from '@/lib/countries';
+
+interface DiscountCode {
+  id: string;
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  min_order_value: number;
+}
 
 const Warenkorb: React.FC = () => {
   const { user, profile, isApproved, isAdmin, loading } = useAuth();
@@ -58,6 +66,12 @@ const Warenkorb: React.FC = () => {
     country: 'Deutschland',
   });
   const [notes, setNotes] = useState('');
+  
+  // Discount code state
+  const [discountCodeInput, setDiscountCodeInput] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
+  const [isValidatingCode, setIsValidatingCode] = useState(false);
+  const [discountError, setDiscountError] = useState('');
 
   useEffect(() => {
     if (profile) {
@@ -68,7 +82,7 @@ const Warenkorb: React.FC = () => {
         address: profile.address || '',
         city: profile.city || '',
         postalCode: profile.postal_code || '',
-        country: (profile as any)?.country || 'Deutschland',
+        country: profile.country || 'Deutschland',
       });
     }
   }, [profile]);
@@ -103,15 +117,108 @@ const Warenkorb: React.FC = () => {
       taxTotal += itemTax;
     });
 
+    // Apply discount code
+    let codeDiscount = 0;
+    if (appliedDiscount) {
+      if (appliedDiscount.discount_type === 'percentage') {
+        codeDiscount = netTotal * (appliedDiscount.discount_value / 100);
+      } else {
+        codeDiscount = Math.min(appliedDiscount.discount_value, netTotal);
+      }
+    }
+
+    const finalNetTotal = netTotal - codeDiscount;
+    const finalTaxTotal = finalNetTotal * 0.19; // Recalculate tax on discounted total
+
     return {
-      netTotal,
-      taxTotal,
+      netTotal: finalNetTotal,
+      taxTotal: finalTaxTotal,
       discountTotal,
-      grossTotal: netTotal + taxTotal,
+      codeDiscount,
+      grossTotal: finalNetTotal + finalTaxTotal,
     };
   };
 
   const totals = calculateTotals();
+
+  // Validate discount code
+  const handleApplyDiscountCode = async () => {
+    if (!discountCodeInput.trim()) return;
+
+    setIsValidatingCode(true);
+    setDiscountError('');
+
+    try {
+      const { data, error } = await supabase
+        .from('discount_codes')
+        .select('*')
+        .eq('code', discountCodeInput.toUpperCase().trim())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!data) {
+        setDiscountError('Ungültiger Rabattcode');
+        return;
+      }
+
+      // Check validity
+      const now = new Date();
+      const validFrom = new Date(data.valid_from);
+      const validUntil = data.valid_until ? new Date(data.valid_until) : null;
+
+      if (now < validFrom) {
+        setDiscountError('Dieser Code ist noch nicht gültig');
+        return;
+      }
+
+      if (validUntil && now > validUntil) {
+        setDiscountError('Dieser Code ist abgelaufen');
+        return;
+      }
+
+      if (data.max_uses && data.current_uses >= data.max_uses) {
+        setDiscountError('Dieser Code wurde bereits zu oft verwendet');
+        return;
+      }
+
+      // Calculate current net total for min order check
+      let currentNetTotal = 0;
+      items.forEach((item) => {
+        const discountPercentage = (item.product as any).discount_percentage || 0;
+        currentNetTotal += calculateDiscountedPrice(item.product.price, discountPercentage) * item.quantity;
+      });
+      vehicleItems.forEach((item) => {
+        const discountPercentage = item.vehicle.discount_percentage || 0;
+        currentNetTotal += calculateDiscountedPrice(item.vehicle.price, discountPercentage);
+      });
+
+      if (data.min_order_value && currentNetTotal < data.min_order_value) {
+        setDiscountError(`Mindestbestellwert: ${formatCurrency(data.min_order_value)}`);
+        return;
+      }
+
+      setAppliedDiscount(data as DiscountCode);
+      setDiscountCodeInput('');
+      toast({
+        title: 'Rabattcode angewendet',
+        description: data.discount_type === 'percentage' 
+          ? `${data.discount_value}% Rabatt` 
+          : `${formatCurrency(data.discount_value)} Rabatt`,
+      });
+    } catch (error) {
+      console.error('Error validating discount code:', error);
+      setDiscountError('Fehler bei der Validierung');
+    } finally {
+      setIsValidatingCode(false);
+    }
+  };
+
+  const handleRemoveDiscountCode = () => {
+    setAppliedDiscount(null);
+    setDiscountError('');
+  };
 
   // Validate name has at least two words
   const isValidName = (name: string) => name.trim().split(/\s+/).length >= 2;
@@ -179,6 +286,8 @@ const Warenkorb: React.FC = () => {
         shipping_country: useDifferentShipping ? shippingData.country : billingData.country,
         notes: notes || null,
         order_number: '',
+        discount_code_id: appliedDiscount?.id || null,
+        discount_amount: totals.codeDiscount || 0,
       };
 
       const { data: createdOrder, error: orderError } = await supabase
@@ -448,11 +557,78 @@ const Warenkorb: React.FC = () => {
                 <CardTitle>Ihr Angebot</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Discount Code Input */}
                 <div className="space-y-2">
+                  <Label htmlFor="discountCode" className="text-sm font-medium">Rabattcode</Label>
+                  {appliedDiscount ? (
+                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md">
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-600" />
+                        <span className="font-mono font-medium">{appliedDiscount.code}</span>
+                        <Badge className="bg-green-500 text-white">
+                          {appliedDiscount.discount_type === 'percentage' 
+                            ? `-${appliedDiscount.discount_value}%` 
+                            : `-${formatCurrency(appliedDiscount.discount_value)}`}
+                        </Badge>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleRemoveDiscountCode}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="discountCode"
+                          value={discountCodeInput}
+                          onChange={(e) => {
+                            setDiscountCodeInput(e.target.value.toUpperCase());
+                            setDiscountError('');
+                          }}
+                          placeholder="Code eingeben"
+                          className="pl-10 font-mono"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleApplyDiscountCode();
+                            }
+                          }}
+                        />
+                      </div>
+                      <Button
+                        onClick={handleApplyDiscountCode}
+                        disabled={!discountCodeInput.trim() || isValidatingCode}
+                        variant="outline"
+                      >
+                        {isValidatingCode ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          'Einlösen'
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                  {discountError && (
+                    <p className="text-sm text-destructive">{discountError}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2 pt-2 border-t">
                   {totals.discountTotal > 0 && (
                     <div className="flex justify-between text-sm text-red-600">
-                      <span>Rabatt</span>
+                      <span>Produktrabatte</span>
                       <span>-{formatCurrency(totals.discountTotal)}</span>
+                    </div>
+                  )}
+                  {totals.codeDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Rabattcode ({appliedDiscount?.code})</span>
+                      <span>-{formatCurrency(totals.codeDiscount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
