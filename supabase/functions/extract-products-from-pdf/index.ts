@@ -183,13 +183,14 @@ Gib die Produkte als JSON-Array zurück.`;
 
     console.log(`Extracted ${products.length} products`);
 
-    // Generate images in parallel for products that have image descriptions
-    // Limit to first 10 products with image descriptions to avoid timeout
-    const productsWithDescriptions = products.filter(p => p.imageDescription).slice(0, 10);
+    // Generate images sequentially to avoid connection issues
+    // Limit to first 5 products with image descriptions
+    const productsWithDescriptions = products.filter(p => p.imageDescription).slice(0, 5);
+    const productImages: { productName: string; base64: string }[] = [];
     
-    console.log(`Generating images for ${productsWithDescriptions.length} products in parallel...`);
+    console.log(`Generating images for ${productsWithDescriptions.length} products...`);
 
-    const imagePromises = productsWithDescriptions.map(async (product) => {
+    for (const product of productsWithDescriptions) {
       try {
         console.log(`Generating image for: ${product.name}`);
         
@@ -217,18 +218,15 @@ Gib die Produkte als JSON-Array zurück.`;
           
           if (generatedImage) {
             console.log(`Image generated for: ${product.name}`);
-            return { productName: product.name, base64: generatedImage };
+            productImages.push({ productName: product.name, base64: generatedImage });
           }
+        } else {
+          console.error(`Image generation failed for ${product.name}: ${imageResponse.status}`);
         }
-        return null;
       } catch (imageError) {
         console.error(`Error generating image for ${product.name}:`, imageError);
-        return null;
       }
-    });
-
-    const imageResults = await Promise.all(imagePromises);
-    const productImages = imageResults.filter(Boolean) as { productName: string; base64: string }[];
+    }
 
     console.log(`Successfully generated ${productImages.length} images`);
 
