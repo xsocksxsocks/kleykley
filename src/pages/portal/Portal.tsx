@@ -8,7 +8,8 @@ import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car, Truck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
@@ -24,6 +25,35 @@ interface ExtendedProduct extends Product {
   discount_percentage?: number;
 }
 
+interface Vehicle {
+  id: string;
+  brand: string;
+  model: string;
+  first_registration_date: string;
+  mileage: number;
+  fuel_type: string;
+  transmission: string;
+  color: string | null;
+  power_hp: number | null;
+  previous_owners: number | null;
+  price: number;
+  description: string | null;
+  features: string[] | null;
+  images: string[];
+  vehicle_type: string | null;
+  vat_deductible: boolean | null;
+  is_featured: boolean | null;
+  is_sold: boolean | null;
+  is_reserved: boolean | null;
+}
+
+const VEHICLE_TYPES = [
+  { value: 'all', label: 'Alle' },
+  { value: 'Fahrzeug', label: 'Fahrzeuge' },
+  { value: 'Motorrad', label: 'Motorräder' },
+  { value: 'Baumaschine', label: 'Baumaschinen' },
+];
+
 const Portal: React.FC = () => {
   const { user, profile, isAdmin, isApproved, loading, signOut } = useAuth();
   const { addToCart } = useCart();
@@ -31,10 +61,15 @@ const Portal: React.FC = () => {
   const { toast } = useToast();
   
   const [products, setProducts] = useState<ExtendedProduct[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedVehicleType, setSelectedVehicleType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [vehicleSearchQuery, setVehicleSearchQuery] = useState('');
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
+  const [activeTab, setActiveTab] = useState('products');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -46,6 +81,7 @@ const Portal: React.FC = () => {
     const fetchData = async () => {
       if (!isApproved && !isAdmin) {
         setLoadingProducts(false);
+        setLoadingVehicles(false);
         return;
       }
 
@@ -81,6 +117,28 @@ const Portal: React.FC = () => {
       }
 
       setLoadingProducts(false);
+
+      // Fetch vehicles
+      const { data: vehiclesData, error: vehiclesError } = await supabase
+        .from('cars_for_sale')
+        .select('*')
+        .is('deleted_at', null)
+        .eq('is_sold', false)
+        .order('is_featured', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (vehiclesError) {
+        console.error('Error fetching vehicles:', vehiclesError);
+        toast({
+          title: 'Fehler',
+          description: 'Fahrzeuge konnten nicht geladen werden.',
+          variant: 'destructive',
+        });
+      } else {
+        setVehicles((vehiclesData as Vehicle[]) || []);
+      }
+
+      setLoadingVehicles(false);
     };
 
     if (user) {
@@ -113,11 +171,9 @@ const Portal: React.FC = () => {
 
   // Filter products by category and search
   const filteredProducts = products.filter((p) => {
-    // Category filter
     if (selectedCategory && p.category_id !== selectedCategory) {
       return false;
     }
-    // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       const matchesName = p.name.toLowerCase().includes(query);
@@ -136,6 +192,41 @@ const Portal: React.FC = () => {
     if (!a.is_recommended && b.is_recommended) return 1;
     return 0;
   });
+
+  // Filter vehicles by type and search
+  const filteredVehicles = vehicles.filter((v) => {
+    if (selectedVehicleType !== 'all' && v.vehicle_type !== selectedVehicleType) {
+      return false;
+    }
+    if (vehicleSearchQuery.trim()) {
+      const query = vehicleSearchQuery.toLowerCase();
+      const matchesBrand = v.brand.toLowerCase().includes(query);
+      const matchesModel = v.model.toLowerCase().includes(query);
+      const matchesDescription = v.description?.toLowerCase().includes(query);
+      if (!matchesBrand && !matchesModel && !matchesDescription) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // Sort vehicles: featured first
+  const sortedVehicles = [...filteredVehicles].sort((a, b) => {
+    if (a.is_featured && !b.is_featured) return -1;
+    if (!a.is_featured && b.is_featured) return 1;
+    return 0;
+  });
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('de-DE', {
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const formatMileage = (km: number) => {
+    return km.toLocaleString('de-DE') + ' km';
+  };
 
   if (loading) {
     return (
@@ -231,195 +322,349 @@ const Portal: React.FC = () => {
             Willkommen, {profile?.company_name || profile?.full_name || 'Kunde'}!
           </h2>
           <p className="text-muted-foreground">
-            Entdecken Sie unsere Produkte und senden Sie uns eine Angebotsanfrage.
+            Entdecken Sie unsere Produkte und Fahrzeuge und senden Sie uns eine Angebotsanfrage.
             <span className="block text-sm mt-1">Alle Preise verstehen sich als Netto-Preise zzgl. MwSt.</span>
           </p>
         </div>
 
-        {/* Search and Category Filter */}
-        <div className="mb-6 space-y-4">
-          {/* Search Input */}
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Produkte suchen..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="products" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Waren
+            </TabsTrigger>
+            <TabsTrigger value="vehicles" className="flex items-center gap-2">
+              <Car className="h-4 w-4" />
+              Fahrzeuge
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Category Filter */}
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={selectedCategory === null ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedCategory(null)}
-              >
-                Alle
-              </Button>
-              {categories.map((category) => (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  {category.name}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
+          {/* Products Tab */}
+          <TabsContent value="products">
+            {/* Search and Category Filter */}
+            <div className="mb-6 space-y-4">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Produkte suchen..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-10"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
 
-        {loadingProducts ? (
-          <div className="flex justify-center py-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : sortedProducts.length === 0 ? (
-          <Card className="text-center py-16">
-            <CardContent>
-              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">
-                {searchQuery 
-                  ? 'Keine Treffer gefunden' 
-                  : selectedCategory 
-                    ? 'Keine Produkte in dieser Kategorie' 
-                    : 'Keine Produkte verfügbar'}
-              </h3>
-              <p className="text-muted-foreground">
-                {searchQuery 
-                  ? `Keine Produkte gefunden für "${searchQuery}".`
-                  : selectedCategory 
-                    ? 'Wählen Sie eine andere Kategorie oder zeigen Sie alle Produkte an.'
-                    : 'Aktuell sind keine Produkte im Portal verfügbar.'}
-              </p>
-              {(selectedCategory || searchQuery) && (
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => {
-                    setSelectedCategory(null);
-                    setSearchQuery('');
-                  }}
-                >
-                  Filter zurücksetzen
-                </Button>
+              {categories.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={selectedCategory === null ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategory(null)}
+                  >
+                    Alle
+                  </Button>
+                  {categories.map((category) => (
+                    <Button
+                      key={category.id}
+                      variant={selectedCategory === category.id ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSelectedCategory(category.id)}
+                    >
+                      {category.name}
+                    </Button>
+                  ))}
+                </div>
               )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sortedProducts.map((product) => {
-              const imageUrl = getProductImage(product);
-              return (
-                <Card key={product.id} className="flex flex-col relative">
-                  {(product.is_recommended || (product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0)) && (
-                    <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-                      {product.is_recommended && (
-                        <Badge className="bg-gold text-navy-dark flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-current" />
-                          Empfohlen
-                        </Badge>
-                      )}
-                      {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 && (
-                        <Badge className="bg-red-500 text-white flex items-center gap-1">
-                          <Percent className="h-3 w-3" />
-                          -{product.discount_percentage}%
-                        </Badge>
-                      )}
-                    </div>
+            </div>
+
+            {loadingProducts ? (
+              <div className="flex justify-center py-16">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : sortedProducts.length === 0 ? (
+              <Card className="text-center py-16">
+                <CardContent>
+                  <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">
+                    {searchQuery 
+                      ? 'Keine Treffer gefunden' 
+                      : selectedCategory 
+                        ? 'Keine Produkte in dieser Kategorie' 
+                        : 'Keine Produkte verfügbar'}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {searchQuery 
+                      ? `Keine Produkte gefunden für "${searchQuery}".`
+                      : selectedCategory 
+                        ? 'Wählen Sie eine andere Kategorie oder zeigen Sie alle Produkte an.'
+                        : 'Aktuell sind keine Produkte im Portal verfügbar.'}
+                  </p>
+                  {(selectedCategory || searchQuery) && (
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => {
+                        setSelectedCategory(null);
+                        setSearchQuery('');
+                      }}
+                    >
+                      Filter zurücksetzen
+                    </Button>
                   )}
-                  <Link to={`/portal/produkt/${product.id}`} className="block">
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {sortedProducts.map((product) => {
+                  const imageUrl = getProductImage(product);
+                  return (
+                    <Card key={product.id} className="flex flex-col relative">
+                      {(product.is_recommended || (product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0)) && (
+                        <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                          {product.is_recommended && (
+                            <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                              <Star className="h-3 w-3 fill-current" />
+                              Empfohlen
+                            </Badge>
+                          )}
+                          {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 && (
+                            <Badge className="bg-red-500 text-white flex items-center gap-1">
+                              <Percent className="h-3 w-3" />
+                              -{product.discount_percentage}%
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                      <Link to={`/portal/produkt/${product.id}`} className="block">
+                        <CardHeader>
+                          {imageUrl ? (
+                            <img
+                              src={imageUrl}
+                              alt={product.name}
+                              className="w-full h-48 object-cover rounded-md mb-4 transition-transform hover:scale-[1.02]"
+                            />
+                          ) : (
+                            <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
+                              <Package className="h-12 w-12 text-muted-foreground" />
+                            </div>
+                          )}
+                          <CardTitle className="text-lg hover:text-primary transition-colors">{product.name}</CardTitle>
+                        </CardHeader>
+                      </Link>
+                      <CardContent className="flex-1">
+                        {product.description && (
+                          <p className="text-muted-foreground text-sm line-clamp-3">
+                            {product.description}
+                          </p>
+                        )}
+                        <div className="mt-4">
+                          {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 ? (
+                            <>
+                              <p className="text-sm text-muted-foreground line-through">
+                                {formatCurrency(product.price)}
+                              </p>
+                              <p className="text-2xl font-bold text-red-600">
+                                {formatCurrency(calculateDiscountedPrice(product.price, product.discount_percentage))}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-2xl font-bold">
+                              {formatCurrency(product.price)}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Netto zzgl. {product.tax_rate}% MwSt.
+                          </p>
+                        </div>
+                        {product.stock_quantity > 0 && product.stock_quantity <= 5 ? (
+                          <p className="text-sm text-amber-600 mt-2 flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            Nur noch {product.stock_quantity} verfügbar
+                          </p>
+                        ) : product.stock_quantity > 0 ? (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {product.stock_quantity} verfügbar
+                          </p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Auf Anfrage
+                          </p>
+                        )}
+                      </CardContent>
+                      <CardFooter className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          asChild
+                        >
+                          <Link to={`/portal/produkt/${product.id}`}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Details
+                          </Link>
+                        </Button>
+                        <Button
+                          className="flex-1"
+                          onClick={() => handleAddToCart(product)}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          Hinzufügen
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Vehicles Tab */}
+          <TabsContent value="vehicles">
+            {/* Search and Vehicle Type Filter */}
+            <div className="mb-6 space-y-4">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Fahrzeuge suchen..."
+                  value={vehicleSearchQuery}
+                  onChange={(e) => setVehicleSearchQuery(e.target.value)}
+                  className="pl-10 pr-10"
+                />
+                {vehicleSearchQuery && (
+                  <button
+                    onClick={() => setVehicleSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {VEHICLE_TYPES.map((type) => (
+                  <Button
+                    key={type.value}
+                    variant={selectedVehicleType === type.value ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedVehicleType(type.value)}
+                  >
+                    {type.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {loadingVehicles ? (
+              <div className="flex justify-center py-16">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : sortedVehicles.length === 0 ? (
+              <Card className="text-center py-16">
+                <CardContent>
+                  <Car className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">
+                    {vehicleSearchQuery 
+                      ? 'Keine Treffer gefunden' 
+                      : selectedVehicleType !== 'all' 
+                        ? 'Keine Fahrzeuge in dieser Kategorie' 
+                        : 'Keine Fahrzeuge verfügbar'}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {vehicleSearchQuery 
+                      ? `Keine Fahrzeuge gefunden für "${vehicleSearchQuery}".`
+                      : selectedVehicleType !== 'all' 
+                        ? 'Wählen Sie eine andere Kategorie oder zeigen Sie alle Fahrzeuge an.'
+                        : 'Aktuell sind keine Fahrzeuge im Portal verfügbar.'}
+                  </p>
+                  {(selectedVehicleType !== 'all' || vehicleSearchQuery) && (
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => {
+                        setSelectedVehicleType('all');
+                        setVehicleSearchQuery('');
+                      }}
+                    >
+                      Filter zurücksetzen
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {sortedVehicles.map((vehicle) => (
+                  <Card key={vehicle.id} className="flex flex-col relative">
+                    {(vehicle.is_featured || vehicle.is_reserved) && (
+                      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                        {vehicle.is_featured && (
+                          <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-current" />
+                            Empfohlen
+                          </Badge>
+                        )}
+                        {vehicle.is_reserved && (
+                          <Badge className="bg-amber-500 text-white">
+                            Reserviert
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                     <CardHeader>
-                      {imageUrl ? (
+                      {vehicle.images && vehicle.images.length > 0 ? (
                         <img
-                          src={imageUrl}
-                          alt={product.name}
-                          className="w-full h-48 object-cover rounded-md mb-4 transition-transform hover:scale-[1.02]"
+                          src={vehicle.images[0]}
+                          alt={`${vehicle.brand} ${vehicle.model}`}
+                          className="w-full h-48 object-cover rounded-md mb-4"
                         />
                       ) : (
                         <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
-                          <Package className="h-12 w-12 text-muted-foreground" />
+                          <Car className="h-12 w-12 text-muted-foreground" />
                         </div>
                       )}
-                      <CardTitle className="text-lg hover:text-primary transition-colors">{product.name}</CardTitle>
+                      <CardTitle className="text-lg">{vehicle.brand} {vehicle.model}</CardTitle>
                     </CardHeader>
-                  </Link>
-                  <CardContent className="flex-1">
-                    {product.description && (
-                      <p className="text-muted-foreground text-sm line-clamp-3">
-                        {product.description}
-                      </p>
-                    )}
-                    <div className="mt-4">
-                      {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 ? (
-                        <>
-                          <p className="text-sm text-muted-foreground line-through">
-                            {formatCurrency(product.price)}
-                          </p>
-                          <p className="text-2xl font-bold text-red-600">
-                            {formatCurrency(calculateDiscountedPrice(product.price, product.discount_percentage))}
-                          </p>
-                        </>
-                      ) : (
+                    <CardContent className="flex-1">
+                      <div className="space-y-1 text-sm text-muted-foreground">
+                        <p>EZ: {formatDate(vehicle.first_registration_date)}</p>
+                        <p>{formatMileage(vehicle.mileage)}</p>
+                        <p>{vehicle.fuel_type} • {vehicle.transmission}</p>
+                        {vehicle.power_hp && <p>{vehicle.power_hp} PS</p>}
+                        {vehicle.color && <p>{vehicle.color}</p>}
+                      </div>
+                      <div className="mt-4">
                         <p className="text-2xl font-bold">
-                          {formatCurrency(product.price)}
+                          {formatCurrency(vehicle.price)}
                         </p>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        Netto zzgl. {product.tax_rate}% MwSt.
-                      </p>
-                    </div>
-                    {product.stock_quantity > 0 && product.stock_quantity <= 5 ? (
-                      <p className="text-sm text-amber-600 mt-2 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" />
-                        Nur noch {product.stock_quantity} verfügbar
-                      </p>
-                    ) : product.stock_quantity > 0 ? (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {product.stock_quantity} verfügbar
-                      </p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Auf Anfrage
-                      </p>
-                    )}
-                  </CardContent>
-                  <CardFooter className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      asChild
-                    >
-                      <Link to={`/portal/produkt/${product.id}`}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        Details
-                      </Link>
-                    </Button>
-                    <Button
-                      className="flex-1"
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Hinzufügen
-                    </Button>
-                  </CardFooter>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+                        <p className="text-xs text-muted-foreground">
+                          {vehicle.vat_deductible ? 'Netto zzgl. MwSt.' : 'Brutto'}
+                        </p>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        className="w-full"
+                        asChild
+                      >
+                        <Link to={`/portal/fahrzeug/${vehicle.id}`}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Details ansehen
+                        </Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </PortalLayout>
   );
