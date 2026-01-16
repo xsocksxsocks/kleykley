@@ -254,20 +254,39 @@ const AnfrageDetail: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {order.order_items.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">
-                          {item.product_name}
-                        </TableCell>
-                        <TableCell className="text-right">{item.quantity}</TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(item.unit_price)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(item.total_price)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {order.order_items.map((item) => {
+                      const hasDiscount = item.discount_percentage && item.discount_percentage > 0;
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {item.product_name}
+                              {hasDiscount && (
+                                <Badge className="bg-red-500 text-white text-xs">
+                                  -{item.discount_percentage}%
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">{item.quantity}</TableCell>
+                          <TableCell className="text-right">
+                            {hasDiscount && item.original_unit_price ? (
+                              <div>
+                                <span className="text-muted-foreground line-through text-xs block">
+                                  {formatCurrency(item.original_unit_price)}
+                                </span>
+                                <span className="text-red-600">{formatCurrency(item.unit_price)}</span>
+                              </div>
+                            ) : (
+                              formatCurrency(item.unit_price)
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {formatCurrency(item.total_price)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
 

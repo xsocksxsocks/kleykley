@@ -319,7 +319,7 @@ const ProduktDetail: React.FC = () => {
 
             {/* Price */}
             <div className="border-y py-4">
-              {product.discount_percentage > 0 ? (
+              {product.discount_percentage && product.discount_percentage > 0 ? (
                 <>
                   <div className="flex items-center gap-2 mb-1">
                     <Badge className="bg-red-500 text-white flex items-center gap-1">
@@ -340,7 +340,7 @@ const ProduktDetail: React.FC = () => {
                 </p>
               )}
               <p className="text-sm text-muted-foreground mt-1">
-                Netto zzgl. {product.tax_rate}% MwSt. = {formatCurrency(calculateDiscountedPrice(product.price, product.discount_percentage) * (1 + product.tax_rate / 100))} brutto
+                Netto zzgl. {product.tax_rate}% MwSt. = {formatCurrency(calculateDiscountedPrice(product.price, product.discount_percentage || 0) * (1 + product.tax_rate / 100))} brutto
               </p>
             </div>
 
