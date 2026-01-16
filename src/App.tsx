@@ -19,6 +19,7 @@ import Portal from "./pages/portal/Portal";
 import Warenkorb from "./pages/portal/Warenkorb";
 import Anfragen from "./pages/portal/Anfragen";
 import Profil from "./pages/portal/Profil";
+import ProduktDetail from "./pages/portal/ProduktDetail";
 import Admin from "./pages/admin/Admin";
 import AnfrageDetail from "./pages/admin/AnfrageDetail";
 
@@ -46,6 +47,7 @@ const App = () => (
                 <Route path="/portal/warenkorb" element={<Warenkorb />} />
                 <Route path="/portal/anfragen" element={<Anfragen />} />
                 <Route path="/portal/profil" element={<Profil />} />
+                <Route path="/portal/produkt/:id" element={<ProduktDetail />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/admin/anfrage/:id" element={<AnfrageDetail />} />
                 <Route path="*" element={<NotFound />} />

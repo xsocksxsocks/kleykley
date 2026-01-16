@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +8,7 @@ import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Clock, Package, Star, Search, X } from 'lucide-react';
+import { ShoppingCart, Clock, Package, Star, Search, X, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
@@ -294,23 +294,25 @@ const Portal: React.FC = () => {
                       </Badge>
                     </div>
                   )}
-                  <CardHeader>
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={product.name}
-                        className="w-full h-48 object-cover rounded-md mb-4"
-                      />
-                    ) : (
-                      <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
-                        <Package className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                    )}
-                    <CardTitle className="text-lg">{product.name}</CardTitle>
-                    {categoryName && (
-                      <Badge variant="secondary">{categoryName}</Badge>
-                    )}
-                  </CardHeader>
+                  <Link to={`/portal/produkt/${product.id}`} className="block">
+                    <CardHeader>
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={product.name}
+                          className="w-full h-48 object-cover rounded-md mb-4 transition-transform hover:scale-[1.02]"
+                        />
+                      ) : (
+                        <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
+                          <Package className="h-12 w-12 text-muted-foreground" />
+                        </div>
+                      )}
+                      <CardTitle className="text-lg hover:text-primary transition-colors">{product.name}</CardTitle>
+                      {categoryName && (
+                        <Badge variant="secondary">{categoryName}</Badge>
+                      )}
+                    </CardHeader>
+                  </Link>
                   <CardContent className="flex-1">
                     <p className="text-muted-foreground text-sm line-clamp-3">
                       {product.description}
@@ -329,13 +331,23 @@ const Portal: React.FC = () => {
                         : 'Auf Anfrage'}
                     </p>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="flex gap-2">
                     <Button
-                      className="w-full"
+                      variant="outline"
+                      className="flex-1"
+                      asChild
+                    >
+                      <Link to={`/portal/produkt/${product.id}`}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Details
+                      </Link>
+                    </Button>
+                    <Button
+                      className="flex-1"
                       onClick={() => handleAddToCart(product)}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
-                      Zur Anfrage hinzufügen
+                      Hinzufügen
                     </Button>
                   </CardFooter>
                 </Card>
