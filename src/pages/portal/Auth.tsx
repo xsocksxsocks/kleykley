@@ -6,9 +6,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import logoImage from '@/assets/logo-kley.png';
+import { EU_COUNTRIES } from '@/lib/countries';
 
 const loginSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
@@ -18,12 +26,13 @@ const loginSchema = z.object({
 const signupSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
   password: z.string().min(6, 'Passwort muss mindestens 6 Zeichen haben'),
-  fullName: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
+  fullName: z.string().min(2, 'Vor- und Nachname muss mindestens 2 Zeichen haben'),
   companyName: z.string().min(2, 'Firmenname muss mindestens 2 Zeichen haben'),
   phone: z.string().min(5, 'Bitte geben Sie eine gültige Telefonnummer ein'),
   address: z.string().min(5, 'Bitte geben Sie eine gültige Adresse ein'),
   postalCode: z.string().min(4, 'Bitte geben Sie eine gültige PLZ ein'),
   city: z.string().min(2, 'Bitte geben Sie eine gültige Stadt ein'),
+  country: z.string().min(1, 'Bitte wählen Sie ein Land'),
 });
 
 const Auth: React.FC = () => {
@@ -42,6 +51,7 @@ const Auth: React.FC = () => {
     address: '',
     postalCode: '',
     city: '',
+    country: 'Deutschland',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -125,7 +135,8 @@ const Auth: React.FC = () => {
       signupData.phone,
       signupData.address,
       signupData.city,
-      signupData.postalCode
+      signupData.postalCode,
+      signupData.country
     );
     setIsLoading(false);
 
@@ -213,7 +224,7 @@ const Auth: React.FC = () => {
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Vollständiger Name *</Label>
+                    <Label htmlFor="signup-name">Vor- und Nachname *</Label>
                     <Input
                       id="signup-name"
                       type="text"
@@ -276,7 +287,7 @@ const Auth: React.FC = () => {
                 </div>
 
                 <div className="border-t pt-4">
-                  <h3 className="font-medium mb-3">Lieferadresse</h3>
+                  <h3 className="font-medium mb-3">Firmen- und Lieferadresse</h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="signup-address">Straße und Hausnummer *</Label>
@@ -315,6 +326,26 @@ const Auth: React.FC = () => {
                         />
                         {errors.city && <p className="text-sm text-destructive">{errors.city}</p>}
                       </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-country">Land *</Label>
+                      <Select
+                        value={signupData.country}
+                        onValueChange={(value) => setSignupData({ ...signupData, country: value })}
+                        disabled={isLoading}
+                      >
+                        <SelectTrigger id="signup-country">
+                          <SelectValue placeholder="Land wählen" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EU_COUNTRIES.map((country) => (
+                            <SelectItem key={country.code} value={country.name}>
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.country && <p className="text-sm text-destructive">{errors.country}</p>}
                     </div>
                   </div>
                 </div>

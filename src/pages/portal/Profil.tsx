@@ -20,17 +20,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { AlertTriangle, Trash2 } from 'lucide-react';
+import { EU_COUNTRIES } from '@/lib/countries';
 
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
-  company_name: z.string().optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  postal_code: z.string().optional(),
+  company_name: z.string().min(2, 'Firmenname muss mindestens 2 Zeichen haben'),
+  phone: z.string().min(5, 'Telefonnummer muss mindestens 5 Zeichen haben'),
+  address: z.string().min(5, 'Adresse muss mindestens 5 Zeichen haben'),
+  city: z.string().min(2, 'Stadt muss mindestens 2 Zeichen haben'),
+  postal_code: z.string().min(4, 'PLZ muss mindestens 4 Zeichen haben'),
+  country: z.string().min(1, 'Land muss ausgewählt sein'),
 });
 
 const passwordSchema = z.object({
@@ -41,6 +50,7 @@ const passwordSchema = z.object({
   message: 'Passwörter stimmen nicht überein',
   path: ['confirmPassword'],
 });
+
 
 const Profil: React.FC = () => {
   const { user, profile, loading, refreshProfile, signOut } = useAuth();
@@ -55,6 +65,7 @@ const Profil: React.FC = () => {
     address: profile?.address || '',
     city: profile?.city || '',
     postal_code: profile?.postal_code || '',
+    country: (profile as any)?.country || 'Deutschland',
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -78,6 +89,7 @@ const Profil: React.FC = () => {
         address: profile.address || '',
         city: profile.city || '',
         postal_code: profile.postal_code || '',
+        country: (profile as any)?.country || 'Deutschland',
       });
     }
   }, [profile]);
@@ -327,46 +339,70 @@ const Profil: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Telefon</Label>
+                    <Label htmlFor="phone">Telefon *</Label>
                     <Input
                       id="phone"
                       value={profileData.phone}
                       onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                       disabled={isLoading}
                     />
+                    {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
                   </div>
 
                   <div className="border-t pt-4 mt-4">
-                    <h3 className="font-medium mb-4">Lieferadresse</h3>
+                    <h3 className="font-medium mb-4">Firmen- und Lieferadresse</h3>
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="address">Straße und Hausnummer</Label>
+                        <Label htmlFor="address">Straße und Hausnummer *</Label>
                         <Input
                           id="address"
                           value={profileData.address}
                           onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
                           disabled={isLoading}
                         />
+                        {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="postal_code">PLZ</Label>
+                          <Label htmlFor="postal_code">PLZ *</Label>
                           <Input
                             id="postal_code"
                             value={profileData.postal_code}
                             onChange={(e) => setProfileData({ ...profileData, postal_code: e.target.value })}
                             disabled={isLoading}
                           />
+                          {errors.postal_code && <p className="text-sm text-destructive">{errors.postal_code}</p>}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="city">Stadt</Label>
+                          <Label htmlFor="city">Stadt *</Label>
                           <Input
                             id="city"
                             value={profileData.city}
                             onChange={(e) => setProfileData({ ...profileData, city: e.target.value })}
                             disabled={isLoading}
                           />
+                          {errors.city && <p className="text-sm text-destructive">{errors.city}</p>}
                         </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="country">Land *</Label>
+                        <Select
+                          value={profileData.country}
+                          onValueChange={(value) => setProfileData({ ...profileData, country: value })}
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger id="country">
+                            <SelectValue placeholder="Land wählen" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {EU_COUNTRIES.map((country) => (
+                              <SelectItem key={country.code} value={country.name}>
+                                {country.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {errors.country && <p className="text-sm text-destructive">{errors.country}</p>}
                       </div>
                     </div>
                   </div>
