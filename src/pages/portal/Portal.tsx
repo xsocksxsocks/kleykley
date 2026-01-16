@@ -8,16 +8,29 @@ import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Clock, Package } from 'lucide-react';
+import { ShoppingCart, Clock, Package, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface Category {
+  id: string;
+  name: string;
+  sort_order: number;
+}
+
+interface ExtendedProduct extends Product {
+  category_id?: string | null;
+  is_recommended?: boolean;
+}
+
 const Portal: React.FC = () => {
-  const { user, profile, isAdmin, isApproved, loading } = useAuth();
+  const { user, profile, isAdmin, isApproved, loading, signOut } = useAuth();
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ExtendedProduct[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
   useEffect(() => {
@@ -27,13 +40,14 @@ const Portal: React.FC = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       if (!isApproved && !isAdmin) {
         setLoadingProducts(false);
         return;
       }
 
-      const { data, error } = await supabase
+      // Fetch products
+      const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select(`
           *,
@@ -42,21 +56,32 @@ const Portal: React.FC = () => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching products:', error);
+      if (productsError) {
+        console.error('Error fetching products:', productsError);
         toast({
           title: 'Fehler',
           description: 'Produkte konnten nicht geladen werden.',
           variant: 'destructive',
         });
       } else {
-        setProducts((data as Product[]) || []);
+        setProducts((productsData as ExtendedProduct[]) || []);
       }
+
+      // Fetch categories
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (!categoriesError && categoriesData) {
+        setCategories(categoriesData);
+      }
+
       setLoadingProducts(false);
     };
 
     if (user) {
-      fetchProducts();
+      fetchData();
     }
   }, [user, isApproved, isAdmin, toast]);
 
@@ -76,6 +101,24 @@ const Portal: React.FC = () => {
     return product.image_url;
   };
 
+  const getCategoryName = (categoryId: string | null | undefined): string | null => {
+    if (!categoryId) return null;
+    const cat = categories.find((c) => c.id === categoryId);
+    return cat?.name || null;
+  };
+
+  // Filter products by category
+  const filteredProducts = selectedCategory
+    ? products.filter((p) => p.category_id === selectedCategory)
+    : products;
+
+  // Sort: recommended first
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (a.is_recommended && !b.is_recommended) return -1;
+    if (!a.is_recommended && b.is_recommended) return 1;
+    return 0;
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -88,7 +131,7 @@ const Portal: React.FC = () => {
     return null;
   }
 
-  // Pending approval view - no mention of automatic approval
+  // Pending approval view
   if (!isApproved && !isAdmin) {
     return (
       <PortalLayout showNav={false}>
@@ -112,7 +155,6 @@ const Portal: React.FC = () => {
                 variant="outline" 
                 className="mt-4"
                 onClick={async () => {
-                  const { signOut } = useAuth();
                   await signOut();
                   navigate('/portal/auth');
                 }}
@@ -139,26 +181,71 @@ const Portal: React.FC = () => {
           </p>
         </div>
 
+        {/* Category Filter */}
+        {categories.length > 0 && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            <Button
+              variant={selectedCategory === null ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedCategory(null)}
+            >
+              Alle
+            </Button>
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                {category.name}
+              </Button>
+            ))}
+          </div>
+        )}
+
         {loadingProducts ? (
           <div className="flex justify-center py-16">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        ) : products.length === 0 ? (
+        ) : sortedProducts.length === 0 ? (
           <Card className="text-center py-16">
             <CardContent>
               <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Keine Produkte verfügbar</h3>
+              <h3 className="text-lg font-medium mb-2">
+                {selectedCategory ? 'Keine Produkte in dieser Kategorie' : 'Keine Produkte verfügbar'}
+              </h3>
               <p className="text-muted-foreground">
-                Aktuell sind keine Produkte im Portal verfügbar.
+                {selectedCategory 
+                  ? 'Wählen Sie eine andere Kategorie oder zeigen Sie alle Produkte an.'
+                  : 'Aktuell sind keine Produkte im Portal verfügbar.'}
               </p>
+              {selectedCategory && (
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => setSelectedCategory(null)}
+                >
+                  Alle Produkte anzeigen
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => {
+            {sortedProducts.map((product) => {
               const imageUrl = getProductImage(product);
+              const categoryName = getCategoryName(product.category_id);
               return (
-                <Card key={product.id} className="flex flex-col">
+                <Card key={product.id} className="flex flex-col relative">
+                  {product.is_recommended && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-current" />
+                        Empfohlen
+                      </Badge>
+                    </div>
+                  )}
                   <CardHeader>
                     {imageUrl ? (
                       <img
@@ -172,8 +259,8 @@ const Portal: React.FC = () => {
                       </div>
                     )}
                     <CardTitle className="text-lg">{product.name}</CardTitle>
-                    {product.category && (
-                      <Badge variant="secondary">{product.category}</Badge>
+                    {categoryName && (
+                      <Badge variant="secondary">{categoryName}</Badge>
                     )}
                   </CardHeader>
                   <CardContent className="flex-1">

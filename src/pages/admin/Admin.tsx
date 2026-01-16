@@ -47,7 +47,7 @@ import {
   Trash2,
   RefreshCw,
   Eye,
-  Image,
+  Tag,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ProductImageUpload } from '@/components/admin/ProductImageUpload';
@@ -142,12 +142,17 @@ const Admin: React.FC = () => {
     name: '',
     description: '',
     price: '',
-    image_url: '',
-    category: '',
+    category_id: '',
     stock_quantity: '',
     is_active: true,
+    is_recommended: false,
   });
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  
+  // Categories state
+  const [categories, setCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -177,6 +182,15 @@ const Admin: React.FC = () => {
 
         if (productsError) throw productsError;
         setProducts((productsData as Product[]) || []);
+
+        // Fetch categories
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*')
+          .order('sort_order', { ascending: true });
+
+        if (categoriesError) throw categoriesError;
+        setCategories(categoriesData || []);
 
         // Fetch orders with items
         const { data: ordersData, error: ordersError } = await supabase
@@ -276,10 +290,10 @@ const Admin: React.FC = () => {
         name: productForm.name,
         description: productForm.description || null,
         price: parseFloat(productForm.price),
-        image_url: productForm.image_url || null,
-        category: productForm.category || null,
+        category_id: productForm.category_id || null,
         stock_quantity: parseInt(productForm.stock_quantity) || 0,
         is_active: productForm.is_active,
+        is_recommended: productForm.is_recommended,
       };
 
       if (editingProduct) {
@@ -389,10 +403,10 @@ const Admin: React.FC = () => {
       name: '',
       description: '',
       price: '',
-      image_url: '',
-      category: '',
+      category_id: '',
       stock_quantity: '',
       is_active: true,
+      is_recommended: false,
     });
     setProductImages([]);
   };
@@ -403,10 +417,10 @@ const Admin: React.FC = () => {
       name: product.name,
       description: product.description || '',
       price: product.price.toString(),
-      image_url: product.image_url || '',
-      category: product.category || '',
+      category_id: (product as any).category_id || '',
       stock_quantity: product.stock_quantity.toString(),
       is_active: product.is_active,
+      is_recommended: (product as any).is_recommended || false,
     });
     
     // Fetch images for this product
@@ -460,6 +474,71 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .insert({ name: newCategoryName.trim(), sort_order: categories.length })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCategories([...categories, data]);
+      setNewCategoryName('');
+      setCategoryDialogOpen(false);
+
+      toast({
+        title: 'Kategorie erstellt',
+        description: `"${data.name}" wurde hinzugefügt.`,
+      });
+    } catch (error: any) {
+      console.error('Error adding category:', error);
+      toast({
+        title: 'Fehler',
+        description: error.message?.includes('duplicate') 
+          ? 'Diese Kategorie existiert bereits.' 
+          : 'Kategorie konnte nicht erstellt werden.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (!confirm('Möchten Sie diese Kategorie wirklich löschen?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', categoryId);
+
+      if (error) throw error;
+
+      setCategories(categories.filter((c) => c.id !== categoryId));
+
+      toast({
+        title: 'Kategorie gelöscht',
+        description: 'Die Kategorie wurde entfernt.',
+      });
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast({
+        title: 'Fehler',
+        description: 'Kategorie konnte nicht gelöscht werden.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const getCategoryName = (categoryId: string | null): string => {
+    if (!categoryId) return '-';
+    const cat = categories.find((c) => c.id === categoryId);
+    return cat?.name || '-';
+  };
+
   if (loading || !user || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -510,6 +589,10 @@ const Admin: React.FC = () => {
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               Produkte
+            </TabsTrigger>
+            <TabsTrigger value="categories" className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Kategorien
             </TabsTrigger>
             <TabsTrigger value="orders" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -638,11 +721,6 @@ const Admin: React.FC = () => {
                       </DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="max-h-[70vh] pr-4">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editingProduct ? 'Produkt bearbeiten' : 'Neues Produkt'}
-                      </DialogTitle>
-                    </DialogHeader>
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">Name *</Label>
@@ -691,11 +769,32 @@ const Admin: React.FC = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="category">Kategorie</Label>
-                        <Input
-                          id="category"
-                          value={productForm.category}
-                          onChange={(e) =>
-                            setProductForm({ ...productForm, category: e.target.value })
+                        <Select
+                          value={productForm.category_id}
+                          onValueChange={(value) =>
+                            setProductForm({ ...productForm, category_id: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Kategorie wählen" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Keine Kategorie</SelectItem>
+                            {categories.map((cat) => (
+                              <SelectItem key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="recommended">Empfohlen</Label>
+                        <Switch
+                          id="recommended"
+                          checked={productForm.is_recommended}
+                          onCheckedChange={(checked) =>
+                            setProductForm({ ...productForm, is_recommended: checked })
                           }
                         />
                       </div>
@@ -761,8 +860,17 @@ const Admin: React.FC = () => {
                           <TableCell>
                             <ProductThumbnail productId={product.id} fallbackUrl={product.image_url} />
                           </TableCell>
-                          <TableCell className="font-medium">{product.name}</TableCell>
-                          <TableCell>{product.category || '-'}</TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {product.name}
+                              {(product as any).is_recommended && (
+                                <Badge variant="outline" className="bg-gold/10 text-gold border-gold/30 text-xs">
+                                  Empfohlen
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{getCategoryName((product as any).category_id)}</TableCell>
                           <TableCell>
                             {product.price.toLocaleString('de-DE', {
                               style: 'currency',
@@ -795,6 +903,86 @@ const Admin: React.FC = () => {
                           </TableCell>
                         </TableRow>
                       ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="categories">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Kategorienverwaltung</CardTitle>
+                <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Kategorie hinzufügen
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Neue Kategorie</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="categoryName">Name</Label>
+                        <Input
+                          id="categoryName"
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          placeholder="z.B. Elektronik"
+                        />
+                      </div>
+                      <Button
+                        className="w-full"
+                        onClick={handleAddCategory}
+                        disabled={!newCategoryName.trim()}
+                      >
+                        Erstellen
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                {categories.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    Keine Kategorien vorhanden.
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Produkte</TableHead>
+                        <TableHead>Aktionen</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {categories.map((category) => {
+                        const productCount = products.filter(
+                          (p) => (p as any).category_id === category.id
+                        ).length;
+                        return (
+                          <TableRow key={category.id}>
+                            <TableCell className="font-medium">{category.name}</TableCell>
+                            <TableCell>{productCount} Produkte</TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteCategory(category.id)}
+                                disabled={productCount > 0}
+                                title={productCount > 0 ? 'Kategorie enthält Produkte' : 'Löschen'}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 )}
