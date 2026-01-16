@@ -100,13 +100,29 @@ const Warenkorb: React.FC = () => {
 
   const totals = calculateTotals();
 
-  const isBillingComplete = billingData.customerName && billingData.companyName && billingData.phone && 
+  // Validate name has at least two words
+  const isValidName = (name: string) => name.trim().split(/\s+/).length >= 2;
+  
+  const isBillingComplete = isValidName(billingData.customerName) && billingData.companyName && billingData.phone && 
     billingData.address && billingData.city && billingData.postalCode && billingData.country;
   
   const isShippingComplete = !useDifferentShipping || (
-    shippingData.customerName && shippingData.companyName && shippingData.phone &&
+    isValidName(shippingData.customerName) && shippingData.companyName && shippingData.phone &&
     shippingData.address && shippingData.city && shippingData.postalCode && shippingData.country
   );
+  
+  // Get validation error messages
+  const getBillingNameError = () => {
+    if (!billingData.customerName) return '';
+    if (!isValidName(billingData.customerName)) return 'Bitte Vor- und Nachname eingeben (z.B. Max Mustermann)';
+    return '';
+  };
+  
+  const getShippingNameError = () => {
+    if (!shippingData.customerName) return '';
+    if (!isValidName(shippingData.customerName)) return 'Bitte Vor- und Nachname eingeben (z.B. Max Mustermann)';
+    return '';
+  };
 
   const handleOrder = async () => {
     if (!user || !isApproved) {
@@ -353,6 +369,9 @@ const Warenkorb: React.FC = () => {
                           onChange={(e) => setBillingData({ ...billingData, customerName: e.target.value })}
                           placeholder="Max Mustermann"
                         />
+                        {getBillingNameError() && (
+                          <p className="text-sm text-destructive">{getBillingNameError()}</p>
+                        )}
                       </div>
                       <div className="space-y-2 col-span-2">
                         <Label htmlFor="companyName">Firma *</Label>
@@ -440,6 +459,9 @@ const Warenkorb: React.FC = () => {
                             onChange={(e) => setShippingData({ ...shippingData, customerName: e.target.value })}
                             placeholder="Max Mustermann"
                           />
+                          {getShippingNameError() && (
+                            <p className="text-sm text-destructive">{getShippingNameError()}</p>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="shippingCompanyName">Firma *</Label>

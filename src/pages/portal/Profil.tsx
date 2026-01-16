@@ -33,7 +33,11 @@ import { AlertTriangle, Trash2 } from 'lucide-react';
 import { EU_COUNTRIES } from '@/lib/countries';
 
 const profileSchema = z.object({
-  full_name: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
+  full_name: z.string()
+    .min(2, 'Name muss mindestens 2 Zeichen haben')
+    .refine((val) => val.trim().split(/\s+/).length >= 2, {
+      message: 'Bitte geben Sie Vor- und Nachname ein (z.B. Max Mustermann)',
+    }),
   company_name: z.string().min(2, 'Firmenname muss mindestens 2 Zeichen haben'),
   phone: z.string().min(5, 'Telefonnummer muss mindestens 5 Zeichen haben'),
   address: z.string().min(5, 'Adresse muss mindestens 5 Zeichen haben'),
