@@ -10,6 +10,7 @@ const navLinks = [
   { href: "/leistungen", label: "Leistungen" },
   { href: "/ueber-uns", label: "Über uns" },
   { href: "/kontakt", label: "Kontakt" },
+  { href: "/portal", label: "Kundenportal" },
 ];
 
 export function Navigation() {
