@@ -197,7 +197,7 @@ const Favoriten = () => {
                             <Package className="h-12 w-12 text-muted-foreground" />
                           </div>
                         )}
-                        {product.discount_percentage && product.discount_percentage > 0 && (
+                        {product.discount_percentage !== null && product.discount_percentage !== undefined && product.discount_percentage > 0 && (
                           <Badge className="absolute top-2 left-2 bg-red-500">
                             -{product.discount_percentage}%
                           </Badge>
@@ -214,7 +214,7 @@ const Favoriten = () => {
                       <CardContent className="p-4">
                         <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
                         <div className="flex items-baseline gap-2 mb-4">
-                          {product.discount_percentage && product.discount_percentage > 0 ? (
+                          {product.discount_percentage !== null && product.discount_percentage !== undefined && product.discount_percentage > 0 ? (
                             <>
                               <span className="text-lg font-bold text-gold">
                                 {formatPrice(product.price * (1 - product.discount_percentage / 100))}
@@ -297,7 +297,7 @@ const Favoriten = () => {
                           {new Date(vehicle.first_registration_date).getFullYear()} • {vehicle.mileage.toLocaleString('de-DE')} km
                         </p>
                         <div className="flex items-baseline gap-2 mb-4">
-                          {vehicle.discount_percentage && vehicle.discount_percentage > 0 ? (
+                          {vehicle.discount_percentage !== null && vehicle.discount_percentage !== undefined && vehicle.discount_percentage > 0 ? (
                             <>
                               <span className="text-lg font-bold text-gold">
                                 {formatPrice(vehicle.price * (1 - vehicle.discount_percentage / 100))}
