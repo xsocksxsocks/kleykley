@@ -22,6 +22,7 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           description_en: string | null
+          discount_percentage: number | null
           features: string[] | null
           features_en: string[] | null
           first_registration_date: string
@@ -48,6 +49,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           description_en?: string | null
+          discount_percentage?: number | null
           features?: string[] | null
           features_en?: string[] | null
           first_registration_date: string
@@ -74,6 +76,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           description_en?: string | null
+          discount_percentage?: number | null
           features?: string[] | null
           features_en?: string[] | null
           first_registration_date?: string

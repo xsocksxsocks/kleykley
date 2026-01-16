@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/CartContext';
+import { useCart, Vehicle } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { formatCurrency, calculateTax, calculateDiscountedPrice } from '@/types/shop';
@@ -19,13 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Minus, Plus, Trash2, FileText } from 'lucide-react';
+import { Minus, Plus, Trash2, FileText, Car } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { EU_COUNTRIES } from '@/lib/countries';
 
 const Warenkorb: React.FC = () => {
   const { user, profile, isApproved, isAdmin, loading } = useAuth();
-  const { items, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { items, vehicleItems, updateQuantity, removeFromCart, removeVehicleFromCart, clearCart } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -79,11 +79,24 @@ const Warenkorb: React.FC = () => {
     let taxTotal = 0;
     let discountTotal = 0;
 
+    // Products
     items.forEach((item) => {
       const originalPrice = item.product.price * item.quantity;
       const discountPercentage = (item.product as any).discount_percentage || 0;
       const discountedPrice = calculateDiscountedPrice(item.product.price, discountPercentage) * item.quantity;
       const itemTax = calculateTax(discountedPrice, item.product.tax_rate);
+      
+      discountTotal += originalPrice - discountedPrice;
+      netTotal += discountedPrice;
+      taxTotal += itemTax;
+    });
+
+    // Vehicles (assume 19% tax for vehicles with vat_deductible)
+    vehicleItems.forEach((item) => {
+      const originalPrice = item.vehicle.price;
+      const discountPercentage = item.vehicle.discount_percentage || 0;
+      const discountedPrice = calculateDiscountedPrice(item.vehicle.price, discountPercentage);
+      const itemTax = item.vehicle.vat_deductible ? calculateTax(discountedPrice, 19) : 0;
       
       discountTotal += originalPrice - discountedPrice;
       netTotal += discountedPrice;
@@ -134,10 +147,10 @@ const Warenkorb: React.FC = () => {
       return;
     }
 
-    if (items.length === 0) {
+    if (items.length === 0 && vehicleItems.length === 0) {
       toast({
-        title: 'Keine Produkte ausgewählt',
-        description: 'Fügen Sie Produkte hinzu, bevor Sie eine Anfrage senden.',
+        title: 'Keine Artikel ausgewählt',
+        description: 'Fügen Sie Produkte oder Fahrzeuge hinzu, bevor Sie eine Anfrage senden.',
         variant: 'destructive',
       });
       return;
@@ -215,19 +228,21 @@ const Warenkorb: React.FC = () => {
     }
   };
 
-  if (items.length === 0 && !showCheckout) {
+  const hasItems = items.length > 0 || vehicleItems.length > 0;
+
+  if (!hasItems && !showCheckout) {
     return (
       <PortalLayout>
         <div className="container mx-auto px-4 py-16">
           <Card className="max-w-md mx-auto text-center">
             <CardContent className="pt-8">
               <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Keine Produkte ausgewählt</h3>
+              <h3 className="text-lg font-medium mb-2">Keine Artikel ausgewählt</h3>
               <p className="text-muted-foreground mb-4">
-                Wählen Sie Produkte aus, für die Sie ein Angebot anfordern möchten.
+                Wählen Sie Produkte oder Fahrzeuge aus, für die Sie ein Angebot anfordern möchten.
               </p>
               <Button asChild>
-                <Link to="/portal">Zum Produktkatalog</Link>
+                <Link to="/portal">Zum Katalog</Link>
               </Button>
             </CardContent>
           </Card>
@@ -330,6 +345,71 @@ const Warenkorb: React.FC = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => removeFromCart(item.product.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+            
+            {/* Vehicle Items */}
+            {vehicleItems.map((item) => {
+              const discountPercentage = item.vehicle.discount_percentage || 0;
+              const discountedPrice = calculateDiscountedPrice(item.vehicle.price, discountPercentage);
+              const hasDiscount = discountPercentage > 0;
+              
+              return (
+                <Card key={item.vehicle.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {item.vehicle.images && item.vehicle.images.length > 0 ? (
+                        <img
+                          src={item.vehicle.images[0]}
+                          alt={`${item.vehicle.brand} ${item.vehicle.model}`}
+                          className="w-20 h-20 object-cover rounded-md"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center">
+                          <Car className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{item.vehicle.brand} {item.vehicle.model}</h3>
+                          <Badge variant="outline">{item.vehicle.vehicle_type || 'Fahrzeug'}</Badge>
+                          {hasDiscount && (
+                            <Badge className="bg-red-500 text-white text-xs">
+                              -{discountPercentage}%
+                            </Badge>
+                          )}
+                        </div>
+                        {hasDiscount ? (
+                          <>
+                            <p className="text-muted-foreground text-sm line-through">
+                              {formatCurrency(item.vehicle.price)}
+                            </p>
+                            <p className="text-red-600 font-medium text-sm">
+                              {formatCurrency(discountedPrice)} {item.vehicle.vat_deductible ? 'netto' : 'brutto'}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-muted-foreground text-sm">
+                            {formatCurrency(item.vehicle.price)} {item.vehicle.vat_deductible ? 'netto' : 'brutto'}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right w-28">
+                        <p className={`font-bold ${hasDiscount ? 'text-red-600' : ''}`}>
+                          {formatCurrency(discountedPrice)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{item.vehicle.vat_deductible ? 'netto' : 'brutto'}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeVehicleFromCart(item.vehicle.id)}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

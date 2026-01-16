@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/CartContext';
+import { useCart, Vehicle } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductImage, formatCurrency, calculateDiscountedPrice } from '@/types/shop';
 import { PortalLayout } from '@/components/portal/PortalLayout';
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car, Truck } from 'lucide-react';
+import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
@@ -25,28 +25,6 @@ interface ExtendedProduct extends Product {
   discount_percentage?: number;
 }
 
-interface Vehicle {
-  id: string;
-  brand: string;
-  model: string;
-  first_registration_date: string;
-  mileage: number;
-  fuel_type: string;
-  transmission: string;
-  color: string | null;
-  power_hp: number | null;
-  previous_owners: number | null;
-  price: number;
-  description: string | null;
-  features: string[] | null;
-  images: string[];
-  vehicle_type: string | null;
-  vat_deductible: boolean | null;
-  is_featured: boolean | null;
-  is_sold: boolean | null;
-  is_reserved: boolean | null;
-}
-
 const VEHICLE_TYPES = [
   { value: 'all', label: 'Alle' },
   { value: 'Fahrzeug', label: 'Fahrzeuge' },
@@ -56,7 +34,7 @@ const VEHICLE_TYPES = [
 
 const Portal: React.FC = () => {
   const { user, profile, isAdmin, isApproved, loading, signOut } = useAuth();
-  const { addToCart } = useCart();
+  const { addToCart, addVehicleToCart, vehicleItems } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -153,6 +131,20 @@ const Portal: React.FC = () => {
         title: 'Zum Angebot hinzugefügt',
       });
     }
+  };
+
+  const handleAddVehicleToCart = (vehicle: Vehicle) => {
+    const success = addVehicleToCart(vehicle);
+    if (success) {
+      toast({
+        title: 'Zum Angebot hinzugefügt',
+        description: `${vehicle.brand} ${vehicle.model} wurde zur Anfrage hinzugefügt.`,
+      });
+    }
+  };
+
+  const isVehicleInCart = (vehicleId: string) => {
+    return vehicleItems.some(item => item.vehicle.id === vehicleId);
   };
 
   const getProductImage = (product: Product): string | null => {
@@ -600,67 +592,103 @@ const Portal: React.FC = () => {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sortedVehicles.map((vehicle) => (
-                  <Card key={vehicle.id} className="flex flex-col relative">
-                    {(vehicle.is_featured || vehicle.is_reserved) && (
-                      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-                        {vehicle.is_featured && (
-                          <Badge className="bg-gold text-navy-dark flex items-center gap-1">
-                            <Star className="h-3 w-3 fill-current" />
-                            Empfohlen
-                          </Badge>
-                        )}
-                        {vehicle.is_reserved && (
-                          <Badge className="bg-amber-500 text-white">
-                            Reserviert
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                    <CardHeader>
-                      {vehicle.images && vehicle.images.length > 0 ? (
-                        <img
-                          src={vehicle.images[0]}
-                          alt={`${vehicle.brand} ${vehicle.model}`}
-                          className="w-full h-48 object-cover rounded-md mb-4"
-                        />
-                      ) : (
-                        <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
-                          <Car className="h-12 w-12 text-muted-foreground" />
+                {sortedVehicles.map((vehicle) => {
+                  const hasDiscount = vehicle.discount_percentage && vehicle.discount_percentage > 0;
+                  const discountedPrice = hasDiscount 
+                    ? calculateDiscountedPrice(vehicle.price, vehicle.discount_percentage!) 
+                    : vehicle.price;
+                  const inCart = isVehicleInCart(vehicle.id);
+                  
+                  return (
+                    <Card key={vehicle.id} className="flex flex-col relative">
+                      {(vehicle.is_featured || vehicle.is_reserved || hasDiscount) && (
+                        <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                          {vehicle.is_featured && (
+                            <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                              <Star className="h-3 w-3 fill-current" />
+                              Empfohlen
+                            </Badge>
+                          )}
+                          {hasDiscount && (
+                            <Badge className="bg-red-500 text-white flex items-center gap-1">
+                              <Percent className="h-3 w-3" />
+                              -{vehicle.discount_percentage}%
+                            </Badge>
+                          )}
+                          {vehicle.is_reserved && (
+                            <Badge className="bg-amber-500 text-white">
+                              Reserviert
+                            </Badge>
+                          )}
                         </div>
                       )}
-                      <CardTitle className="text-lg">{vehicle.brand} {vehicle.model}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                      <div className="space-y-1 text-sm text-muted-foreground">
-                        <p>EZ: {formatDate(vehicle.first_registration_date)}</p>
-                        <p>{formatMileage(vehicle.mileage)}</p>
-                        <p>{vehicle.fuel_type} • {vehicle.transmission}</p>
-                        {vehicle.power_hp && <p>{vehicle.power_hp} PS</p>}
-                        {vehicle.color && <p>{vehicle.color}</p>}
-                      </div>
-                      <div className="mt-4">
-                        <p className="text-2xl font-bold">
-                          {formatCurrency(vehicle.price)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {vehicle.vat_deductible ? 'Netto zzgl. MwSt.' : 'Brutto'}
-                        </p>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        className="w-full"
-                        asChild
-                      >
-                        <Link to={`/portal/fahrzeug/${vehicle.id}`}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Details ansehen
-                        </Link>
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
+                      <Link to={`/portal/fahrzeug/${vehicle.id}`} className="block">
+                        <CardHeader>
+                          {vehicle.images && vehicle.images.length > 0 ? (
+                            <img
+                              src={vehicle.images[0]}
+                              alt={`${vehicle.brand} ${vehicle.model}`}
+                              className="w-full h-48 object-cover rounded-md mb-4 transition-transform hover:scale-[1.02]"
+                            />
+                          ) : (
+                            <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
+                              <Car className="h-12 w-12 text-muted-foreground" />
+                            </div>
+                          )}
+                          <CardTitle className="text-lg hover:text-primary transition-colors">{vehicle.brand} {vehicle.model}</CardTitle>
+                        </CardHeader>
+                      </Link>
+                      <CardContent className="flex-1">
+                        <div className="space-y-1 text-sm text-muted-foreground">
+                          <p>EZ: {formatDate(vehicle.first_registration_date)}</p>
+                          <p>{formatMileage(vehicle.mileage)}</p>
+                          <p>{vehicle.fuel_type} • {vehicle.transmission}</p>
+                          {vehicle.power_hp && <p>{vehicle.power_hp} PS</p>}
+                          {vehicle.color && <p>{vehicle.color}</p>}
+                        </div>
+                        <div className="mt-4">
+                          {hasDiscount ? (
+                            <>
+                              <p className="text-sm text-muted-foreground line-through">
+                                {formatCurrency(vehicle.price)}
+                              </p>
+                              <p className="text-2xl font-bold text-red-600">
+                                {formatCurrency(discountedPrice)}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-2xl font-bold">
+                              {formatCurrency(vehicle.price)}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            {vehicle.vat_deductible ? 'Netto zzgl. MwSt.' : 'Brutto'}
+                          </p>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          asChild
+                        >
+                          <Link to={`/portal/fahrzeug/${vehicle.id}`}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Details
+                          </Link>
+                        </Button>
+                        <Button
+                          className="flex-1"
+                          onClick={() => handleAddVehicleToCart(vehicle)}
+                          disabled={vehicle.is_sold || inCart}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          {inCart ? 'In Anfrage' : 'Hinzufügen'}
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </TabsContent>
