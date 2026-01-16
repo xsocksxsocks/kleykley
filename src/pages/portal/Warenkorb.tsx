@@ -4,14 +4,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { PortalLayout } from '@/components/portal/PortalLayout';
-import { formatCurrency, calculateTax, calculateGrossPrice } from '@/types/shop';
+import { formatCurrency, calculateTax, calculateGrossPrice, calculateDiscountedPrice } from '@/types/shop';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Minus, Plus, Trash2, FileText } from 'lucide-react';
+import { Minus, Plus, Trash2, FileText, Percent } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Warenkorb: React.FC = () => {
@@ -47,21 +48,27 @@ const Warenkorb: React.FC = () => {
     }
   }, [profile]);
 
-  // Calculate totals with tax
+  // Calculate totals with tax and discounts
   const calculateTotals = () => {
     let netTotal = 0;
     let taxTotal = 0;
+    let discountTotal = 0;
 
     items.forEach((item) => {
-      const itemNet = item.product.price * item.quantity;
-      const itemTax = calculateTax(itemNet, item.product.tax_rate);
-      netTotal += itemNet;
+      const originalPrice = item.product.price * item.quantity;
+      const discountPercentage = (item.product as any).discount_percentage || 0;
+      const discountedPrice = calculateDiscountedPrice(item.product.price, discountPercentage) * item.quantity;
+      const itemTax = calculateTax(discountedPrice, item.product.tax_rate);
+      
+      discountTotal += originalPrice - discountedPrice;
+      netTotal += discountedPrice;
       taxTotal += itemTax;
     });
 
     return {
       netTotal,
       taxTotal,
+      discountTotal,
       grossTotal: netTotal + taxTotal,
     };
   };
@@ -113,14 +120,18 @@ const Warenkorb: React.FC = () => {
 
       if (orderError) throw orderError;
 
-      const orderItems = items.map((item) => ({
-        order_id: createdOrder.id,
-        product_id: item.product.id,
-        product_name: item.product.name,
-        quantity: item.quantity,
-        unit_price: item.product.price,
-        total_price: item.product.price * item.quantity,
-      }));
+      const orderItems = items.map((item) => {
+        const discountPercentage = (item.product as any).discount_percentage || 0;
+        const discountedUnitPrice = calculateDiscountedPrice(item.product.price, discountPercentage);
+        return {
+          order_id: createdOrder.id,
+          product_id: item.product.id,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          unit_price: discountedUnitPrice,
+          total_price: discountedUnitPrice * item.quantity,
+        };
+      });
 
       const { error: itemsError } = await supabase
         .from('order_items')
@@ -174,64 +185,88 @@ const Warenkorb: React.FC = () => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
-              <Card key={item.product.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    {item.product.image_url ? (
-                      <img
-                        src={item.product.image_url}
-                        alt={item.product.name}
-                        className="w-20 h-20 object-cover rounded-md"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center">
-                        <FileText className="h-8 w-8 text-muted-foreground" />
+            {items.map((item) => {
+              const discountPercentage = (item.product as any).discount_percentage || 0;
+              const discountedPrice = calculateDiscountedPrice(item.product.price, discountPercentage);
+              const hasDiscount = discountPercentage > 0;
+              
+              return (
+                <Card key={item.product.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {item.product.image_url ? (
+                        <img
+                          src={item.product.image_url}
+                          alt={item.product.name}
+                          className="w-20 h-20 object-cover rounded-md"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center">
+                          <FileText className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{item.product.name}</h3>
+                          {hasDiscount && (
+                            <Badge className="bg-red-500 text-white text-xs">
+                              -{discountPercentage}%
+                            </Badge>
+                          )}
+                        </div>
+                        {hasDiscount ? (
+                          <>
+                            <p className="text-muted-foreground text-sm line-through">
+                              {formatCurrency(item.product.price)}
+                            </p>
+                            <p className="text-red-600 font-medium text-sm">
+                              {formatCurrency(discountedPrice)} netto
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-muted-foreground text-sm">
+                            {formatCurrency(item.product.price)} netto
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          zzgl. {item.product.tax_rate}% MwSt.
+                        </p>
                       </div>
-                    )}
-                    <div className="flex-1">
-                      <h3 className="font-medium">{item.product.name}</h3>
-                      <p className="text-muted-foreground text-sm">
-                        {formatCurrency(item.product.price)} netto
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        zzgl. {item.product.tax_rate}% MwSt.
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="text-right w-28">
+                        <p className={`font-bold ${hasDiscount ? 'text-red-600' : ''}`}>
+                          {formatCurrency(discountedPrice * item.quantity)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">netto</p>
+                      </div>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                        onClick={() => removeFromCart(item.product.id)}
                       >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-8 text-center">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
-                    <div className="text-right w-28">
-                      <p className="font-bold">
-                        {formatCurrency(item.product.price * item.quantity)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">netto</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeFromCart(item.product.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           <div>
@@ -241,6 +276,12 @@ const Warenkorb: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
+                  {totals.discountTotal > 0 && (
+                    <div className="flex justify-between text-sm text-red-600">
+                      <span>Rabatt</span>
+                      <span>-{formatCurrency(totals.discountTotal)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span>Zwischensumme (Netto)</span>
                     <span>{formatCurrency(totals.netTotal)}</span>

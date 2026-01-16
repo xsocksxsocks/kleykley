@@ -32,6 +32,7 @@ export interface Product {
   stock_quantity: number;
   is_active: boolean;
   tax_rate: number;
+  discount_percentage?: number;
   created_at: string;
   updated_at: string;
   product_images?: ProductImage[];
@@ -87,6 +88,12 @@ export const calculateTax = (netPrice: number, taxRate: number): number => {
 
 export const calculateGrossPrice = (netPrice: number, taxRate: number): number => {
   return netPrice + calculateTax(netPrice, taxRate);
+};
+
+// Helper function to calculate discounted price
+export const calculateDiscountedPrice = (price: number, discountPercentage: number = 0): number => {
+  if (!discountPercentage || discountPercentage <= 0) return price;
+  return price * (1 - discountPercentage / 100);
 };
 
 export const formatCurrency = (amount: number): string => {
