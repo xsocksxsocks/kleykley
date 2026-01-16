@@ -159,10 +159,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
+    // If login successful, check and cancel any pending deletion
+    if (!error && data.user) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('deletion_scheduled_at')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (profileData?.deletion_scheduled_at) {
+        // Cancel the deletion request
+        await supabase.rpc('cancel_account_deletion', {
+          user_id: data.user.id,
+        });
+      }
+    }
+
     return { error: error as Error | null };
   };
 

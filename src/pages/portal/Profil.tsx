@@ -187,11 +187,14 @@ const Profil: React.FC = () => {
 
       if (error) throw error;
 
-      await refreshProfile();
       toast({
         title: 'Löschung beantragt',
-        description: 'Ihr Konto wird in 30 Tagen gelöscht. Sie können dies jederzeit rückgängig machen.',
+        description: 'Ihr Konto wird in 30 Tagen gelöscht. Sie werden jetzt ausgeloggt.',
       });
+
+      // Log out the user after requesting deletion
+      await signOut();
+      navigate('/portal/auth');
     } catch (error) {
       console.error('Error requesting deletion:', error);
       toast({
@@ -199,7 +202,6 @@ const Profil: React.FC = () => {
         description: 'Löschung konnte nicht beantragt werden.',
         variant: 'destructive',
       });
-    } finally {
       setIsLoading(false);
     }
   };
