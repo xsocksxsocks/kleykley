@@ -618,7 +618,7 @@ const Admin: React.FC = () => {
               <FileText className="h-4 w-4" />
               Anfragen
               {pendingOrders.length > 0 && (
-                <Badge variant="secondary" className="ml-1">
+                <Badge className="ml-1 bg-yellow-500 text-yellow-950 hover:bg-yellow-500">
                   {pendingOrders.length}
                 </Badge>
               )}
