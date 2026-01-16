@@ -1,11 +1,42 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { CartItem, Product } from '@/types/shop';
+import { CartItem, Product, calculateDiscountedPrice } from '@/types/shop';
 import { useToast } from '@/hooks/use-toast';
+
+export interface Vehicle {
+  id: string;
+  brand: string;
+  model: string;
+  first_registration_date: string;
+  mileage: number;
+  fuel_type: string;
+  transmission: string;
+  color: string | null;
+  power_hp: number | null;
+  previous_owners: number | null;
+  price: number;
+  description: string | null;
+  features: string[] | null;
+  images: string[];
+  vehicle_type: string | null;
+  vat_deductible: boolean | null;
+  is_featured: boolean | null;
+  is_sold: boolean | null;
+  is_reserved: boolean | null;
+  discount_percentage?: number | null;
+}
+
+export interface VehicleCartItem {
+  vehicle: Vehicle;
+  quantity: 1; // Vehicles are always quantity 1
+}
 
 interface CartContextType {
   items: CartItem[];
+  vehicleItems: VehicleCartItem[];
   addToCart: (product: Product, quantity?: number) => boolean;
+  addVehicleToCart: (vehicle: Vehicle) => boolean;
   removeFromCart: (productId: string) => void;
+  removeVehicleFromCart: (vehicleId: string) => void;
   updateQuantity: (productId: string, quantity: number) => boolean;
   clearCart: () => void;
   totalItems: number;
@@ -29,9 +60,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [vehicleItems, setVehicleItems] = useState<VehicleCartItem[]>(() => {
+    const saved = localStorage.getItem('cart_vehicles');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
+
+  useEffect(() => {
+    localStorage.setItem('cart_vehicles', JSON.stringify(vehicleItems));
+  }, [vehicleItems]);
 
   const addToCart = (product: Product, quantity = 1): boolean => {
     const existing = items.find((item) => item.product.id === product.id);
@@ -61,8 +101,36 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return true;
   };
 
+  const addVehicleToCart = (vehicle: Vehicle): boolean => {
+    const existing = vehicleItems.find((item) => item.vehicle.id === vehicle.id);
+    if (existing) {
+      toast({
+        title: 'Bereits im Warenkorb',
+        description: `${vehicle.brand} ${vehicle.model} ist bereits in Ihrer Anfrage.`,
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    if (vehicle.is_sold) {
+      toast({
+        title: 'Nicht verfügbar',
+        description: 'Dieses Fahrzeug wurde bereits verkauft.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    setVehicleItems((prev) => [...prev, { vehicle, quantity: 1 }]);
+    return true;
+  };
+
   const removeFromCart = (productId: string) => {
     setItems((prev) => prev.filter((item) => item.product.id !== productId));
+  };
+
+  const removeVehicleFromCart = (vehicleId: string) => {
+    setVehicleItems((prev) => prev.filter((item) => item.vehicle.id !== vehicleId));
   };
 
   const updateQuantity = (productId: string, quantity: number): boolean => {
@@ -91,20 +159,32 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearCart = () => {
     setItems([]);
+    setVehicleItems([]);
   };
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0) + vehicleItems.length;
+  
+  const productTotal = items.reduce((sum, item) => {
+    const discountedPrice = calculateDiscountedPrice(item.product.price, item.product.discount_percentage);
+    return sum + discountedPrice * item.quantity;
+  }, 0);
+
+  const vehicleTotal = vehicleItems.reduce((sum, item) => {
+    const discountedPrice = calculateDiscountedPrice(item.vehicle.price, item.vehicle.discount_percentage || 0);
+    return sum + discountedPrice;
+  }, 0);
+
+  const totalPrice = productTotal + vehicleTotal;
 
   return (
     <CartContext.Provider
       value={{
         items,
+        vehicleItems,
         addToCart,
+        addVehicleToCart,
         removeFromCart,
+        removeVehicleFromCart,
         updateQuantity,
         clearCart,
         totalItems,

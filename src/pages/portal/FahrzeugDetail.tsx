@@ -1,46 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCart, Vehicle } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Car, Star, Mail, Phone, Calendar, Gauge, Fuel, Settings, Users, Palette, Check } from 'lucide-react';
-import { formatCurrency } from '@/types/shop';
+import { ArrowLeft, Car, Star, ShoppingCart, Calendar, Gauge, Fuel, Settings, Users, Palette, Check, Percent } from 'lucide-react';
+import { formatCurrency, calculateDiscountedPrice } from '@/types/shop';
 import { useToast } from '@/hooks/use-toast';
-
-interface Vehicle {
-  id: string;
-  brand: string;
-  model: string;
-  first_registration_date: string;
-  mileage: number;
-  fuel_type: string;
-  transmission: string;
-  color: string | null;
-  power_hp: number | null;
-  previous_owners: number | null;
-  price: number;
-  description: string | null;
-  features: string[] | null;
-  images: string[];
-  vehicle_type: string | null;
-  vat_deductible: boolean | null;
-  is_featured: boolean | null;
-  is_sold: boolean | null;
-  is_reserved: boolean | null;
-}
 
 const FahrzeugDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isApproved, isAdmin, loading } = useAuth();
+  const { addVehicleToCart, vehicleItems } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
   
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const isInCart = vehicle ? vehicleItems.some(item => item.vehicle.id === vehicle.id) : false;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -80,6 +62,17 @@ const FahrzeugDetail: React.FC = () => {
       fetchVehicle();
     }
   }, [id, user, isApproved, isAdmin, toast]);
+
+  const handleAddToCart = () => {
+    if (!vehicle) return;
+    const success = addVehicleToCart(vehicle);
+    if (success) {
+      toast({
+        title: 'Zum Angebot hinzugefügt',
+        description: `${vehicle.brand} ${vehicle.model} wurde zur Anfrage hinzugefügt.`,
+      });
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('de-DE', {
@@ -127,6 +120,11 @@ const FahrzeugDetail: React.FC = () => {
     ? vehicle.images[selectedImageIndex] 
     : null;
 
+  const hasDiscount = vehicle.discount_percentage && vehicle.discount_percentage > 0;
+  const discountedPrice = hasDiscount 
+    ? calculateDiscountedPrice(vehicle.price, vehicle.discount_percentage!) 
+    : vehicle.price;
+
   return (
     <PortalLayout>
       <div className="container mx-auto px-4 py-8">
@@ -156,12 +154,18 @@ const FahrzeugDetail: React.FC = () => {
                   <Car className="h-24 w-24 text-muted-foreground" />
                 </div>
               )}
-              {(vehicle.is_featured || vehicle.is_reserved || vehicle.is_sold) && (
+              {(vehicle.is_featured || vehicle.is_reserved || vehicle.is_sold || hasDiscount) && (
                 <div className="absolute top-4 right-4 flex flex-col gap-2">
                   {vehicle.is_featured && (
                     <Badge className="bg-gold text-navy-dark flex items-center gap-1">
                       <Star className="h-3 w-3 fill-current" />
                       Empfohlen
+                    </Badge>
+                  )}
+                  {hasDiscount && (
+                    <Badge className="bg-red-500 text-white flex items-center gap-1">
+                      <Percent className="h-3 w-3" />
+                      -{vehicle.discount_percentage}%
                     </Badge>
                   )}
                   {vehicle.is_reserved && (
@@ -210,14 +214,40 @@ const FahrzeugDetail: React.FC = () => {
             {/* Price */}
             <Card>
               <CardContent className="py-6">
-                <p className="text-3xl font-bold text-primary">
-                  {formatCurrency(vehicle.price)}
-                </p>
+                {hasDiscount ? (
+                  <>
+                    <p className="text-lg text-muted-foreground line-through">
+                      {formatCurrency(vehicle.price)}
+                    </p>
+                    <p className="text-3xl font-bold text-red-600">
+                      {formatCurrency(discountedPrice)}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-3xl font-bold text-primary">
+                    {formatCurrency(vehicle.price)}
+                  </p>
+                )}
                 <p className="text-sm text-muted-foreground">
                   {vehicle.vat_deductible ? 'Netto zzgl. MwSt. (MwSt. ausweisbar)' : 'Brutto inkl. MwSt.'}
                 </p>
               </CardContent>
             </Card>
+
+            {/* Add to Cart Button */}
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={handleAddToCart}
+              disabled={vehicle.is_sold || isInCart}
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              {vehicle.is_sold 
+                ? 'Nicht verfügbar' 
+                : isInCart 
+                  ? 'Bereits in Anfrage' 
+                  : 'Zur Anfrage hinzufügen'}
+            </Button>
 
             {/* Key Specs */}
             <Card>
@@ -315,30 +345,6 @@ const FahrzeugDetail: React.FC = () => {
                 </CardContent>
               </Card>
             )}
-
-            {/* Contact CTA */}
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="py-6">
-                <h3 className="font-semibold mb-2">Interesse an diesem Fahrzeug?</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Kontaktieren Sie uns für ein unverbindliches Angebot oder weitere Informationen.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button asChild className="flex-1">
-                    <a href="mailto:info@kley.de?subject=Anfrage%20{vehicle.brand}%20{vehicle.model}">
-                      <Mail className="h-4 w-4 mr-2" />
-                      E-Mail senden
-                    </a>
-                  </Button>
-                  <Button variant="outline" asChild className="flex-1">
-                    <a href="tel:+4912345678">
-                      <Phone className="h-4 w-4 mr-2" />
-                      Anrufen
-                    </a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
