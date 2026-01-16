@@ -18,7 +18,10 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
   const { user, isAdmin, isApproved, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  
   const isOnPortalHome = location.pathname === '/portal';
+  const isOnProfil = location.pathname === '/portal/profil';
+  const isOnAnfragen = location.pathname === '/portal/anfragen';
 
   const handleSignOut = async () => {
     await signOut();
@@ -62,7 +65,15 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                   <span className="hidden sm:inline">Portal</span>
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild 
+                className={cn(
+                  "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
+                  isOnProfil && "bg-gold/20 text-gold border-gold/50"
+                )}
+              >
                 <Link to="/portal/profil">
                   <User className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Profil</span>
@@ -70,7 +81,15 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
               </Button>
               {canAccessShop && (
                 <>
-                  <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    asChild 
+                    className={cn(
+                      "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
+                      isOnAnfragen && "bg-gold/20 text-gold border-gold/50"
+                    )}
+                  >
                     <Link to="/portal/anfragen">
                       <FileText className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">Meine Angebote</span>
