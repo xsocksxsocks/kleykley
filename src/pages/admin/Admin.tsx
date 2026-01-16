@@ -158,6 +158,7 @@ const Admin: React.FC = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+  const [productCategoryFilter, setProductCategoryFilter] = useState<string>('all');
   
   // Product form state
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -1005,6 +1006,36 @@ const Admin: React.FC = () => {
                 </div>
               </CardHeader>
               <CardContent>
+                {/* Category Filter */}
+                <div className="mb-4 flex flex-wrap gap-2 items-center">
+                  <span className="text-sm text-muted-foreground">Filter:</span>
+                  <Select value={productCategoryFilter} onValueChange={setProductCategoryFilter}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Alle Kategorien" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Alle Kategorien</SelectItem>
+                      <SelectItem value="no_category">⚠️ Ohne Kategorie</SelectItem>
+                      {categories.filter(c => c.parent_id === null).map(parent => (
+                        <React.Fragment key={parent.id}>
+                          <SelectItem value={`parent_${parent.id}`} className="font-semibold">
+                            {parent.name}
+                          </SelectItem>
+                          {categories.filter(c => c.parent_id === parent.id).map(sub => (
+                            <SelectItem key={sub.id} value={sub.id} className="pl-6">
+                              └ {sub.name}
+                            </SelectItem>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {productCategoryFilter === 'no_category' && (
+                    <Badge variant="destructive" className="ml-2">
+                      {products.filter(p => !(p as any).category_id).length} Produkte ohne Kategorie
+                    </Badge>
+                  )}
+                </div>
                 {loadingData ? (
                   <div className="flex justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -1027,7 +1058,16 @@ const Admin: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {products.map((product) => (
+                      {products.filter((product) => {
+                        if (productCategoryFilter === 'all') return true;
+                        if (productCategoryFilter === 'no_category') return !(product as any).category_id;
+                        if (productCategoryFilter.startsWith('parent_')) {
+                          const parentId = productCategoryFilter.replace('parent_', '');
+                          const subcategoryIds = categories.filter(c => c.parent_id === parentId).map(c => c.id);
+                          return subcategoryIds.includes((product as any).category_id);
+                        }
+                        return (product as any).category_id === productCategoryFilter;
+                      }).map((product) => (
                         <TableRow key={product.id}>
                           <TableCell>
                             <ProductThumbnail productId={product.id} fallbackUrl={product.image_url} />

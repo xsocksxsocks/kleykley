@@ -211,7 +211,12 @@ const Portal: React.FC = () => {
   };
 
   // Filter products by category and search
+  // Hide products without category_id (unless admin)
   const filteredProducts = products.filter((p) => {
+    // Hide products without category assignment from customers
+    if (!p.category_id) {
+      return false;
+    }
     // If a specific subcategory is selected
     if (selectedCategory && p.category_id !== selectedCategory) {
       return false;
