@@ -54,7 +54,9 @@ const Portal: React.FC = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentVehiclePage, setCurrentVehiclePage] = useState(1);
   const PRODUCTS_PER_PAGE = 24;
+  const VEHICLES_PER_PAGE = 24;
   
   // Get initial tab from URL param or default to 'products'
   const tabFromUrl = searchParams.get('tab');
@@ -218,6 +220,11 @@ const Portal: React.FC = () => {
     setCurrentPage(1);
   }, [selectedCategory, searchQuery]);
 
+  // Reset vehicle page when filters change
+  useEffect(() => {
+    setCurrentVehiclePage(1);
+  }, [selectedVehicleType, vehicleSearchQuery]);
+
   // Filter vehicles by type and search
   const filteredVehicles = vehicles.filter((v) => {
     if (selectedVehicleType !== 'all' && v.vehicle_type !== selectedVehicleType) {
@@ -236,11 +243,20 @@ const Portal: React.FC = () => {
   });
 
   // Sort vehicles: featured first
-  const sortedVehicles = [...filteredVehicles].sort((a, b) => {
-    if (a.is_featured && !b.is_featured) return -1;
-    if (!a.is_featured && b.is_featured) return 1;
-    return 0;
-  });
+  const sortedVehicles = useMemo(() => {
+    return [...filteredVehicles].sort((a, b) => {
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      return 0;
+    });
+  }, [filteredVehicles]);
+
+  // Vehicle pagination calculations
+  const totalVehiclePages = Math.ceil(sortedVehicles.length / VEHICLES_PER_PAGE);
+  const paginatedVehicles = useMemo(() => {
+    const startIndex = (currentVehiclePage - 1) * VEHICLES_PER_PAGE;
+    return sortedVehicles.slice(startIndex, startIndex + VEHICLES_PER_PAGE);
+  }, [sortedVehicles, currentVehiclePage]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('de-DE', {
@@ -565,14 +581,16 @@ const Portal: React.FC = () => {
 
                 {/* Pagination controls */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-8">
+                  <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="icon"
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
+                      title="Erste Seite"
                     >
-                      Erste
+                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-4 w-4 -ml-2" />
                     </Button>
                     <Button
                       variant="outline"
@@ -586,13 +604,11 @@ const Portal: React.FC = () => {
                     <div className="flex items-center gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1)
                         .filter(page => {
-                          // Show first, last, current, and pages around current
                           if (page === 1 || page === totalPages) return true;
                           if (Math.abs(page - currentPage) <= 2) return true;
                           return false;
                         })
                         .map((page, index, array) => {
-                          // Add ellipsis between gaps
                           const prevPage = array[index - 1];
                           const showEllipsisBefore = prevPage && page - prevPage > 1;
                           
@@ -624,11 +640,13 @@ const Portal: React.FC = () => {
                     </Button>
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="icon"
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages}
+                      title="Letzte Seite"
                     >
-                      Letzte
+                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 -ml-2" />
                     </Button>
                   </div>
                 )}
@@ -710,119 +728,201 @@ const Portal: React.FC = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sortedVehicles.map((vehicle) => {
-                  const hasDiscount = (vehicle.discount_percentage ?? 0) > 0;
-                  const discountedPrice = hasDiscount 
-                    ? calculateDiscountedPrice(vehicle.price, vehicle.discount_percentage!) 
-                    : vehicle.price;
-                  const inCart = isVehicleInCart(vehicle.id);
-                  
-                  return (
-                    <Card key={vehicle.id} className="flex flex-col relative">
-                      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                        <FavoriteButton itemType="vehicle" itemId={vehicle.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
-                        {vehicle.is_sold && (
-                          <Badge className="bg-destructive text-destructive-foreground">
-                            Verkauft
-                          </Badge>
-                        )}
-                        {vehicle.is_reserved && !vehicle.is_sold && (
-                          <Badge className="bg-amber-500 text-white">
-                            Reserviert
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-                        {vehicle.is_featured && (
-                          <Badge className="bg-gold text-navy-dark flex items-center gap-1">
-                            <Star className="h-3 w-3 fill-current" />
-                            Empfohlen
-                          </Badge>
-                        )}
-                        {hasDiscount && (
-                          <Badge className="bg-red-500 text-white flex items-center gap-1">
-                            <Percent className="h-3 w-3" />
-                            -{vehicle.discount_percentage}%
-                          </Badge>
-                        )}
-                        {vehicle.vat_deductible && (
-                          <Badge variant="outline" className="bg-background/80 text-xs">
-                            MwSt. ausweisbar
-                          </Badge>
-                        )}
-                      </div>
-                      <Link to={`/portal/fahrzeug/${vehicle.id}`} className="block">
-                        <CardHeader>
-                          {vehicle.images && vehicle.images.length > 0 ? (
-                            <img
-                              src={vehicle.images[0]}
-                              alt={`${vehicle.brand} ${vehicle.model}`}
-                              className="w-full h-48 object-cover rounded-md mb-4 transition-transform hover:scale-[1.02]"
-                            />
-                          ) : (
-                            <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
-                              <Car className="h-12 w-12 text-muted-foreground" />
-                            </div>
+              <>
+                {/* Vehicle count and page info */}
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    {sortedVehicles.length} Fahrzeuge gefunden
+                    {totalVehiclePages > 1 && ` • Seite ${currentVehiclePage} von ${totalVehiclePages}`}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {paginatedVehicles.map((vehicle) => {
+                    const hasDiscount = (vehicle.discount_percentage ?? 0) > 0;
+                    const discountedPrice = hasDiscount 
+                      ? calculateDiscountedPrice(vehicle.price, vehicle.discount_percentage!) 
+                      : vehicle.price;
+                    const inCart = isVehicleInCart(vehicle.id);
+                    
+                    return (
+                      <Card key={vehicle.id} className="flex flex-col relative">
+                        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                          <FavoriteButton itemType="vehicle" itemId={vehicle.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
+                          {vehicle.is_sold && (
+                            <Badge className="bg-destructive text-destructive-foreground">
+                              Verkauft
+                            </Badge>
                           )}
-                          <CardTitle className="text-lg hover:text-primary transition-colors">{vehicle.brand} {vehicle.model}</CardTitle>
-                          {(vehicle as any).vehicle_number && (
-                            <p className="text-xs text-muted-foreground mt-1">Fzg.-Nr.: {(vehicle as any).vehicle_number}</p>
+                          {vehicle.is_reserved && !vehicle.is_sold && (
+                            <Badge className="bg-amber-500 text-white">
+                              Reserviert
+                            </Badge>
                           )}
-                        </CardHeader>
-                      </Link>
-                      <CardContent className="flex-1">
-                        <div className="space-y-1 text-sm text-muted-foreground">
-                          <p>EZ: {formatDate(vehicle.first_registration_date)}</p>
-                          <p>{formatMileage(vehicle.mileage)}</p>
-                          <p>{vehicle.fuel_type} • {vehicle.transmission}</p>
-                          {vehicle.power_hp && <p>{vehicle.power_hp} PS</p>}
-                          {vehicle.color && <p>{vehicle.color}</p>}
                         </div>
-                        <div className="mt-4">
-                          {hasDiscount ? (
-                            <>
-                              <p className="text-sm text-muted-foreground line-through">
+                        <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+                          {vehicle.is_featured && (
+                            <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                              <Star className="h-3 w-3 fill-current" />
+                              Empfohlen
+                            </Badge>
+                          )}
+                          {hasDiscount && (
+                            <Badge className="bg-red-500 text-white flex items-center gap-1">
+                              <Percent className="h-3 w-3" />
+                              -{vehicle.discount_percentage}%
+                            </Badge>
+                          )}
+                          {vehicle.vat_deductible && (
+                            <Badge variant="outline" className="bg-background/80 text-xs">
+                              MwSt. ausweisbar
+                            </Badge>
+                          )}
+                        </div>
+                        <Link to={`/portal/fahrzeug/${vehicle.id}`} className="block">
+                          <CardHeader>
+                            {vehicle.images && vehicle.images.length > 0 ? (
+                              <img
+                                src={vehicle.images[0]}
+                                alt={`${vehicle.brand} ${vehicle.model}`}
+                                className="w-full h-48 object-cover rounded-md mb-4 transition-transform hover:scale-[1.02]"
+                              />
+                            ) : (
+                              <div className="w-full h-48 bg-muted rounded-md mb-4 flex items-center justify-center">
+                                <Car className="h-12 w-12 text-muted-foreground" />
+                              </div>
+                            )}
+                            <CardTitle className="text-lg hover:text-primary transition-colors">{vehicle.brand} {vehicle.model}</CardTitle>
+                            {(vehicle as any).vehicle_number && (
+                              <p className="text-xs text-muted-foreground mt-1">Fzg.-Nr.: {(vehicle as any).vehicle_number}</p>
+                            )}
+                          </CardHeader>
+                        </Link>
+                        <CardContent className="flex-1">
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            <p>EZ: {formatDate(vehicle.first_registration_date)}</p>
+                            <p>{formatMileage(vehicle.mileage)}</p>
+                            <p>{vehicle.fuel_type} • {vehicle.transmission}</p>
+                            {vehicle.power_hp && <p>{vehicle.power_hp} PS</p>}
+                            {vehicle.color && <p>{vehicle.color}</p>}
+                          </div>
+                          <div className="mt-4">
+                            {hasDiscount ? (
+                              <>
+                                <p className="text-sm text-muted-foreground line-through">
+                                  {formatCurrency(vehicle.price)}
+                                </p>
+                                <p className="text-2xl font-bold text-red-600">
+                                  {formatCurrency(discountedPrice)}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-2xl font-bold">
                                 {formatCurrency(vehicle.price)}
                               </p>
-                              <p className="text-2xl font-bold text-red-600">
-                                {formatCurrency(discountedPrice)}
-                              </p>
-                            </>
-                          ) : (
-                            <p className="text-2xl font-bold">
-                              {formatCurrency(vehicle.price)}
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              Netto zzgl. MwSt.
                             </p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            Netto zzgl. MwSt.
-                          </p>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          className="flex-1"
-                          asChild
-                        >
-                          <Link to={`/portal/fahrzeug/${vehicle.id}`}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Details
-                          </Link>
-                        </Button>
-                        <Button
-                          className="flex-1"
-                          onClick={() => handleAddVehicleToCart(vehicle)}
-                          disabled={vehicle.is_sold || inCart}
-                        >
-                          <ShoppingCart className="h-4 w-4 mr-2" />
-                          {inCart ? 'Im Angebot' : 'Hinzufügen'}
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  );
-                })}
-              </div>
+                          </div>
+                        </CardContent>
+                        <CardFooter className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            className="flex-1"
+                            asChild
+                          >
+                            <Link to={`/portal/fahrzeug/${vehicle.id}`}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Details
+                            </Link>
+                          </Button>
+                          <Button
+                            className="flex-1"
+                            onClick={() => handleAddVehicleToCart(vehicle)}
+                            disabled={vehicle.is_sold || inCart}
+                          >
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            {inCart ? 'Im Angebot' : 'Hinzufügen'}
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                {/* Vehicle Pagination controls */}
+                {totalVehiclePages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentVehiclePage(1)}
+                      disabled={currentVehiclePage === 1}
+                      title="Erste Seite"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-4 w-4 -ml-2" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentVehiclePage(prev => Math.max(1, prev - 1))}
+                      disabled={currentVehiclePage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalVehiclePages }, (_, i) => i + 1)
+                        .filter(page => {
+                          if (page === 1 || page === totalVehiclePages) return true;
+                          if (Math.abs(page - currentVehiclePage) <= 2) return true;
+                          return false;
+                        })
+                        .map((page, index, array) => {
+                          const prevPage = array[index - 1];
+                          const showEllipsisBefore = prevPage && page - prevPage > 1;
+                          
+                          return (
+                            <React.Fragment key={page}>
+                              {showEllipsisBefore && (
+                                <span className="px-2 text-muted-foreground">...</span>
+                              )}
+                              <Button
+                                variant={currentVehiclePage === page ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setCurrentVehiclePage(page)}
+                                className="min-w-[40px]"
+                              >
+                                {page}
+                              </Button>
+                            </React.Fragment>
+                          );
+                        })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentVehiclePage(prev => Math.min(totalVehiclePages, prev + 1))}
+                      disabled={currentVehiclePage === totalVehiclePages}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentVehiclePage(totalVehiclePages)}
+                      disabled={currentVehiclePage === totalVehiclePages}
+                      title="Letzte Seite"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 -ml-2" />
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
         </Tabs>
