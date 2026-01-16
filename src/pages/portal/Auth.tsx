@@ -26,7 +26,11 @@ const loginSchema = z.object({
 const signupSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
   password: z.string().min(6, 'Passwort muss mindestens 6 Zeichen haben'),
-  fullName: z.string().min(2, 'Vor- und Nachname muss mindestens 2 Zeichen haben'),
+  fullName: z.string()
+    .min(2, 'Vor- und Nachname muss mindestens 2 Zeichen haben')
+    .refine((val) => val.trim().split(/\s+/).length >= 2, {
+      message: 'Bitte geben Sie Vor- und Nachname ein (z.B. Max Mustermann)',
+    }),
   companyName: z.string().min(2, 'Firmenname muss mindestens 2 Zeichen haben'),
   phone: z.string().min(5, 'Bitte geben Sie eine gültige Telefonnummer ein'),
   address: z.string().min(5, 'Bitte geben Sie eine gültige Adresse ein'),
