@@ -45,7 +45,10 @@ import {
   AlertTriangle,
   Plus,
   Copy,
+  RefreshCw,
+  ArrowRight,
 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/types/shop';
 
@@ -60,6 +63,7 @@ interface ExtractedProduct {
   editing: boolean;
   isDuplicate: boolean;
   existingProductId?: string;
+  updateExisting?: boolean; // New: flag to update instead of create
 }
 
 interface Category {
@@ -71,6 +75,21 @@ interface ExistingProduct {
   id: string;
   name: string;
   product_number: string | null;
+  description: string | null;
+  price: number;
+  stock_quantity: number;
+  category_id: string | null;
+}
+
+interface ExistingProductDetails {
+  id: string;
+  name: string;
+  product_number: string | null;
+  description: string | null;
+  price: number;
+  stock_quantity: number;
+  category_id: string | null;
+  category_name?: string;
 }
 
 interface BulkProductImporterProps {
@@ -98,13 +117,15 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
   // Duplicate handling dialog
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [currentDuplicate, setCurrentDuplicate] = useState<ExtractedProduct | null>(null);
+  const [existingProductDetails, setExistingProductDetails] = useState<ExistingProductDetails | null>(null);
+  const [loadingExistingProduct, setLoadingExistingProduct] = useState(false);
 
   // Fetch existing products for duplicate detection
   useEffect(() => {
     const fetchExistingProducts = async () => {
       const { data } = await supabase
         .from('products')
-        .select('id, name, product_number');
+        .select('id, name, product_number, description, price, stock_quantity, category_id');
       if (data) {
         setExistingProducts(data);
       }
@@ -235,13 +256,25 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
     }
   };
 
-  const handleToggleSelect = (id: string) => {
+  const handleToggleSelect = async (id: string) => {
     const product = products.find((p) => p.id === id);
     
-    // If it's a duplicate and being selected, show the dialog
-    if (product?.isDuplicate && !product.selected) {
+    // If it's a duplicate and being selected, show the dialog with existing product details
+    if (product?.isDuplicate && !product.selected && product.existingProductId) {
       setCurrentDuplicate(product);
+      setLoadingExistingProduct(true);
       setDuplicateDialogOpen(true);
+      
+      // Fetch existing product details for comparison
+      const existing = existingProducts.find((p) => p.id === product.existingProductId);
+      if (existing) {
+        const category = categories.find((c) => c.id === existing.category_id);
+        setExistingProductDetails({
+          ...existing,
+          category_name: category?.name,
+        });
+      }
+      setLoadingExistingProduct(false);
       return;
     }
     
@@ -250,29 +283,35 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
     );
   };
 
-  const handleDuplicateAction = (action: 'skip' | 'edit' | 'import_anyway') => {
+  const handleDuplicateAction = (action: 'skip' | 'edit' | 'import_anyway' | 'update_existing') => {
     if (!currentDuplicate) return;
 
     if (action === 'skip') {
       // Keep it deselected
       setProducts((prev) =>
-        prev.map((p) => (p.id === currentDuplicate.id ? { ...p, selected: false } : p))
+        prev.map((p) => (p.id === currentDuplicate.id ? { ...p, selected: false, updateExisting: false } : p))
       );
     } else if (action === 'edit') {
       // Select it and open edit mode
       setProducts((prev) =>
-        prev.map((p) => (p.id === currentDuplicate.id ? { ...p, selected: true } : p))
+        prev.map((p) => (p.id === currentDuplicate.id ? { ...p, selected: true, updateExisting: false } : p))
       );
       handleStartEdit(currentDuplicate);
     } else if (action === 'import_anyway') {
-      // Just select it for import
+      // Just select it for import as new product
       setProducts((prev) =>
-        prev.map((p) => (p.id === currentDuplicate.id ? { ...p, selected: true } : p))
+        prev.map((p) => (p.id === currentDuplicate.id ? { ...p, selected: true, updateExisting: false } : p))
+      );
+    } else if (action === 'update_existing') {
+      // Select it and mark for update
+      setProducts((prev) =>
+        prev.map((p) => (p.id === currentDuplicate.id ? { ...p, selected: true, updateExisting: true } : p))
       );
     }
 
     setDuplicateDialogOpen(false);
     setCurrentDuplicate(null);
+    setExistingProductDetails(null);
   };
 
   const handleSelectAll = (selected: boolean) => {
@@ -371,8 +410,9 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
       // Combine existing and new categories for lookup
       const allCategories = [...categories, ...createdCategories];
 
-      // Step 2: Import products
+      // Step 2: Import/Update products
       let successCount = 0;
+      let updateCount = 0;
       let errorCount = 0;
 
       for (let i = 0; i < selectedProducts.length; i++) {
@@ -399,23 +439,44 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
           is_active: true,
         };
 
-        const { error } = await supabase.from('products').insert(productData);
+        // Check if we should update existing product
+        if (product.updateExisting && product.existingProductId) {
+          const { error } = await supabase
+            .from('products')
+            .update(productData)
+            .eq('id', product.existingProductId);
 
-        if (error) {
-          console.error('Error inserting product:', error);
-          errorCount++;
+          if (error) {
+            console.error('Error updating product:', error);
+            errorCount++;
+          } else {
+            updateCount++;
+          }
         } else {
-          successCount++;
+          const { error } = await supabase.from('products').insert(productData);
+
+          if (error) {
+            console.error('Error inserting product:', error);
+            errorCount++;
+          } else {
+            successCount++;
+          }
         }
       }
 
+      const parts = [];
+      if (successCount > 0) parts.push(`${successCount} neu importiert`);
+      if (updateCount > 0) parts.push(`${updateCount} aktualisiert`);
+      if (createdCategories.length > 0) parts.push(`${createdCategories.length} Kategorien erstellt`);
+      if (errorCount > 0) parts.push(`${errorCount} Fehler`);
+
       toast({
         title: 'Import abgeschlossen',
-        description: `${successCount} Produkte importiert${createdCategories.length > 0 ? `, ${createdCategories.length} Kategorien erstellt` : ''}${errorCount > 0 ? `, ${errorCount} Fehler` : ''}.`,
+        description: parts.join(', ') + '.',
         variant: errorCount > 0 ? 'destructive' : 'default',
       });
 
-      if (successCount > 0) {
+      if (successCount > 0 || updateCount > 0) {
         setProducts([]);
         setFile(null);
         setNewCategoriesToCreate([]);
@@ -437,6 +498,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
   const selectedCount = products.filter((p) => p.selected).length;
   const duplicateCount = products.filter((p) => p.isDuplicate).length;
   const selectedDuplicateCount = products.filter((p) => p.selected && p.isDuplicate).length;
+  const updateCount = products.filter((p) => p.selected && p.updateExisting).length;
 
   return (
     <>
@@ -613,10 +675,17 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
                         </TableCell>
                         <TableCell>
                           {product.isDuplicate ? (
-                            <Badge variant="outline" className="border-amber-500 text-amber-600 text-xs">
-                              <Copy className="h-3 w-3 mr-1" />
-                              Duplikat
-                            </Badge>
+                            product.updateExisting ? (
+                              <Badge variant="outline" className="border-blue-500 text-blue-600 text-xs">
+                                <RefreshCw className="h-3 w-3 mr-1" />
+                                Update
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="border-amber-500 text-amber-600 text-xs">
+                                <Copy className="h-3 w-3 mr-1" />
+                                Duplikat
+                              </Badge>
+                            )
                           ) : (
                             <Badge variant="outline" className="border-green-500 text-green-600 text-xs">
                               <Check className="h-3 w-3 mr-1" />
@@ -801,10 +870,15 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
               {!importing && (
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div className="text-sm text-muted-foreground">
-                    {selectedCount} von {products.length} Produkten werden importiert
-                    {selectedDuplicateCount > 0 && (
+                    {selectedCount} von {products.length} Produkten
+                    {updateCount > 0 && (
+                      <span className="text-blue-600 ml-1">
+                        ({updateCount} werden aktualisiert)
+                      </span>
+                    )}
+                    {selectedDuplicateCount > 0 && selectedDuplicateCount !== updateCount && (
                       <span className="text-amber-600 ml-1">
-                        (davon {selectedDuplicateCount} Duplikat{selectedDuplicateCount !== 1 ? 'e' : ''})
+                        ({selectedDuplicateCount - updateCount} Duplikat{(selectedDuplicateCount - updateCount) !== 1 ? 'e' : ''} neu)
                       </span>
                     )}
                   </div>
@@ -837,22 +911,128 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
         </CardContent>
       </Card>
 
-      {/* Duplicate Handling Dialog */}
-      <AlertDialog open={duplicateDialogOpen} onOpenChange={setDuplicateDialogOpen}>
-        <AlertDialogContent>
+      {/* Duplicate Handling Dialog with Comparison */}
+      <AlertDialog open={duplicateDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setDuplicateDialogOpen(false);
+          setCurrentDuplicate(null);
+          setExistingProductDetails(null);
+        }
+      }}>
+        <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
               Duplikat erkannt
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>
-                Das Produkt <strong>"{currentDuplicate?.name}"</strong> existiert bereits in der Datenbank.
-              </p>
-              <p>Was möchtest du tun?</p>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <p>
+                  Das Produkt <strong>"{currentDuplicate?.name}"</strong> existiert bereits.
+                </p>
+                
+                {/* Comparison View */}
+                {loadingExistingProduct ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : existingProductDetails && currentDuplicate && (
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    {/* Existing Product */}
+                    <div className="p-4 bg-muted/50 rounded-lg border">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <Copy className="h-4 w-4" />
+                        Bestehendes Produkt
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Name:</span>
+                          <p className="font-medium text-foreground">{existingProductDetails.name}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Artikelnr.:</span>
+                          <p className="font-medium text-foreground">{existingProductDetails.product_number || '-'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Preis:</span>
+                          <p className="font-medium text-foreground">{formatCurrency(existingProductDetails.price)}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Bestand:</span>
+                          <p className="font-medium text-foreground">{existingProductDetails.stock_quantity}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Kategorie:</span>
+                          <p className="font-medium text-foreground">{existingProductDetails.category_name || '-'}</p>
+                        </div>
+                        {existingProductDetails.description && (
+                          <div>
+                            <span className="text-muted-foreground">Beschreibung:</span>
+                            <p className="font-medium text-foreground line-clamp-2">{existingProductDetails.description}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Arrow */}
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex">
+                      <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                    </div>
+
+                    {/* New Product from PDF */}
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Aus PDF extrahiert
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-blue-600 dark:text-blue-400">Name:</span>
+                          <p className="font-medium text-foreground">{currentDuplicate.name}</p>
+                        </div>
+                        <div>
+                          <span className="text-blue-600 dark:text-blue-400">Preis:</span>
+                          <p className={`font-medium ${currentDuplicate.price !== existingProductDetails.price ? 'text-amber-600' : 'text-foreground'}`}>
+                            {currentDuplicate.price !== null ? formatCurrency(currentDuplicate.price) : '-'}
+                            {currentDuplicate.price !== null && currentDuplicate.price !== existingProductDetails.price && (
+                              <span className="text-xs ml-1">
+                                ({currentDuplicate.price > existingProductDetails.price ? '+' : ''}{formatCurrency(currentDuplicate.price - existingProductDetails.price)})
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-blue-600 dark:text-blue-400">Bestand:</span>
+                          <p className={`font-medium ${currentDuplicate.stock_quantity !== existingProductDetails.stock_quantity ? 'text-amber-600' : 'text-foreground'}`}>
+                            {currentDuplicate.stock_quantity ?? '-'}
+                            {currentDuplicate.stock_quantity !== null && currentDuplicate.stock_quantity !== existingProductDetails.stock_quantity && (
+                              <span className="text-xs ml-1">
+                                (war: {existingProductDetails.stock_quantity})
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-blue-600 dark:text-blue-400">Kategorie:</span>
+                          <p className="font-medium text-foreground">{currentDuplicate.category || '-'}</p>
+                        </div>
+                        {currentDuplicate.description && (
+                          <div>
+                            <span className="text-blue-600 dark:text-blue-400">Beschreibung:</span>
+                            <p className="font-medium text-foreground line-clamp-2">{currentDuplicate.description}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <Separator />
+                <p className="text-sm">Was möchtest du tun?</p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 mt-4">
             <AlertDialogCancel onClick={() => handleDuplicateAction('skip')}>
               Überspringen
             </AlertDialogCancel>
@@ -863,8 +1043,17 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
               <Edit className="h-4 w-4 mr-2" />
               Bearbeiten
             </Button>
+            <Button 
+              variant="outline"
+              className="border-blue-500 text-blue-600 hover:bg-blue-50"
+              onClick={() => handleDuplicateAction('update_existing')}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Bestehendes aktualisieren
+            </Button>
             <AlertDialogAction onClick={() => handleDuplicateAction('import_anyway')}>
-              Trotzdem importieren
+              <Plus className="h-4 w-4 mr-2" />
+              Neu anlegen
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
