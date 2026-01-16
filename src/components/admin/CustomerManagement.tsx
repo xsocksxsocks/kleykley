@@ -40,6 +40,9 @@ import {
   FolderOpen,
   Search,
   Download,
+  TrendingUp,
+  Calendar,
+  Euro,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { EU_COUNTRIES } from '@/lib/countries';
@@ -579,6 +582,53 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
               Kundenhistorie: {selectedCustomer?.company_name || selectedCustomer?.full_name || selectedCustomer?.email}
             </DialogTitle>
           </DialogHeader>
+          
+          {/* Customer Statistics */}
+          {!loadingHistory && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="bg-muted/50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+                  <FileText className="h-4 w-4" />
+                  <span className="text-xs font-medium">Anfragen</span>
+                </div>
+                <p className="text-xl font-bold">{customerOrders.length}</p>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+                  <Euro className="h-4 w-4" />
+                  <span className="text-xs font-medium">Gesamtumsatz</span>
+                </div>
+                <p className="text-xl font-bold">
+                  {formatCurrency(customerOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0))}
+                </p>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="text-xs font-medium">Ø Bestellwert</span>
+                </div>
+                <p className="text-xl font-bold">
+                  {customerOrders.length > 0 
+                    ? formatCurrency(customerOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0) / customerOrders.length)
+                    : formatCurrency(0)}
+                </p>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-xs font-medium">Letzte Aktivität</span>
+                </div>
+                <p className="text-sm font-bold">
+                  {customerOrders.length > 0 
+                    ? formatDate(customerOrders[0].created_at)
+                    : selectedCustomer?.created_at 
+                      ? formatDate(selectedCustomer.created_at)
+                      : '-'}
+                </p>
+              </div>
+            </div>
+          )}
+
           <Tabs defaultValue="orders" className="w-full">
             <TabsList>
               <TabsTrigger value="orders" className="flex items-center gap-2">
@@ -590,7 +640,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
                 Dokumente ({customerDocuments.length})
               </TabsTrigger>
             </TabsList>
-            <ScrollArea className="h-[500px] mt-4">
+            <ScrollArea className="h-[400px] mt-4">
               <TabsContent value="orders" className="mt-0">
                 {loadingHistory ? (
                   <div className="flex justify-center py-8">
