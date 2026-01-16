@@ -323,7 +323,7 @@ const Portal: React.FC = () => {
               const imageUrl = getProductImage(product);
               return (
                 <Card key={product.id} className="flex flex-col relative">
-                  {(product.is_recommended || (product.discount_percentage && product.discount_percentage > 0)) && (
+                  {(product.is_recommended || (product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0)) && (
                     <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
                       {product.is_recommended && (
                         <Badge className="bg-gold text-navy-dark flex items-center gap-1">
@@ -331,7 +331,7 @@ const Portal: React.FC = () => {
                           Empfohlen
                         </Badge>
                       )}
-                      {product.discount_percentage && product.discount_percentage > 0 && (
+                      {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 && (
                         <Badge className="bg-red-500 text-white flex items-center gap-1">
                           <Percent className="h-3 w-3" />
                           -{product.discount_percentage}%
@@ -362,7 +362,7 @@ const Portal: React.FC = () => {
                       </p>
                     )}
                     <div className="mt-4">
-                      {product.discount_percentage && product.discount_percentage > 0 ? (
+                      {product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0 ? (
                         <>
                           <p className="text-sm text-muted-foreground line-through">
                             {formatCurrency(product.price)}
