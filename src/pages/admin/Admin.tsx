@@ -60,6 +60,7 @@ import AdminDashboard from '@/components/admin/AdminDashboard';
 import { DocumentUpload } from '@/components/admin/DocumentUpload';
 import { CustomerManagement } from '@/components/admin/CustomerManagement';
 import { DiscountCodeManagement } from '@/components/admin/DiscountCodeManagement';
+import { BulkProductImporter } from '@/components/admin/BulkProductImporter';
 
 interface ProductImage {
   id: string;
@@ -873,6 +874,23 @@ const Admin: React.FC = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Bulk Importer */}
+            <div className="mt-6">
+              <BulkProductImporter
+                categories={categories}
+                onImportComplete={async () => {
+                  // Refresh products list
+                  const { data: productsData } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                  if (productsData) {
+                    setProducts(productsData as Product[]);
+                  }
+                }}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="categories">

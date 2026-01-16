@@ -2,3 +2,6 @@ project_id = "elrxbgberccgztipwtcw"
 
 [functions.process-account-deletions]
 verify_jwt = false
+
+[functions.extract-products-from-pdf]
+verify_jwt = false
