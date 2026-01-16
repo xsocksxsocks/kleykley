@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      cars_for_sale: {
+        Row: {
+          brand: string
+          color: string | null
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          description_en: string | null
+          features: string[] | null
+          features_en: string[] | null
+          first_registration_date: string
+          fuel_type: string
+          id: string
+          images: string[]
+          is_featured: boolean | null
+          is_reserved: boolean | null
+          is_sold: boolean | null
+          mileage: number
+          model: string
+          power_hp: number | null
+          previous_owners: number | null
+          price: number
+          transmission: string
+          updated_at: string
+          vat_deductible: boolean | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          brand: string
+          color?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          description_en?: string | null
+          features?: string[] | null
+          features_en?: string[] | null
+          first_registration_date: string
+          fuel_type: string
+          id?: string
+          images?: string[]
+          is_featured?: boolean | null
+          is_reserved?: boolean | null
+          is_sold?: boolean | null
+          mileage: number
+          model: string
+          power_hp?: number | null
+          previous_owners?: number | null
+          price: number
+          transmission: string
+          updated_at?: string
+          vat_deductible?: boolean | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          brand?: string
+          color?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          description_en?: string | null
+          features?: string[] | null
+          features_en?: string[] | null
+          first_registration_date?: string
+          fuel_type?: string
+          id?: string
+          images?: string[]
+          is_featured?: boolean | null
+          is_reserved?: boolean | null
+          is_sold?: boolean | null
+          mileage?: number
+          model?: string
+          power_hp?: number | null
+          previous_owners?: number | null
+          price?: number
+          transmission?: string
+          updated_at?: string
+          vat_deductible?: boolean | null
+          vehicle_type?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -347,86 +428,6 @@ export type Database = {
         }
         Relationships: []
       }
-      vehicle_images: {
-        Row: {
-          created_at: string
-          id: string
-          image_url: string
-          sort_order: number
-          vehicle_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          image_url: string
-          sort_order?: number
-          vehicle_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          image_url?: string
-          sort_order?: number
-          vehicle_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vehicle_images_vehicle_id_fkey"
-            columns: ["vehicle_id"]
-            isOneToOne: false
-            referencedRelation: "vehicles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      vehicles: {
-        Row: {
-          brand: string
-          created_at: string
-          description: string | null
-          id: string
-          image_url: string | null
-          is_active: boolean
-          model: string | null
-          name: string
-          price: number
-          stock_quantity: number
-          updated_at: string
-          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
-          year: number | null
-        }
-        Insert: {
-          brand: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean
-          model?: string | null
-          name: string
-          price: number
-          stock_quantity?: number
-          updated_at?: string
-          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
-          year?: number | null
-        }
-        Update: {
-          brand?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean
-          model?: string | null
-          name?: string
-          price?: number
-          stock_quantity?: number
-          updated_at?: string
-          vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
-          year?: number | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -459,7 +460,6 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
-      vehicle_type: "auto" | "motorrad" | "baumaschine"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -596,7 +596,6 @@ export const Constants = {
         "delivered",
         "cancelled",
       ],
-      vehicle_type: ["auto", "motorrad", "baumaschine"],
     },
   },
 } as const
