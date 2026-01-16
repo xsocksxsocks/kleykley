@@ -57,6 +57,7 @@ import { ProductImageUpload } from '@/components/admin/ProductImageUpload';
 import VehicleManagement from '@/components/admin/VehicleManagement';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import { DocumentUpload } from '@/components/admin/DocumentUpload';
+import { CustomerManagement } from '@/components/admin/CustomerManagement';
 
 interface ProductImage {
   id: string;
@@ -633,98 +634,11 @@ const Admin: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="customers">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Kundenverwaltung</CardTitle>
-                <Button variant="outline" size="sm" onClick={triggerAutoApproval}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Zeitgesteuerte Freischaltung ausführen
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {loadingData ? (
-                  <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  </div>
-                ) : customers.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    Keine Kunden vorhanden.
-                  </p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>E-Mail</TableHead>
-                        <TableHead>Registriert</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Aktionen</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {customers.map((customer) => (
-                        <TableRow key={customer.id}>
-                          <TableCell className="font-medium">
-                            {customer.full_name || '-'}
-                          </TableCell>
-                          <TableCell>{customer.email}</TableCell>
-                          <TableCell>
-                            {new Date(customer.registered_at).toLocaleDateString('de-DE')}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                customer.approval_status === 'approved'
-                                  ? 'default'
-                                  : customer.approval_status === 'rejected'
-                                  ? 'destructive'
-                                  : 'secondary'
-                              }
-                            >
-                              {customer.approval_status === 'approved' && (
-                                <Check className="h-3 w-3 mr-1" />
-                              )}
-                              {customer.approval_status === 'rejected' && (
-                                <X className="h-3 w-3 mr-1" />
-                              )}
-                              {customer.approval_status === 'pending' && (
-                                <Clock className="h-3 w-3 mr-1" />
-                              )}
-                              {customer.approval_status === 'approved'
-                                ? 'Freigeschaltet'
-                                : customer.approval_status === 'rejected'
-                                ? 'Abgelehnt'
-                                : 'Wartend'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {customer.approval_status === 'pending' && (
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleApproveCustomer(customer.id)}
-                                >
-                                  <Check className="h-4 w-4 mr-1" />
-                                  Freischalten
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleRejectCustomer(customer.id)}
-                                >
-                                  <X className="h-4 w-4 mr-1" />
-                                  Ablehnen
-                                </Button>
-                              </div>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+            <CustomerManagement
+              customers={customers}
+              setCustomers={setCustomers}
+              loadingData={loadingData}
+            />
           </TabsContent>
 
           <TabsContent value="products">

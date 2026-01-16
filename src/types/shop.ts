@@ -7,6 +7,7 @@ export interface Profile {
   address: string | null;
   city: string | null;
   postal_code: string | null;
+  country: string | null;
   approval_status: 'pending' | 'approved' | 'rejected';
   registered_at: string;
   approved_at: string | null;
