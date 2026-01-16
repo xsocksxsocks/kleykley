@@ -295,14 +295,27 @@ const Warenkorb: React.FC = () => {
                           variant="outline"
                           size="icon"
                           onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
-                        <span className="w-8 text-center">{item.quantity}</span>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={item.product.stock_quantity > 0 ? item.product.stock_quantity : undefined}
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 1;
+                            const maxVal = item.product.stock_quantity > 0 ? item.product.stock_quantity : val;
+                            updateQuantity(item.product.id, Math.max(1, Math.min(val, maxVal)));
+                          }}
+                          className="w-16 text-center"
+                        />
                         <Button
                           variant="outline"
                           size="icon"
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          disabled={item.product.stock_quantity > 0 && item.quantity >= item.product.stock_quantity}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
