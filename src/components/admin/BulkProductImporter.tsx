@@ -63,7 +63,7 @@ interface ExtractedProduct {
   editing: boolean;
   isDuplicate: boolean;
   existingProductId?: string;
-  updateExisting?: boolean; // New: flag to update instead of create
+  updateExisting?: boolean;
 }
 
 interface Category {
@@ -90,6 +90,17 @@ interface ExistingProductDetails {
   stock_quantity: number;
   category_id: string | null;
   category_name?: string;
+}
+
+interface ImportReportItem {
+  name: string;
+  type: 'created' | 'updated' | 'error';
+  changes?: {
+    field: string;
+    oldValue: string;
+    newValue: string;
+  }[];
+  error?: string;
 }
 
 interface BulkProductImporterProps {
@@ -119,6 +130,10 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
   const [currentDuplicate, setCurrentDuplicate] = useState<ExtractedProduct | null>(null);
   const [existingProductDetails, setExistingProductDetails] = useState<ExistingProductDetails | null>(null);
   const [loadingExistingProduct, setLoadingExistingProduct] = useState(false);
+  
+  // Import report
+  const [importReport, setImportReport] = useState<ImportReportItem[]>([]);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   // Fetch existing products for duplicate detection
   useEffect(() => {
@@ -321,6 +336,19 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
     })));
   };
 
+  // Batch mark all duplicates for update
+  const handleMarkAllDuplicatesForUpdate = () => {
+    setProducts((prev) => prev.map((p) => 
+      p.isDuplicate 
+        ? { ...p, selected: true, updateExisting: true }
+        : p
+    ));
+    toast({
+      title: 'Duplikate markiert',
+      description: `${duplicateCount} Duplikat${duplicateCount !== 1 ? 'e' : ''} werden beim Import aktualisiert.`,
+    });
+  };
+
   const handleStartEdit = (product: ExtractedProduct) => {
     setEditingProduct({ ...product });
   };
@@ -410,10 +438,11 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
       // Combine existing and new categories for lookup
       const allCategories = [...categories, ...createdCategories];
 
-      // Step 2: Import/Update products
+      // Step 2: Import/Update products with detailed tracking
       let successCount = 0;
       let updateCount = 0;
       let errorCount = 0;
+      const report: ImportReportItem[] = [];
 
       for (let i = 0; i < selectedProducts.length; i++) {
         const product = selectedProducts[i];
@@ -423,11 +452,13 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
         
         // Find category ID - check both existing and newly created categories
         let categoryId: string | null = null;
+        let categoryName: string | null = null;
         if (product.category) {
           const categoryMatch = allCategories.find(
             (c) => c.name.toLowerCase() === product.category?.toLowerCase()
           );
           categoryId = categoryMatch?.id || null;
+          categoryName = categoryMatch?.name || product.category;
         }
 
         const productData = {
@@ -441,6 +472,12 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
 
         // Check if we should update existing product
         if (product.updateExisting && product.existingProductId) {
+          // Get existing product data for comparison
+          const existingProduct = existingProducts.find((p) => p.id === product.existingProductId);
+          const existingCategory = existingProduct?.category_id 
+            ? allCategories.find((c) => c.id === existingProduct.category_id)?.name 
+            : null;
+          
           const { error } = await supabase
             .from('products')
             .update(productData)
@@ -449,8 +486,60 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
           if (error) {
             console.error('Error updating product:', error);
             errorCount++;
+            report.push({
+              name: product.name,
+              type: 'error',
+              error: error.message,
+            });
           } else {
             updateCount++;
+            
+            // Build changes list
+            const changes: ImportReportItem['changes'] = [];
+            
+            if (existingProduct) {
+              if (existingProduct.name !== product.name) {
+                changes.push({ 
+                  field: 'Name', 
+                  oldValue: existingProduct.name, 
+                  newValue: product.name 
+                });
+              }
+              if (existingProduct.price !== (product.price || 0)) {
+                changes.push({ 
+                  field: 'Preis', 
+                  oldValue: formatCurrency(existingProduct.price), 
+                  newValue: formatCurrency(product.price || 0) 
+                });
+              }
+              if (existingProduct.stock_quantity !== (product.stock_quantity || 0)) {
+                changes.push({ 
+                  field: 'Bestand', 
+                  oldValue: String(existingProduct.stock_quantity), 
+                  newValue: String(product.stock_quantity || 0) 
+                });
+              }
+              if ((existingProduct.description || '') !== (product.description || '')) {
+                changes.push({ 
+                  field: 'Beschreibung', 
+                  oldValue: existingProduct.description?.slice(0, 50) || '-', 
+                  newValue: product.description?.slice(0, 50) || '-' 
+                });
+              }
+              if (existingCategory !== categoryName) {
+                changes.push({ 
+                  field: 'Kategorie', 
+                  oldValue: existingCategory || '-', 
+                  newValue: categoryName || '-' 
+                });
+              }
+            }
+            
+            report.push({
+              name: product.name,
+              type: 'updated',
+              changes: changes.length > 0 ? changes : [{ field: 'Keine Änderungen', oldValue: '-', newValue: '-' }],
+            });
           }
         } else {
           const { error } = await supabase.from('products').insert(productData);
@@ -458,11 +547,23 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
           if (error) {
             console.error('Error inserting product:', error);
             errorCount++;
+            report.push({
+              name: product.name,
+              type: 'error',
+              error: error.message,
+            });
           } else {
             successCount++;
+            report.push({
+              name: product.name,
+              type: 'created',
+            });
           }
         }
       }
+
+      // Store report and show dialog
+      setImportReport(report);
 
       const parts = [];
       if (successCount > 0) parts.push(`${successCount} neu importiert`);
@@ -472,7 +573,7 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
 
       toast({
         title: 'Import abgeschlossen',
-        description: parts.join(', ') + '.',
+        description: parts.join(', ') + '. Klicke auf "Bericht anzeigen" für Details.',
         variant: errorCount > 0 ? 'destructive' : 'default',
       });
 
@@ -480,6 +581,8 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
         setProducts([]);
         setFile(null);
         setNewCategoriesToCreate([]);
+        setReportDialogOpen(true); // Show report dialog
+        onImportComplete();
         onImportComplete();
       }
     } catch (error: any) {
@@ -592,17 +695,28 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
           {/* Duplicate Warning */}
           {duplicateCount > 0 && (
             <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-amber-800 dark:text-amber-300">
-                    {duplicateCount} Duplikat{duplicateCount !== 1 ? 'e' : ''} erkannt
-                  </h4>
-                  <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
-                    Diese Produkte existieren bereits. Du kannst sie bearbeiten, 
-                    trotzdem importieren oder überspringen.
-                  </p>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-amber-800 dark:text-amber-300">
+                      {duplicateCount} Duplikat{duplicateCount !== 1 ? 'e' : ''} erkannt
+                    </h4>
+                    <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
+                      Diese Produkte existieren bereits. Du kannst sie bearbeiten, 
+                      trotzdem importieren oder überspringen.
+                    </p>
+                  </div>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-500 text-blue-600 hover:bg-blue-50 shrink-0"
+                  onClick={handleMarkAllDuplicatesForUpdate}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Alle aktualisieren
+                </Button>
               </div>
             </div>
           )}
@@ -1054,6 +1168,113 @@ export const BulkProductImporter: React.FC<BulkProductImporterProps> = ({
             <AlertDialogAction onClick={() => handleDuplicateAction('import_anyway')}>
               <Plus className="h-4 w-4 mr-2" />
               Neu anlegen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Import Report Dialog */}
+      <AlertDialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <AlertDialogContent className="max-w-3xl max-h-[80vh]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Import-Bericht
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Detaillierte Übersicht aller importierten und aktualisierten Produkte.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <ScrollArea className="max-h-[50vh] pr-4">
+            <div className="space-y-3">
+              {importReport.map((item, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded-lg border ${
+                    item.type === 'created'
+                      ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
+                      : item.type === 'updated'
+                      ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'
+                      : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      {item.type === 'created' && (
+                        <Badge variant="outline" className="border-green-500 text-green-600">
+                          <Plus className="h-3 w-3 mr-1" />
+                          Neu
+                        </Badge>
+                      )}
+                      {item.type === 'updated' && (
+                        <Badge variant="outline" className="border-blue-500 text-blue-600">
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Aktualisiert
+                        </Badge>
+                      )}
+                      {item.type === 'error' && (
+                        <Badge variant="outline" className="border-red-500 text-red-600">
+                          <X className="h-3 w-3 mr-1" />
+                          Fehler
+                        </Badge>
+                      )}
+                      <span className="font-medium">{item.name}</span>
+                    </div>
+                  </div>
+                  
+                  {item.type === 'updated' && item.changes && item.changes.length > 0 && (
+                    <div className="mt-2 pl-4 border-l-2 border-blue-300 dark:border-blue-700">
+                      <p className="text-xs text-muted-foreground mb-1">Änderungen:</p>
+                      <div className="space-y-1">
+                        {item.changes.map((change, changeIndex) => (
+                          <div key={changeIndex} className="text-sm flex items-center gap-2">
+                            <span className="text-muted-foreground">{change.field}:</span>
+                            <span className="text-red-500 line-through">{change.oldValue}</span>
+                            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-green-600 font-medium">{change.newValue}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {item.type === 'error' && item.error && (
+                    <p className="mt-2 text-sm text-red-600">{item.error}</p>
+                  )}
+                </div>
+              ))}
+              
+              {importReport.length === 0 && (
+                <p className="text-center text-muted-foreground py-4">
+                  Keine Einträge im Bericht.
+                </p>
+              )}
+            </div>
+          </ScrollArea>
+          
+          <div className="pt-4 border-t">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-green-500"></div>
+                  {importReport.filter((r) => r.type === 'created').length} neu
+                </span>
+                <span className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-blue-500"></div>
+                  {importReport.filter((r) => r.type === 'updated').length} aktualisiert
+                </span>
+                <span className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-red-500"></div>
+                  {importReport.filter((r) => r.type === 'error').length} Fehler
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setReportDialogOpen(false)}>
+              Schließen
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
