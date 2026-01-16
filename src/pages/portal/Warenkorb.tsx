@@ -33,9 +33,14 @@ interface DiscountCode {
 
 const Warenkorb: React.FC = () => {
   const { user, profile, isApproved, isAdmin, loading } = useAuth();
-  const { items, vehicleItems, updateQuantity, removeFromCart, removeVehicleFromCart, clearCart } = useCart();
+  const { items, vehicleItems, updateQuantity, removeFromCart, removeVehicleFromCart, clearCart, validateCart } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Validate cart on mount to remove deleted products
+  useEffect(() => {
+    validateCart();
+  }, [validateCart]);
 
   // Redirect non-approved users
   useEffect(() => {
