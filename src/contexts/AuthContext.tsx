@@ -119,6 +119,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  // Listen for realtime changes to user's profile (e.g., being blocked)
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`profile-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newProfile = payload.new as Profile;
+          
+          // If user was blocked, sign them out immediately
+          if (newProfile.is_blocked && !profile?.is_blocked) {
+            signOut();
+          } else {
+            // Update profile with new data
+            setProfile(newProfile);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, profile?.is_blocked]);
+
   const signUp = async (
     email: string,
     password: string,
