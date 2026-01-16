@@ -419,14 +419,14 @@ const Warenkorb: React.FC = () => {
                           )}
                         </div>
                         {hasDiscount ? (
-                          <>
+                          <div className="flex items-center gap-2">
                             <p className="text-muted-foreground text-sm line-through">
                               {formatCurrency(item.product.price)}
                             </p>
                             <p className="text-red-600 font-medium text-sm">
                               {formatCurrency(discountedPrice)} netto
                             </p>
-                          </>
+                          </div>
                         ) : (
                           <p className="text-muted-foreground text-sm">
                             {formatCurrency(item.product.price)} netto
