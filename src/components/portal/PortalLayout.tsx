@@ -22,6 +22,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
   const isOnPortalHome = location.pathname === '/portal';
   const isOnProfil = location.pathname === '/portal/profil';
   const isOnAnfragen = location.pathname === '/portal/anfragen';
+  const isOnWarenkorb = location.pathname === '/portal/warenkorb';
 
   const handleSignOut = async () => {
     await signOut();
@@ -95,7 +96,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                       <span className="hidden sm:inline">Meine Angebote</span>
                     </Link>
                   </Button>
-                  <CartDropdown />
+                  <CartDropdown isActive={isOnWarenkorb} />
                 </>
               )}
               <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-cream hover:bg-gold/10 hover:text-gold">

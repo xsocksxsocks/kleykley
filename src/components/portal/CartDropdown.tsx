@@ -11,8 +11,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ShoppingCart, Trash2, Package, Plus, Minus, Car } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export const CartDropdown: React.FC = () => {
+interface CartDropdownProps {
+  isActive?: boolean;
+}
+
+export const CartDropdown: React.FC<CartDropdownProps> = ({ isActive = false }) => {
   const { items, vehicleItems, totalItems, totalPrice, removeFromCart, removeVehicleFromCart, updateQuantity } = useCart();
 
   const hasItems = items.length > 0 || vehicleItems.length > 0;
@@ -23,7 +28,10 @@ export const CartDropdown: React.FC = () => {
         <Button 
           variant="outline" 
           size="sm" 
-          className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold relative"
+          className={cn(
+            "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold relative",
+            isActive && "bg-gold/20 text-gold border-gold/50"
+          )}
         >
           <ShoppingCart className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">Warenkorb</span>
