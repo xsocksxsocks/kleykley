@@ -50,7 +50,7 @@ import {
   Tag,
   Car,
   LayoutDashboard,
-  FolderOpen,
+  
   Percent,
   Download,
   Upload,
@@ -68,7 +68,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ProductImageUpload } from '@/components/admin/ProductImageUpload';
 import VehicleManagement from '@/components/admin/VehicleManagement';
 import AdminDashboard from '@/components/admin/AdminDashboard';
-import { DocumentUpload } from '@/components/admin/DocumentUpload';
+
 import { CustomerManagement } from '@/components/admin/CustomerManagement';
 import { DiscountCodeManagement } from '@/components/admin/DiscountCodeManagement';
 import { BulkProductImporter } from '@/components/admin/BulkProductImporter';
@@ -690,10 +690,6 @@ const Admin: React.FC = () => {
             <TabsTrigger value="discounts" className="flex items-center gap-2">
               <Percent className="h-4 w-4" />
               Rabattcodes
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="flex items-center gap-2">
-              <FolderOpen className="h-4 w-4" />
-              Dokumente
             </TabsTrigger>
             <TabsTrigger value="emails" className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
@@ -1418,9 +1414,6 @@ const Admin: React.FC = () => {
             <DiscountCodeManagement />
           </TabsContent>
 
-          <TabsContent value="documents">
-            <DocumentUpload />
-          </TabsContent>
 
           <TabsContent value="emails">
             <EmailLogViewer />

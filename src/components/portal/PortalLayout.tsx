@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Settings, FileText, User, Home, Heart, FolderOpen, ChevronDown, Moon, Sun } from 'lucide-react';
+import { LogOut, Settings, FileText, User, Home, Heart, ChevronDown, Moon, Sun } from 'lucide-react';
 import { PortalFooter } from './PortalFooter';
 import { CartDropdown } from './CartDropdown';
 import { PortalBreadcrumb } from './PortalBreadcrumb';
@@ -33,8 +33,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
   const isOnAnfragen = location.pathname === '/portal/anfragen';
   const isOnWarenkorb = location.pathname === '/portal/warenkorb';
   const isOnFavoriten = location.pathname === '/portal/favoriten';
-  const isOnDokumente = location.pathname === '/portal/dokumente';
-  const isOnUserMenu = isOnProfil || isOnFavoriten || isOnDokumente || isOnAnfragen;
+  const isOnUserMenu = isOnProfil || isOnFavoriten || isOnAnfragen;
 
   const handleSignOut = async () => {
     await signOut();
@@ -118,12 +117,6 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                         <Link to="/portal/favoriten" className={cn("flex items-center gap-2 cursor-pointer", isOnFavoriten && "bg-muted")}>
                           <Heart className="h-4 w-4" />
                           Favoriten
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/portal/dokumente" className={cn("flex items-center gap-2 cursor-pointer", isOnDokumente && "bg-muted")}>
-                          <FolderOpen className="h-4 w-4" />
-                          Dokumente
                         </Link>
                       </DropdownMenuItem>
                     </>
