@@ -189,6 +189,53 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
     }
   };
 
+  const handleChangeStatus = async (customerId: string, newStatus: 'pending' | 'approved' | 'rejected') => {
+    try {
+      const updateData: { approval_status: typeof newStatus; approved_at?: string | null } = {
+        approval_status: newStatus,
+      };
+      
+      if (newStatus === 'approved') {
+        updateData.approved_at = new Date().toISOString();
+      } else {
+        updateData.approved_at = null;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', customerId);
+
+      if (error) throw error;
+
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === customerId
+            ? { ...c, approval_status: newStatus, approved_at: updateData.approved_at || null }
+            : c
+        )
+      );
+
+      const statusLabels = {
+        pending: 'Wartend',
+        approved: 'Freigeschaltet',
+        rejected: 'Abgelehnt',
+      };
+
+      toast({
+        title: 'Status geändert',
+        description: `Kundenstatus auf "${statusLabels[newStatus]}" gesetzt.`,
+      });
+    } catch (error) {
+      console.error('Error changing customer status:', error);
+      toast({
+        title: 'Fehler',
+        description: 'Status konnte nicht geändert werden.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const triggerAutoApproval = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('process-auto-approvals');
@@ -423,7 +470,37 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 items-center">
+                        <Select
+                          value={customer.approval_status}
+                          onValueChange={(value: 'pending' | 'approved' | 'rejected') => 
+                            handleChangeStatus(customer.id, value)
+                          }
+                        >
+                          <SelectTrigger className="w-[140px] h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-3 w-3" />
+                                Wartend
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="approved">
+                              <div className="flex items-center gap-2">
+                                <Check className="h-3 w-3" />
+                                Freigeschaltet
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="rejected">
+                              <div className="flex items-center gap-2">
+                                <X className="h-3 w-3" />
+                                Abgelehnt
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                         <Button
                           size="sm"
                           variant="outline"
@@ -440,25 +517,6 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {customer.approval_status === 'pending' && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => handleApproveCustomer(customer.id)}
-                              title="Freischalten"
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleRejectCustomer(customer.id)}
-                              title="Ablehnen"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
                       </div>
                     </TableCell>
                   </TableRow>
