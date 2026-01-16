@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   ShoppingCart, 
@@ -388,15 +389,35 @@ const ProduktDetail: React.FC = () => {
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-12 text-center font-medium">{quantity}</span>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={product.stock_quantity > 0 ? product.stock_quantity : undefined}
+                    value={quantity}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 1;
+                      const maxVal = product.stock_quantity > 0 ? product.stock_quantity : val;
+                      setQuantity(Math.max(1, Math.min(val, maxVal)));
+                    }}
+                    className="w-20 text-center"
+                  />
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() => {
+                      const maxVal = product.stock_quantity > 0 ? product.stock_quantity : quantity + 1;
+                      setQuantity(Math.min(quantity + 1, maxVal));
+                    }}
+                    disabled={product.stock_quantity > 0 && quantity >= product.stock_quantity}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
+                {product.stock_quantity > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    (max. {product.stock_quantity})
+                  </span>
+                )}
               </div>
 
               <Button 
