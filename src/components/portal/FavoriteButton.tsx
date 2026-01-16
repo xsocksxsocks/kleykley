@@ -37,8 +37,9 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
       onClick={handleClick}
       disabled={loading}
       className={cn(
-        "hover:bg-gold/10",
-        isFav && "text-red-500 hover:text-red-600",
+        "rounded-full hover:bg-accent/20",
+        isFav && "text-red-500 hover:text-red-500",
+        !isFav && "hover:text-red-400",
         className
       )}
       title={isFav ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen"}
