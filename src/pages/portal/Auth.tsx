@@ -94,20 +94,29 @@ const Auth: React.FC = () => {
 
     setIsResetting(true);
     
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/portal/auth`,
-    });
-    
-    setIsResetting(false);
-
-    if (error) {
+    try {
+      // Use custom Edge Function for password reset email
+      const { error } = await supabase.functions.invoke('send-password-reset', {
+        body: {
+          email: resetEmail,
+          redirectUrl: `${window.location.origin}/portal/reset-password`,
+        },
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      setResetEmailSent(true);
+    } catch (error: any) {
+      console.error('Password reset error:', error);
       toast({
         title: 'Fehler',
         description: 'Es konnte keine E-Mail gesendet werden. Bitte versuchen Sie es später erneut.',
         variant: 'destructive',
       });
-    } else {
-      setResetEmailSent(true);
+    } finally {
+      setIsResetting(false);
     }
   };
 

@@ -15,6 +15,7 @@ import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/portal/Auth";
+import ResetPassword from "./pages/portal/ResetPassword";
 import Portal from "./pages/portal/Portal";
 import Warenkorb from "./pages/portal/Warenkorb";
 import Anfragen from "./pages/portal/Anfragen";
@@ -46,6 +47,7 @@ const App = () => (
                 <Route path="/datenschutz" element={<Datenschutz />} />
                 <Route path="/portal" element={<Portal />} />
                 <Route path="/portal/auth" element={<Auth />} />
+                <Route path="/portal/reset-password" element={<ResetPassword />} />
                 <Route path="/portal/warenkorb" element={<Warenkorb />} />
                 <Route path="/portal/anfragen" element={<Anfragen />} />
                 <Route path="/portal/profil" element={<Profil />} />
