@@ -51,7 +51,7 @@ import {
   Tag,
   Car,
   LayoutDashboard,
-  
+  Search,
   Percent,
   Download,
   Upload,
@@ -160,6 +160,7 @@ const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [productCategoryFilter, setProductCategoryFilter] = useState<string>('all');
+  const [productSearchQuery, setProductSearchQuery] = useState<string>('');
   
   // Product form state
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -1003,33 +1004,64 @@ const Admin: React.FC = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                {/* Category Filter */}
-                <div className="mb-4 flex flex-wrap gap-2 items-center">
-                  <span className="text-sm text-muted-foreground">Filter:</span>
-                  <Select value={productCategoryFilter} onValueChange={setProductCategoryFilter}>
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Alle Kategorien" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Alle Kategorien</SelectItem>
-                      <SelectItem value="no_category">⚠️ Ohne Kategorie</SelectItem>
-                      {categories.filter(c => c.parent_id === null).map(parent => (
-                        <React.Fragment key={parent.id}>
-                          <SelectItem value={`parent_${parent.id}`} className="font-semibold">
-                            {parent.name}
-                          </SelectItem>
-                          {categories.filter(c => c.parent_id === parent.id).map(sub => (
-                            <SelectItem key={sub.id} value={sub.id} className="pl-6">
-                              └ {sub.name}
+                {/* Search and Category Filter */}
+                <div className="mb-4 flex flex-wrap gap-4 items-center">
+                  <div className="relative flex-1 min-w-[200px] max-w-[400px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Produkte suchen..."
+                      value={productSearchQuery}
+                      onChange={(e) => setProductSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                    {productSearchQuery && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+                        onClick={() => setProductSearchQuery('')}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Kategorie:</span>
+                    <Select value={productCategoryFilter} onValueChange={setProductCategoryFilter}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Alle Kategorien" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Alle Kategorien</SelectItem>
+                        <SelectItem value="no_category">⚠️ Ohne Kategorie</SelectItem>
+                        {categories.filter(c => c.parent_id === null).map(parent => (
+                          <React.Fragment key={parent.id}>
+                            <SelectItem value={`parent_${parent.id}`} className="font-semibold">
+                              {parent.name}
                             </SelectItem>
-                          ))}
-                        </React.Fragment>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                            {categories.filter(c => c.parent_id === parent.id).map(sub => (
+                              <SelectItem key={sub.id} value={sub.id} className="pl-6">
+                                └ {sub.name}
+                              </SelectItem>
+                            ))}
+                          </React.Fragment>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   {productCategoryFilter === 'no_category' && (
-                    <Badge variant="destructive" className="ml-2">
+                    <Badge variant="destructive">
                       {products.filter(p => !(p as any).category_id).length} Produkte ohne Kategorie
+                    </Badge>
+                  )}
+                  {productSearchQuery && (
+                    <Badge variant="secondary">
+                      {products.filter(p => {
+                        const searchLower = productSearchQuery.toLowerCase();
+                        return p.name.toLowerCase().includes(searchLower) ||
+                          (p.description?.toLowerCase().includes(searchLower)) ||
+                          (p.product_number?.toLowerCase().includes(searchLower));
+                      }).length} Treffer
                     </Badge>
                   )}
                 </div>
@@ -1056,6 +1088,15 @@ const Admin: React.FC = () => {
                     </TableHeader>
                     <TableBody>
                       {products.filter((product) => {
+                        // First apply search filter
+                        if (productSearchQuery) {
+                          const searchLower = productSearchQuery.toLowerCase();
+                          const matchesSearch = product.name.toLowerCase().includes(searchLower) ||
+                            (product.description?.toLowerCase().includes(searchLower)) ||
+                            (product.product_number?.toLowerCase().includes(searchLower));
+                          if (!matchesSearch) return false;
+                        }
+                        // Then apply category filter
                         if (productCategoryFilter === 'all') return true;
                         if (productCategoryFilter === 'no_category') return !(product as any).category_id;
                         if (productCategoryFilter.startsWith('parent_')) {
