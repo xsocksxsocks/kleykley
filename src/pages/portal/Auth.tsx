@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,10 +14,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import logoImage from '@/assets/logo-kley.png';
 import { EU_COUNTRIES } from '@/lib/countries';
+import { Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
@@ -39,6 +48,10 @@ const signupSchema = z.object({
   country: z.string().min(1, 'Bitte wählen Sie ein Land'),
 });
 
+const resetEmailSchema = z.object({
+  email: z.string().email('Ungültige E-Mail-Adresse'),
+});
+
 const Auth: React.FC = () => {
   const { user, signIn, signUp, loading } = useAuth();
   const navigate = useNavigate();
@@ -58,6 +71,52 @@ const Auth: React.FC = () => {
     country: 'Deutschland',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Password reset state
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetEmailError, setResetEmailError] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetEmailError('');
+    
+    try {
+      resetEmailSchema.parse({ email: resetEmail });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setResetEmailError(error.errors[0]?.message || 'Ungültige E-Mail');
+        return;
+      }
+    }
+
+    setIsResetting(true);
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/portal/auth`,
+    });
+    
+    setIsResetting(false);
+
+    if (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Es konnte keine E-Mail gesendet werden. Bitte versuchen Sie es später erneut.',
+        variant: 'destructive',
+      });
+    } else {
+      setResetEmailSent(true);
+    }
+  };
+
+  const closeResetDialog = () => {
+    setResetDialogOpen(false);
+    setResetEmail('');
+    setResetEmailError('');
+    setResetEmailSent(false);
+  };
 
   useEffect(() => {
     if (user && !loading) {
@@ -221,6 +280,19 @@ const Auth: React.FC = () => {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Wird angemeldet...' : 'Anmelden'}
                 </Button>
+                <div className="text-center mt-4">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="text-sm text-muted-foreground hover:text-primary"
+                    onClick={() => {
+                      setResetEmail(loginData.email);
+                      setResetDialogOpen(true);
+                    }}
+                  >
+                    Passwort vergessen?
+                  </Button>
+                </div>
               </form>
             </TabsContent>
             
@@ -365,6 +437,76 @@ const Auth: React.FC = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={resetDialogOpen} onOpenChange={closeResetDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Passwort zurücksetzen</DialogTitle>
+            <DialogDescription>
+              Geben Sie Ihre E-Mail-Adresse ein. Wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {resetEmailSent ? (
+            <div className="space-y-4 py-4">
+              <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md p-4">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  ✓ Eine E-Mail mit einem Link zum Zurücksetzen Ihres Passworts wurde an <strong>{resetEmail}</strong> gesendet.
+                </p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Bitte überprüfen Sie auch Ihren Spam-Ordner, falls Sie keine E-Mail erhalten.
+              </p>
+              <Button onClick={closeResetDialog} className="w-full">
+                Schließen
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handlePasswordReset} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">E-Mail-Adresse</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => {
+                    setResetEmail(e.target.value);
+                    setResetEmailError('');
+                  }}
+                  placeholder="ihre@email.de"
+                  disabled={isResetting}
+                  autoFocus
+                />
+                {resetEmailError && (
+                  <p className="text-sm text-destructive">{resetEmailError}</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeResetDialog}
+                  className="flex-1"
+                  disabled={isResetting}
+                >
+                  Abbrechen
+                </Button>
+                <Button type="submit" className="flex-1" disabled={isResetting}>
+                  {isResetting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Wird gesendet...
+                    </>
+                  ) : (
+                    'E-Mail senden'
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
