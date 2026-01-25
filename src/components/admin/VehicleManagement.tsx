@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Car, Bike, Truck, Upload, X, Star, CheckCircle, Clock, FileJson } from 'lucide-react';
+import { Plus, Edit, Trash2, Car, Bike, Truck, Upload, X, Star, CheckCircle, Clock, FileJson, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { VEHICLE_BRANDS, VEHICLE_TYPE_LABELS } from '@/lib/vehicleBrands';
 
@@ -74,6 +74,7 @@ const VehicleManagement: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCar, setEditingCar] = useState<CarForSale | null>(null);
   const [filterType, setFilterType] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [uploadingImages, setUploadingImages] = useState(false);
   const [importingJson, setImportingJson] = useState(false);
   
@@ -429,9 +430,23 @@ const VehicleManagement: React.FC = () => {
     }
   };
 
-  const filteredCars = filterType === 'all' 
-    ? cars 
-    : cars.filter((c) => c.vehicle_type === filterType);
+  const filteredCars = cars.filter((car) => {
+    // Apply search filter first
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = 
+        car.brand.toLowerCase().includes(query) ||
+        car.model.toLowerCase().includes(query) ||
+        (car.description?.toLowerCase().includes(query)) ||
+        (car.color?.toLowerCase().includes(query)) ||
+        car.fuel_type.toLowerCase().includes(query) ||
+        car.vehicle_type.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+    // Then apply type filter
+    if (filterType === 'all') return true;
+    return car.vehicle_type === filterType;
+  });
 
   const getCurrentBrands = () => {
     switch (form.vehicle_type) {
@@ -808,13 +823,41 @@ const VehicleManagement: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent>
+        {/* Search and Filter */}
+        <div className="mb-4 flex flex-wrap gap-4 items-center">
+          <div className="relative flex-1 min-w-[200px] max-w-[400px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Fahrzeuge suchen..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+                onClick={() => setSearchQuery('')}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+          {searchQuery && (
+            <Badge variant="secondary">
+              {filteredCars.length} Treffer
+            </Badge>
+          )}
+        </div>
+        
         {loading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : filteredCars.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
-            Keine Fahrzeuge vorhanden.
+            {searchQuery ? 'Keine Fahrzeuge gefunden.' : 'Keine Fahrzeuge vorhanden.'}
           </p>
         ) : (
           <Table>
