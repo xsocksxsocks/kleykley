@@ -111,12 +111,13 @@ const Warenkorb: React.FC = () => {
       taxTotal += itemTax;
     });
 
-    // Vehicles (assume 19% tax for vehicles with vat_deductible)
+    // Vehicles (19% tax only for vehicles WITHOUT vat_deductible - "MwSt. ausweisbar" means VAT is already included in net price)
     vehicleItems.forEach((item) => {
       const originalPrice = item.vehicle.price;
       const discountPercentage = item.vehicle.discount_percentage || 0;
       const discountedPrice = calculateDiscountedPrice(item.vehicle.price, discountPercentage);
-      const itemTax = item.vehicle.vat_deductible ? calculateTax(discountedPrice, 19) : 0;
+      // If vat_deductible is true, VAT is already accounted for (Differenzbesteuerung), so no additional VAT
+      const itemTax = item.vehicle.vat_deductible ? 0 : calculateTax(discountedPrice, 19);
       
       discountTotal += originalPrice - discountedPrice;
       netTotal += discountedPrice;
@@ -583,7 +584,9 @@ const Warenkorb: React.FC = () => {
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                          zzgl. 19% MwSt.{item.vehicle.vat_deductible && ' (ausweisbar)'}
+                          {item.vehicle.vat_deductible 
+                            ? '✓ MwSt. ausweisbar (bereits im Preis)' 
+                            : 'zzgl. 19% MwSt.'}
                         </p>
                       </div>
                       <div className="text-right w-28">
