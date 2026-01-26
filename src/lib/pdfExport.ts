@@ -110,21 +110,26 @@ const addFooter = (doc: jsPDF, pageNumber: number, totalPages: number) => {
   const pageHeight = doc.internal.pageSize.height;
   const pageWidth = doc.internal.pageSize.width;
   
-  // Light separator line
-  doc.setDrawColor(...COLORS.textMuted);
-  doc.setLineWidth(0.3);
-  doc.line(15, pageHeight - 20, pageWidth - 15, pageHeight - 20);
+  // Footer background
+  doc.setFillColor(...COLORS.navy);
+  doc.rect(0, pageHeight - 25, pageWidth, 25, 'F');
+  
+  // Gold line above footer
+  doc.setDrawColor(...COLORS.gold);
+  doc.setLineWidth(0.5);
+  doc.line(20, pageHeight - 25, pageWidth - 20, pageHeight - 25);
   
   // Impressum text
   doc.setFontSize(7);
-  doc.setTextColor(...COLORS.textMuted);
+  doc.setTextColor(...COLORS.white);
   doc.setFont('helvetica', 'normal');
   
-  const impressumText = `${IMPRESSUM.company} | ${IMPRESSUM.address} | ${IMPRESSUM.vatId}`;
-  doc.text(impressumText, 15, pageHeight - 12);
+  const impressumText = `${IMPRESSUM.company} | ${IMPRESSUM.address} | ${IMPRESSUM.vatId} | ${IMPRESSUM.email}`;
+  doc.text(impressumText, pageWidth / 2, pageHeight - 15, { align: 'center' });
   
-  // Page number on the right
-  doc.text(`Seite ${pageNumber} von ${totalPages}`, pageWidth - 15, pageHeight - 12, { align: 'right' });
+  // Page number
+  doc.setFontSize(8);
+  doc.text(`Seite ${pageNumber} von ${totalPages}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
 };
 
 const addHeader = async (doc: jsPDF, logoBase64: string) => {
@@ -134,100 +139,98 @@ const addHeader = async (doc: jsPDF, logoBase64: string) => {
 const addHeaderSync = (doc: jsPDF, logoBase64: string) => {
   const pageWidth = doc.internal.pageSize.width;
   
-  // Add logo on the left
+  // Header background
+  doc.setFillColor(...COLORS.navy);
+  doc.rect(0, 0, pageWidth, 30, 'F');
+  
+  // Add logo (proportionally scaled - aspect ratio ~2.8:1)
   try {
     const logoWidth = 36;
     const logoHeight = 13;
-    doc.addImage(logoBase64, 'PNG', 15, 12, logoWidth, logoHeight);
+    doc.addImage(logoBase64, 'PNG', 15, 9, logoWidth, logoHeight);
   } catch (error) {
     console.error('Error adding logo to header:', error);
   }
   
-  // Title next to logo
-  doc.setFontSize(16);
-  doc.setTextColor(...COLORS.navy);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Bestandsliste', 55, 20);
-  
-  // Company info on the right
-  doc.setFontSize(8);
-  doc.setTextColor(...COLORS.textDark);
-  doc.setFont('helvetica', 'bold');
-  doc.text(IMPRESSUM.company, pageWidth - 15, 12, { align: 'right' });
-  
+  // Date on the right
+  doc.setFontSize(9);
+  doc.setTextColor(...COLORS.white);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.text(IMPRESSUM.address, pageWidth - 15, 17, { align: 'right' });
-  doc.text(`E-Mail: ${IMPRESSUM.email}`, pageWidth - 15, 21, { align: 'right' });
-  doc.text(`T: ${IMPRESSUM.phone}`, pageWidth - 15, 25, { align: 'right' });
+  doc.text(`Stand: ${formatDate(new Date().toISOString())}`, pageWidth - 15, 18, { align: 'right' });
   
-  // Separator line below header
-  doc.setDrawColor(...COLORS.textMuted);
-  doc.setLineWidth(0.3);
-  doc.line(15, 32, pageWidth - 15, 32);
+  // Gold line below header
+  doc.setDrawColor(...COLORS.gold);
+  doc.setLineWidth(1);
+  doc.line(0, 30, pageWidth, 30);
 };
 
 const createCoverPage = async (doc: jsPDF, logoBase64: string) => {
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
   
-  // White background (default)
+  // Full navy background
+  doc.setFillColor(...COLORS.navy);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
   
-  // Add logo (centered, larger)
+  // Gold decorative lines
+  doc.setDrawColor(...COLORS.gold);
+  doc.setLineWidth(2);
+  doc.line(30, 60, pageWidth - 30, 60);
+  doc.line(30, pageHeight - 80, pageWidth - 30, pageHeight - 80);
+  
+  // Add logo (centered, larger - aspect ratio ~2.8:1)
   try {
     const logoWidth = 80;
     const logoHeight = 30;
-    doc.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 60, logoWidth, logoHeight);
+    doc.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 95, logoWidth, logoHeight);
   } catch (error) {
     console.error('Error adding logo to cover:', error);
   }
   
   // Title
-  doc.setFontSize(28);
-  doc.setTextColor(...COLORS.navy);
+  doc.setFontSize(32);
+  doc.setTextColor(...COLORS.gold);
   doc.setFont('helvetica', 'bold');
-  doc.text('Bestandsliste', pageWidth / 2, 120, { align: 'center' });
+  doc.text('Produktkatalog', pageWidth / 2, 180, { align: 'center' });
   
-  // Subtitle
+  doc.setFontSize(18);
+  doc.setTextColor(...COLORS.white);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Übersicht aller Produkte & Fahrzeuge', pageWidth / 2, 200, { align: 'center' });
+  
+  // Date - above the bottom decorative line
   doc.setFontSize(14);
-  doc.setTextColor(...COLORS.textMuted);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Übersicht aller Produkte & Fahrzeuge', pageWidth / 2, 135, { align: 'center' });
+  doc.setTextColor(...COLORS.gold);
+  doc.text(formatDate(new Date().toISOString()), pageWidth / 2, pageHeight - 90, { align: 'center' });
   
-  // Gold decorative line
-  doc.setDrawColor(...COLORS.gold);
-  doc.setLineWidth(2);
-  doc.line(60, 150, pageWidth - 60, 150);
-  
-  // Date
-  doc.setFontSize(11);
-  doc.setTextColor(...COLORS.textDark);
-  doc.text(`Stand: ${formatDate(new Date().toISOString())}`, pageWidth / 2, 170, { align: 'center' });
-  
-  // Company info at bottom
+  // Contact info and Impressum at bottom (below the line at pageHeight - 80)
   doc.setFontSize(10);
-  doc.setTextColor(...COLORS.navy);
-  doc.setFont('helvetica', 'bold');
-  doc.text(IMPRESSUM.company, pageWidth / 2, pageHeight - 60, { align: 'center' });
+  doc.setTextColor(...COLORS.white);
+  doc.text(IMPRESSUM.company, pageWidth / 2, pageHeight - 68, { align: 'center' });
+  doc.text(IMPRESSUM.address, pageWidth / 2, pageHeight - 58, { align: 'center' });
   
-  doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(...COLORS.textDark);
-  doc.text(IMPRESSUM.address, pageWidth / 2, pageHeight - 52, { align: 'center' });
-  doc.text(`T: ${IMPRESSUM.phone} | E-Mail: ${IMPRESSUM.email}`, pageWidth / 2, pageHeight - 44, { align: 'center' });
+  doc.setTextColor(...COLORS.gold);
+  doc.text(`Tel: ${IMPRESSUM.phone}  |  E-Mail: ${IMPRESSUM.email}`, pageWidth / 2, pageHeight - 45, { align: 'center' });
   
   doc.setFontSize(8);
-  doc.setTextColor(...COLORS.textMuted);
-  doc.text(`${IMPRESSUM.registry} | ${IMPRESSUM.vatId}`, pageWidth / 2, pageHeight - 36, { align: 'center' });
+  doc.setTextColor(...COLORS.white);
+  doc.text(`${IMPRESSUM.registry} | ${IMPRESSUM.vatId}`, pageWidth / 2, pageHeight - 35, { align: 'center' });
 };
 
 const addSectionTitle = (doc: jsPDF, title: string, yPosition: number) => {
+  const pageWidth = doc.internal.pageSize.width;
+  
+  // Background bar
+  doc.setFillColor(...COLORS.gold);
+  doc.rect(15, yPosition - 5, pageWidth - 30, 12, 'F');
+  
   doc.setFontSize(14);
   doc.setTextColor(...COLORS.navy);
   doc.setFont('helvetica', 'bold');
-  doc.text(title, 15, yPosition);
+  doc.text(title, 20, yPosition + 3);
   
-  return yPosition + 8;
+  return yPosition + 15;
 };
 
 export const exportCatalogToPDF = async (): Promise<void> => {
@@ -303,14 +306,14 @@ export const exportCatalogToPDF = async (): Promise<void> => {
   currentPage++;
   await addHeader(doc, logoBase64);
   
-  let yPos = 40;
+  let yPos = 45;
   
   // Section title for products
-  doc.setFontSize(16);
+  doc.setFontSize(20);
   doc.setTextColor(...COLORS.navy);
   doc.setFont('helvetica', 'bold');
   doc.text('Produkte', 15, yPos);
-  yPos += 10;
+  yPos += 15;
 
   // Products by parent category
   for (const [categoryId, { category, products: categoryProducts }] of productsByParentCategory) {
@@ -331,26 +334,25 @@ export const exportCatalogToPDF = async (): Promise<void> => {
     
     // Products table
     const tableData = categoryProducts.map(product => {
-      const nettoPrice = product.discount_percentage && product.discount_percentage > 0
+      const finalPrice = product.discount_percentage && product.discount_percentage > 0
         ? product.price * (1 - product.discount_percentage / 100)
         : product.price;
-      const bruttoPrice = nettoPrice * 1.19; // Add 19% VAT
       
       return [
         product.product_number || '-',
         product.name,
-        formatCurrency(nettoPrice),
-        formatCurrency(bruttoPrice),
+        product.stock_quantity.toString(),
+        formatCurrency(finalPrice),
       ];
     });
 
     autoTable(doc, {
       startY: yPos,
-      head: [['Position / Art.-Nr.', 'Beschreibung', 'Nettopreis', 'Endpreis']],
+      head: [['Art.-Nr.', 'Bezeichnung', 'Bestand', 'Preis (netto)']],
       body: tableData,
-      theme: 'grid',
+      theme: 'striped',
       headStyles: {
-        fillColor: COLORS.gold,
+        fillColor: COLORS.navy,
         textColor: COLORS.white,
         fontStyle: 'bold',
         fontSize: 9,
@@ -359,13 +361,16 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         fontSize: 8,
         textColor: COLORS.textDark,
       },
-      columnStyles: {
-        0: { cellWidth: 35 },
-        1: { cellWidth: 85 },
-        2: { cellWidth: 25, halign: 'right' },
-        3: { cellWidth: 25, halign: 'right' },
+      alternateRowStyles: {
+        fillColor: COLORS.lightGray,
       },
-      margin: { top: 40, bottom: 25, left: 15, right: 15 },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 90 },
+        2: { cellWidth: 25, halign: 'center' },
+        3: { cellWidth: 30, halign: 'right' },
+      },
+      margin: { top: 45, bottom: 30, left: 15, right: 15 },
       didDrawPage: (data: any) => {
         // Add header on new pages created by autoTable
         if (data.pageNumber > 1 || doc.getNumberOfPages() > currentPage) {
@@ -383,14 +388,14 @@ export const exportCatalogToPDF = async (): Promise<void> => {
     currentPage++;
     await addHeader(doc, logoBase64);
     
-    yPos = 40;
+    yPos = 45;
     
     // Section title for vehicles
-    doc.setFontSize(16);
+    doc.setFontSize(20);
     doc.setTextColor(...COLORS.navy);
     doc.setFont('helvetica', 'bold');
     doc.text('Fahrzeuge', 15, yPos);
-    yPos += 10;
+    yPos += 15;
 
     // Group vehicles by type
     const vehiclesByType = new Map<string, Vehicle[]>();
@@ -437,9 +442,9 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         startY: yPos,
         head: [['Fzg.-Nr.', 'Bezeichnung', 'EZ', 'Km-Stand', 'Leistung', 'MwSt.\nausweisbar', 'Preis (netto)']],
         body: tableData,
-        theme: 'grid',
+        theme: 'striped',
         headStyles: {
-          fillColor: COLORS.gold,
+          fillColor: COLORS.navy,
           textColor: COLORS.white,
           fontStyle: 'bold',
           fontSize: 8,
@@ -447,6 +452,9 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         bodyStyles: {
           fontSize: 7,
           textColor: COLORS.textDark,
+        },
+        alternateRowStyles: {
+          fillColor: COLORS.lightGray,
         },
         columnStyles: {
           0: { cellWidth: 18 },
@@ -457,7 +465,7 @@ export const exportCatalogToPDF = async (): Promise<void> => {
           5: { cellWidth: 24, halign: 'center' },
           6: { cellWidth: 34, halign: 'right' },
         },
-        margin: { top: 40, bottom: 25, left: 15, right: 15 },
+        margin: { top: 45, bottom: 30, left: 15, right: 15 },
         didDrawPage: (data: any) => {
           // Add header on new pages created by autoTable
           if (data.pageNumber > 1 || doc.getNumberOfPages() > currentPage) {
