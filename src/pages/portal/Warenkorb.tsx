@@ -93,12 +93,23 @@ const Warenkorb: React.FC = () => {
     }
   }, [profile]);
 
+  // Tax breakdown per item
+  interface TaxBreakdownItem {
+    name: string;
+    netAmount: number;
+    taxRate: number;
+    taxAmount: number;
+    isVehicle: boolean;
+    hasTax: boolean;
+  }
+
   // Calculate totals with tax and discounts
   const calculateTotals = () => {
     let netTotal = 0;
     let taxTotal = 0;
     let discountTotal = 0;
     let taxableNetTotal = 0; // Only the portion that has VAT
+    const taxBreakdown: TaxBreakdownItem[] = [];
 
     // Products - always have 19% MwSt
     items.forEach((item) => {
@@ -111,6 +122,15 @@ const Warenkorb: React.FC = () => {
       netTotal += discountedPrice;
       taxTotal += itemTax;
       taxableNetTotal += discountedPrice; // Products are always taxable
+
+      taxBreakdown.push({
+        name: item.product.name,
+        netAmount: discountedPrice,
+        taxRate: item.product.tax_rate,
+        taxAmount: itemTax,
+        isVehicle: false,
+        hasTax: true,
+      });
     });
 
     // Vehicles: 
@@ -130,6 +150,15 @@ const Warenkorb: React.FC = () => {
       if (isTaxable) {
         taxableNetTotal += discountedPrice;
       }
+
+      taxBreakdown.push({
+        name: `${item.vehicle.brand} ${item.vehicle.model}`,
+        netAmount: discountedPrice,
+        taxRate: 19,
+        taxAmount: itemTax,
+        isVehicle: true,
+        hasTax: isTaxable,
+      });
     });
 
     // Apply discount code proportionally
@@ -149,12 +178,20 @@ const Warenkorb: React.FC = () => {
     const discountRatio = netTotal > 0 ? (netTotal - codeDiscount) / netTotal : 1;
     const finalTaxTotal = taxTotal * discountRatio;
 
+    // Adjust tax breakdown for discount ratio
+    const adjustedTaxBreakdown = taxBreakdown.map(item => ({
+      ...item,
+      taxAmount: item.taxAmount * discountRatio,
+      netAmount: item.netAmount * discountRatio,
+    }));
+
     return {
       netTotal: finalNetTotal,
       taxTotal: finalTaxTotal,
       discountTotal,
       codeDiscount,
       grossTotal: finalNetTotal + finalTaxTotal,
+      taxBreakdown: adjustedTaxBreakdown,
     };
   };
 
@@ -727,8 +764,27 @@ const Warenkorb: React.FC = () => {
                     <span>Zwischensumme (Netto)</span>
                     <span>{formatCurrency(totals.netTotal)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span>MwSt. (19%)</span>
+                  
+                  {/* Tax breakdown per item */}
+                  {totals.taxBreakdown.length > 0 && (
+                    <div className="space-y-1 pt-2 border-t">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">MwSt. Aufschlüsselung:</p>
+                      {totals.taxBreakdown.map((item, index) => (
+                        <div key={index} className="flex justify-between text-xs text-muted-foreground">
+                          <span className="truncate max-w-[180px]" title={item.name}>
+                            {item.name}
+                            {!item.hasTax && ' (keine MwSt.)'}
+                          </span>
+                          <span className={item.hasTax ? '' : 'text-muted-foreground/60'}>
+                            {item.hasTax ? formatCurrency(item.taxAmount) : '–'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-sm font-medium pt-2 border-t">
+                    <span>MwSt. Gesamt</span>
                     <span>{formatCurrency(totals.taxTotal)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t">
