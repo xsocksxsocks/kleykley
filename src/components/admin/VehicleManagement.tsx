@@ -41,11 +41,11 @@ interface CarForSale {
   model: string;
   first_registration_date: string;
   mileage: number;
-  fuel_type: string;
-  transmission: string;
+  fuel_type: string | null;
+  transmission: string | null;
   color: string | null;
   power_hp: number | null;
-  previous_owners: number;
+  previous_owners: number | null;
   price: number;
   discount_percentage: number | null;
   description: string | null;
@@ -161,24 +161,24 @@ const VehicleManagement: React.FC = () => {
       brand: car.brand,
       model: car.model,
       first_registration_date: car.first_registration_date,
-      mileage: car.mileage.toString(),
-      fuel_type: car.fuel_type,
-      transmission: car.transmission,
+      mileage: car.mileage?.toString() || '',
+      fuel_type: car.fuel_type || '',
+      transmission: car.transmission || '',
       color: car.color || '',
       power_hp: car.power_hp?.toString() || '',
-      previous_owners: car.previous_owners.toString(),
-      price: car.price.toString(),
+      previous_owners: car.previous_owners?.toString() || '',
+      price: car.price?.toString() || '',
       discount_percentage: car.discount_percentage?.toString() || '',
       description: car.description || '',
       description_en: car.description_en || '',
       features: car.features?.join('\n') || '',
       features_en: car.features_en?.join('\n') || '',
       images: car.images || [],
-      vehicle_type: car.vehicle_type,
-      vat_deductible: car.vat_deductible,
-      is_featured: car.is_featured,
-      is_sold: car.is_sold,
-      is_reserved: car.is_reserved,
+      vehicle_type: car.vehicle_type || 'Fahrzeug',
+      vat_deductible: car.vat_deductible ?? false,
+      is_featured: car.is_featured ?? false,
+      is_sold: car.is_sold ?? false,
+      is_reserved: car.is_reserved ?? false,
     });
     setDialogOpen(true);
   };
@@ -435,12 +435,12 @@ const VehicleManagement: React.FC = () => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesSearch = 
-        car.brand.toLowerCase().includes(query) ||
-        car.model.toLowerCase().includes(query) ||
+        car.brand?.toLowerCase().includes(query) ||
+        car.model?.toLowerCase().includes(query) ||
         (car.description?.toLowerCase().includes(query)) ||
         (car.color?.toLowerCase().includes(query)) ||
-        car.fuel_type.toLowerCase().includes(query) ||
-        car.vehicle_type.toLowerCase().includes(query);
+        (car.fuel_type?.toLowerCase().includes(query)) ||
+        (car.vehicle_type?.toLowerCase().includes(query));
       if (!matchesSearch) return false;
     }
     // Then apply type filter
