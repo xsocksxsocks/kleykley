@@ -41,6 +41,7 @@ interface Vehicle {
   is_reserved: boolean | null;
   discount_percentage: number | null;
   vat_deductible: boolean | null;
+  images: string[];
 }
 
 const COLORS = {
@@ -463,6 +464,7 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         const vatStatus = vehicle.vat_deductible ? 'Ja' : 'Nein';
         
         return [
+          '', // Placeholder for image
           vehicle.vehicle_number || '-',
           `${vehicle.brand} ${vehicle.model}`,
           formatDate(vehicle.first_registration_date),
@@ -473,9 +475,24 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         ];
       });
 
+      // Pre-load vehicle images
+      const vehicleImages: Map<number, string> = new Map();
+      await Promise.all(
+        typeVehicles.map(async (vehicle, index) => {
+          if (vehicle.images && vehicle.images.length > 0) {
+            try {
+              const base64 = await loadImageAsBase64(vehicle.images[0]);
+              vehicleImages.set(index, base64);
+            } catch (error) {
+              console.error(`Error loading image for vehicle ${vehicle.brand} ${vehicle.model}:`, error);
+            }
+          }
+        })
+      );
+
       autoTable(doc, {
         startY: yPos,
-        head: [['Fzg.-Nr.', 'Bezeichnung', 'EZ', 'Km-Stand', 'Leistung', 'MwSt.\nausweisbar', 'Preis (netto)']],
+        head: [['Bild', 'Fzg.-Nr.', 'Bezeichnung', 'EZ', 'Km-Stand', 'Leistung', 'MwSt.\nausweisbar', 'Preis (netto)']],
         body: tableData,
         theme: 'striped',
         headStyles: {
@@ -487,20 +504,38 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         bodyStyles: {
           fontSize: 7,
           textColor: COLORS.textDark,
+          minCellHeight: 12,
         },
         alternateRowStyles: {
           fillColor: COLORS.lightGray,
         },
         columnStyles: {
-          0: { cellWidth: 18 },
-          1: { cellWidth: 42 },
-          2: { cellWidth: 20 },
-          3: { cellWidth: 24 },
-          4: { cellWidth: 18, halign: 'center' },
-          5: { cellWidth: 24, halign: 'center' },
-          6: { cellWidth: 34, halign: 'right' },
+          0: { cellWidth: 14, halign: 'center' },
+          1: { cellWidth: 16 },
+          2: { cellWidth: 38 },
+          3: { cellWidth: 18 },
+          4: { cellWidth: 22 },
+          5: { cellWidth: 16, halign: 'center' },
+          6: { cellWidth: 22, halign: 'center' },
+          7: { cellWidth: 28, halign: 'right' },
         },
         margin: { top: 45, bottom: 30, left: 15, right: 15 },
+        didDrawCell: (data: any) => {
+          // Draw vehicle image in the first column
+          if (data.section === 'body' && data.column.index === 0) {
+            const imageBase64 = vehicleImages.get(data.row.index);
+            if (imageBase64) {
+              const imgSize = 10;
+              const xPos = data.cell.x + (data.cell.width - imgSize) / 2;
+              const yPos = data.cell.y + (data.cell.height - imgSize) / 2;
+              try {
+                doc.addImage(imageBase64, 'JPEG', xPos, yPos, imgSize, imgSize);
+              } catch (error) {
+                console.error('Error adding vehicle image:', error);
+              }
+            }
+          }
+        },
         didDrawPage: (data: any) => {
           // Add header on new pages created by autoTable
           if (data.pageNumber > 1 || doc.getNumberOfPages() > currentPage) {
