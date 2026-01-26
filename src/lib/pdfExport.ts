@@ -39,6 +39,7 @@ interface Vehicle {
   is_sold: boolean | null;
   is_reserved: boolean | null;
   discount_percentage: number | null;
+  vat_deductible: boolean | null;
 }
 
 const COLORS = {
@@ -414,7 +415,7 @@ export const exportCatalogToPDF = async (): Promise<void> => {
           ? vehicle.price * (1 - vehicle.discount_percentage / 100)
           : vehicle.price;
         
-        const status = vehicle.is_sold ? 'Verkauft' : vehicle.is_reserved ? 'Reserviert' : 'Verfügbar';
+        const vatStatus = vehicle.vat_deductible ? 'Ja' : 'Nein';
         
         return [
           vehicle.vehicle_number || '-',
@@ -422,14 +423,14 @@ export const exportCatalogToPDF = async (): Promise<void> => {
           formatDate(vehicle.first_registration_date),
           `${vehicle.mileage.toLocaleString('de-DE')} km`,
           `${vehicle.power_hp || '-'} PS`,
-          status,
+          vatStatus,
           formatCurrency(finalPrice),
         ];
       });
 
       autoTable(doc, {
         startY: yPos,
-        head: [['Fzg.-Nr.', 'Fahrzeug', 'EZ', 'Km-Stand', 'Leistung', 'Status', 'Preis']],
+        head: [['Fzg.-Nr.', 'Fahrzeug', 'EZ', 'Km-Stand', 'Leistung', 'MwSt.', 'Preis (netto)']],
         body: tableData,
         theme: 'striped',
         headStyles: {
@@ -451,8 +452,8 @@ export const exportCatalogToPDF = async (): Promise<void> => {
           2: { cellWidth: 22 },
           3: { cellWidth: 25 },
           4: { cellWidth: 20, halign: 'center' },
-          5: { cellWidth: 22, halign: 'center' },
-          6: { cellWidth: 28, halign: 'right' },
+          5: { cellWidth: 18, halign: 'center' },
+          6: { cellWidth: 32, halign: 'right' },
         },
         margin: { top: 45, bottom: 30, left: 15, right: 15 },
         didDrawPage: (data: any) => {
