@@ -98,8 +98,9 @@ const Warenkorb: React.FC = () => {
     let netTotal = 0;
     let taxTotal = 0;
     let discountTotal = 0;
+    let taxableNetTotal = 0; // Only the portion that has VAT
 
-    // Products
+    // Products - always have 19% MwSt
     items.forEach((item) => {
       const originalPrice = item.product.price * item.quantity;
       const discountPercentage = item.product.discount_percentage || 0;
@@ -109,22 +110,29 @@ const Warenkorb: React.FC = () => {
       discountTotal += originalPrice - discountedPrice;
       netTotal += discountedPrice;
       taxTotal += itemTax;
+      taxableNetTotal += discountedPrice; // Products are always taxable
     });
 
-    // Vehicles (19% tax only for vehicles WITHOUT vat_deductible - "MwSt. ausweisbar" means VAT is already included in net price)
+    // Vehicles: 
+    // - vat_deductible = true → MwSt. ausweisbar → Netto + 19% MwSt
+    // - vat_deductible = false → Keine ausweisbare MwSt (Differenzbesteuerung) → Brutto = Netto (keine zusätzliche Steuer)
     vehicleItems.forEach((item) => {
       const originalPrice = item.vehicle.price;
       const discountPercentage = item.vehicle.discount_percentage || 0;
       const discountedPrice = calculateDiscountedPrice(item.vehicle.price, discountPercentage);
-      // If vat_deductible is true, VAT is already accounted for (Differenzbesteuerung), so no additional VAT
-      const itemTax = item.vehicle.vat_deductible ? 0 : calculateTax(discountedPrice, 19);
+      // Only add tax if vat_deductible is true (MwSt. ausweisbar)
+      const isTaxable = item.vehicle.vat_deductible === true;
+      const itemTax = isTaxable ? calculateTax(discountedPrice, 19) : 0;
       
       discountTotal += originalPrice - discountedPrice;
       netTotal += discountedPrice;
       taxTotal += itemTax;
+      if (isTaxable) {
+        taxableNetTotal += discountedPrice;
+      }
     });
 
-    // Apply discount code
+    // Apply discount code proportionally
     let codeDiscount = 0;
     if (appliedDiscount) {
       if (appliedDiscount.discount_type === 'percentage') {
@@ -135,7 +143,11 @@ const Warenkorb: React.FC = () => {
     }
 
     const finalNetTotal = netTotal - codeDiscount;
-    const finalTaxTotal = finalNetTotal * 0.19; // Recalculate tax on discounted total
+    
+    // Recalculate tax proportionally based on taxable portion
+    // If discount is applied, reduce taxable amount proportionally
+    const discountRatio = netTotal > 0 ? (netTotal - codeDiscount) / netTotal : 1;
+    const finalTaxTotal = taxTotal * discountRatio;
 
     return {
       netTotal: finalNetTotal,
