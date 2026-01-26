@@ -331,16 +331,13 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         product.product_number || '-',
         product.name,
         product.stock_quantity.toString(),
-        product.discount_percentage && product.discount_percentage > 0 
-          ? `${product.discount_percentage}%` 
-          : '-',
         formatCurrency(finalPrice),
       ];
     });
 
     autoTable(doc, {
       startY: yPos,
-      head: [['Art.-Nr.', 'Bezeichnung', 'Bestand', 'Rabatt', 'Preis (netto)']],
+      head: [['Art.-Nr.', 'Bezeichnung', 'Bestand', 'Preis (netto)']],
       body: tableData,
       theme: 'striped',
       headStyles: {
@@ -358,10 +355,9 @@ export const exportCatalogToPDF = async (): Promise<void> => {
       },
       columnStyles: {
         0: { cellWidth: 25 },
-        1: { cellWidth: 70 },
-        2: { cellWidth: 20, halign: 'center' },
-        3: { cellWidth: 20, halign: 'center' },
-        4: { cellWidth: 30, halign: 'right' },
+        1: { cellWidth: 90 },
+        2: { cellWidth: 25, halign: 'center' },
+        3: { cellWidth: 30, halign: 'right' },
       },
       margin: { top: 45, bottom: 30, left: 15, right: 15 },
       didDrawPage: (data: any) => {
