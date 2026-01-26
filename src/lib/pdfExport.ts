@@ -1,17 +1,8 @@
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { supabase } from '@/integrations/supabase/client';
 import logoImage from '@/assets/logo-pdf-export.png';
 
-// Extend jsPDF type for autoTable
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-    lastAutoTable: {
-      finalY: number;
-    };
-  }
-}
 
 interface Product {
   id: string;
@@ -321,7 +312,7 @@ export const exportCatalogToPDF = async (): Promise<void> => {
       ];
     });
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPos,
       head: [['Art.-Nr.', 'Bezeichnung', 'Bestand', 'Rabatt', 'Preis (netto)']],
       body: tableData,
@@ -347,12 +338,9 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         4: { cellWidth: 30, halign: 'right' },
       },
       margin: { left: 15, right: 15 },
-      didDrawPage: () => {
-        // This will be handled later for footers
-      },
     });
 
-    yPos = doc.lastAutoTable.finalY + 15;
+    yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
   // Vehicles section - new page
@@ -411,7 +399,7 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         ];
       });
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPos,
         head: [['Fzg.-Nr.', 'Fahrzeug', 'EZ', 'Km-Stand', 'Leistung', 'Status', 'Preis']],
         body: tableData,
@@ -441,7 +429,7 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         margin: { left: 15, right: 15 },
       });
 
-      yPos = doc.lastAutoTable.finalY + 15;
+      yPos = (doc as any).lastAutoTable.finalY + 15;
     }
   }
 
