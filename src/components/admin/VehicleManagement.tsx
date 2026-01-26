@@ -83,11 +83,11 @@ const VehicleManagement: React.FC = () => {
     model: '',
     first_registration_date: '',
     mileage: '',
-    fuel_type: 'Benzin',
-    transmission: 'Schaltgetriebe',
+    fuel_type: '',
+    transmission: '',
     color: '',
     power_hp: '',
-    previous_owners: '1',
+    previous_owners: '',
     price: '',
     discount_percentage: '',
     description: '',
@@ -244,11 +244,11 @@ const VehicleManagement: React.FC = () => {
         model: form.model,
         first_registration_date: form.first_registration_date,
         mileage: parseInt(form.mileage),
-        fuel_type: form.fuel_type,
-        transmission: form.transmission,
+        fuel_type: form.fuel_type || null,
+        transmission: form.transmission || null,
         color: form.color || null,
         power_hp: form.power_hp ? parseInt(form.power_hp) : null,
-        previous_owners: parseInt(form.previous_owners) || 1,
+        previous_owners: form.previous_owners ? parseInt(form.previous_owners) : null,
         price: parseFloat(form.price),
         discount_percentage: form.discount_percentage ? parseFloat(form.discount_percentage) : 0,
         description: form.description || null,
@@ -610,15 +610,16 @@ const VehicleManagement: React.FC = () => {
                     <h3 className="font-medium border-b pb-2">Technische Daten</h3>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label>Kraftstoff *</Label>
+                        <Label>Kraftstoff</Label>
                         <Select
                           value={form.fuel_type}
                           onValueChange={(value) => setForm({ ...form, fuel_type: value })}
                         >
                           <SelectTrigger>
-                            <SelectValue />
+                            <SelectValue placeholder="Keine Angabe" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="">Keine Angabe</SelectItem>
                             {FUEL_TYPES.map((type) => (
                               <SelectItem key={type} value={type}>{type}</SelectItem>
                             ))}
@@ -626,15 +627,16 @@ const VehicleManagement: React.FC = () => {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Getriebe *</Label>
+                        <Label>Getriebe</Label>
                         <Select
                           value={form.transmission}
                           onValueChange={(value) => setForm({ ...form, transmission: value })}
                         >
                           <SelectTrigger>
-                            <SelectValue />
+                            <SelectValue placeholder="Keine Angabe" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="">Keine Angabe</SelectItem>
                             {TRANSMISSIONS.map((trans) => (
                               <SelectItem key={trans} value={trans}>{trans}</SelectItem>
                             ))}
@@ -659,9 +661,10 @@ const VehicleManagement: React.FC = () => {
                           onValueChange={(value) => setForm({ ...form, color: value })}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Farbe wählen" />
+                            <SelectValue placeholder="Keine Angabe" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="">Keine Angabe</SelectItem>
                             {COLORS.map((color) => (
                               <SelectItem key={color} value={color}>{color}</SelectItem>
                             ))}
@@ -672,9 +675,10 @@ const VehicleManagement: React.FC = () => {
                         <Label>Vorbesitzer</Label>
                         <Input
                           type="number"
-                          min="1"
+                          min="0"
                           value={form.previous_owners}
                           onChange={(e) => setForm({ ...form, previous_owners: e.target.value })}
+                          placeholder="Keine Angabe"
                         />
                       </div>
                     </div>
