@@ -297,43 +297,37 @@ const FahrzeugDetail: React.FC = () => {
                     <Fuel className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">Kraftstoff</p>
-                      <p className="font-medium">{vehicle.fuel_type}</p>
+                      <p className="font-medium">{vehicle.fuel_type || 'Keine Angabe'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Settings className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">Getriebe</p>
-                      <p className="font-medium">{vehicle.transmission}</p>
+                      <p className="font-medium">{vehicle.transmission || 'Keine Angabe'}</p>
                     </div>
                   </div>
-                  {vehicle.power_hp && (
-                    <div className="flex items-center gap-3">
-                      <Car className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Leistung</p>
-                        <p className="font-medium">{vehicle.power_hp} PS</p>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <Car className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Leistung</p>
+                      <p className="font-medium">{vehicle.power_hp ? `${vehicle.power_hp} PS` : 'Keine Angabe'}</p>
                     </div>
-                  )}
-                  {vehicle.color && (
-                    <div className="flex items-center gap-3">
-                      <Palette className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Farbe</p>
-                        <p className="font-medium">{vehicle.color}</p>
-                      </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Palette className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Farbe</p>
+                      <p className="font-medium">{vehicle.color || 'Keine Angabe'}</p>
                     </div>
-                  )}
-                  {vehicle.previous_owners !== null && (
-                    <div className="flex items-center gap-3">
-                      <Users className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Vorbesitzer</p>
-                        <p className="font-medium">{vehicle.previous_owners}</p>
-                      </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Vorbesitzer</p>
+                      <p className="font-medium">{vehicle.previous_owners !== null ? vehicle.previous_owners : 'Keine Angabe'}</p>
                     </div>
-                  )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
