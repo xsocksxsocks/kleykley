@@ -35,8 +35,6 @@ export const VEHICLE_BRANDS = {
     'Bobcat',
     'Caterpillar',
     'Claas',
-    'Graco',
-    'Husqvarna',
     'JCB',
     'Komatsu',
     'Kramer',
