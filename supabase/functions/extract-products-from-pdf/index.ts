@@ -18,6 +18,53 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Verify authentication - require admin role
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+  // Verify user token
+  const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.49.1");
+  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } }
+  });
+
+  // Verify user from token
+  const { data: { user }, error: userError } = await userClient.auth.getUser();
+  
+  if (userError || !user) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Unauthorized - Invalid token' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const userId = user.id;
+
+  // Check admin role
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const { data: roleData } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'admin')
+    .maybeSingle();
+
+  if (!roleData) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Forbidden - Admin access required' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
     const { pdfBase64, pageNumbers } = await req.json();
 

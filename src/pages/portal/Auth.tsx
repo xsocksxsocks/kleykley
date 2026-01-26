@@ -26,6 +26,7 @@ import { z } from 'zod';
 import logoImage from '@/assets/logo-kley.png';
 import { EU_COUNTRIES } from '@/lib/countries';
 import { Loader2 } from 'lucide-react';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
 
 const loginSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
@@ -356,6 +357,7 @@ const Auth: React.FC = () => {
                     disabled={isLoading}
                   />
                   {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                  <PasswordStrengthIndicator password={signupData.password} />
                 </div>
 
                 <div className="space-y-2">

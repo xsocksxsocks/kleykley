@@ -348,13 +348,83 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Initialize Supabase client with service role for logging
+  // Initialize Supabase clients
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+  // Verify authentication - require logged in user
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized - No auth token provided' }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // Create client with user's auth token
+  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } }
+  });
+
+  // Verify the user from token
+  const { data: { user }, error: userError } = await userClient.auth.getUser();
+  
+  if (userError || !user) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized - Invalid token' }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const userId = user.id;
+
+  // For certain notification types, require admin role
+  // (order confirmations from checkout are sent by customers themselves, so allow approved customers)
+  const adminOnlyTypes = ['status_approved', 'status_rejected', 'status_pending', 'document_uploaded'];
+  
   try {
     const { type, customerEmail, customerName, data }: NotificationRequest = await req.json();
+
+    // Check authorization based on notification type
+    if (adminOnlyTypes.includes(type)) {
+      // Require admin for these types
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+      
+      if (!roleData) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden - Admin access required' }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      // For order notifications, verify user is approved customer or admin
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('approval_status')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      const { data: adminCheck } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+      
+      if (!adminCheck && profileData?.approval_status !== 'approved') {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden - Approved customer or admin required' }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     console.log("Sending notification:", { type, customerEmail: customerEmail?.substring(0, 30), customerName: customerName?.substring(0, 20) });
 
