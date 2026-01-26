@@ -148,7 +148,7 @@ const Warenkorb: React.FC = () => {
 
   const totals = calculateTotals();
 
-  // Validate discount code
+  // Validate discount code using secure server-side function
   const handleApplyDiscountCode = async () => {
     if (!discountCodeInput.trim()) return;
 
@@ -156,41 +156,7 @@ const Warenkorb: React.FC = () => {
     setDiscountError('');
 
     try {
-      const { data, error } = await supabase
-        .from('discount_codes')
-        .select('*')
-        .eq('code', discountCodeInput.toUpperCase().trim())
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (!data) {
-        setDiscountError('Ungültiger Rabattcode');
-        return;
-      }
-
-      // Check validity
-      const now = new Date();
-      const validFrom = new Date(data.valid_from);
-      const validUntil = data.valid_until ? new Date(data.valid_until) : null;
-
-      if (now < validFrom) {
-        setDiscountError('Dieser Code ist noch nicht gültig');
-        return;
-      }
-
-      if (validUntil && now > validUntil) {
-        setDiscountError('Dieser Code ist abgelaufen');
-        return;
-      }
-
-      if (data.max_uses && data.current_uses >= data.max_uses) {
-        setDiscountError('Dieser Code wurde bereits zu oft verwendet');
-        return;
-      }
-
-      // Calculate current net total for min order check
+      // Calculate current net total for validation
       let currentNetTotal = 0;
       items.forEach((item) => {
         const discountPercentage = (item.product as any).discount_percentage || 0;
@@ -201,18 +167,50 @@ const Warenkorb: React.FC = () => {
         currentNetTotal += calculateDiscountedPrice(item.vehicle.price, discountPercentage);
       });
 
-      if (data.min_order_value && currentNetTotal < data.min_order_value) {
-        setDiscountError(`Mindestbestellwert: ${formatCurrency(data.min_order_value)}`);
+      // Use secure RPC function instead of direct table access
+      const { data, error } = await supabase.rpc('validate_discount_code', {
+        _code: discountCodeInput.trim(),
+        _order_total: currentNetTotal
+      });
+
+      if (error) {
+        // Parse error message for user-friendly feedback
+        const errorMsg = error.message || '';
+        if (errorMsg.includes('Invalid discount code')) {
+          setDiscountError('Ungültiger Rabattcode');
+        } else if (errorMsg.includes('Order total must be at least')) {
+          const minValue = errorMsg.match(/at least (\d+(\.\d+)?)/)?.[1];
+          setDiscountError(`Mindestbestellwert: ${minValue ? formatCurrency(parseFloat(minValue)) : 'nicht erreicht'}`);
+        } else if (errorMsg.includes('maximum uses')) {
+          setDiscountError('Dieser Code wurde bereits zu oft verwendet');
+        } else if (errorMsg.includes('Not authorized')) {
+          setDiscountError('Nicht berechtigt');
+        } else {
+          setDiscountError('Fehler bei der Validierung');
+        }
         return;
       }
 
-      setAppliedDiscount(data as DiscountCode);
+      if (!data || data.length === 0) {
+        setDiscountError('Ungültiger Rabattcode');
+        return;
+      }
+
+      // data is an array from RETURNS TABLE, take first row
+      const discountData = data[0];
+      setAppliedDiscount({
+        id: discountData.id,
+        code: discountData.code,
+        discount_type: discountData.discount_type as 'percentage' | 'fixed',
+        discount_value: discountData.discount_value,
+        min_order_value: discountData.min_order_value || 0,
+      });
       setDiscountCodeInput('');
       toast({
         title: 'Rabattcode angewendet',
-        description: data.discount_type === 'percentage' 
-          ? `${data.discount_value}% Rabatt` 
-          : `${formatCurrency(data.discount_value)} Rabatt`,
+        description: discountData.discount_type === 'percentage' 
+          ? `${discountData.discount_value}% Rabatt` 
+          : `${formatCurrency(discountData.discount_value)} Rabatt`,
       });
     } catch (error) {
       logError('Warenkorb:validateDiscountCode', error);

@@ -711,6 +711,16 @@ export type Database = {
         Args: { user_id: string }
         Returns: undefined
       }
+      validate_discount_code: {
+        Args: { _code: string; _order_total: number }
+        Returns: {
+          code: string
+          discount_type: string
+          discount_value: number
+          id: string
+          min_order_value: number
+        }[]
+      }
     }
     Enums: {
       approval_status: "pending" | "approved" | "rejected"
