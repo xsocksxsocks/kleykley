@@ -54,7 +54,9 @@ const IMPRESSUM = {
   company: 'Kley Rechtsanwalt GmbH',
   address: 'Eiderkamp 13, 24582 Bordesholm',
   registry: 'Amtsgericht Kiel, HRB 25081 KI',
+  vatId: 'USt-IdNr.: DE162233216',
   email: 'info@kanzlei-kley.com',
+  phone: '+49 (0) 4322 123 4567',
 };
 
 const formatCurrency = (value: number): string => {
@@ -111,7 +113,7 @@ const addFooter = (doc: jsPDF, pageNumber: number, totalPages: number) => {
   doc.setTextColor(...COLORS.white);
   doc.setFont('helvetica', 'normal');
   
-  const impressumText = `${IMPRESSUM.company} | ${IMPRESSUM.address} | ${IMPRESSUM.registry} | ${IMPRESSUM.email}`;
+  const impressumText = `${IMPRESSUM.company} | ${IMPRESSUM.address} | ${IMPRESSUM.vatId} | ${IMPRESSUM.email}`;
   doc.text(impressumText, pageWidth / 2, pageHeight - 15, { align: 'center' });
   
   // Page number
@@ -190,12 +192,20 @@ const createCoverPage = async (doc: jsPDF, logoBase64: string) => {
   doc.setTextColor(...COLORS.gold);
   doc.text(formatDate(new Date().toISOString()), pageWidth / 2, 230, { align: 'center' });
   
-  // Impressum at bottom
-  doc.setFontSize(9);
+  // Contact info and Impressum at bottom
+  doc.setFontSize(10);
   doc.setTextColor(...COLORS.white);
-  doc.text(IMPRESSUM.company, pageWidth / 2, pageHeight - 55, { align: 'center' });
-  doc.text(IMPRESSUM.address, pageWidth / 2, pageHeight - 45, { align: 'center' });
-  doc.text(`${IMPRESSUM.registry}`, pageWidth / 2, pageHeight - 35, { align: 'center' });
+  doc.text(IMPRESSUM.company, pageWidth / 2, pageHeight - 75, { align: 'center' });
+  doc.text(IMPRESSUM.address, pageWidth / 2, pageHeight - 65, { align: 'center' });
+  
+  doc.setFontSize(9);
+  doc.setTextColor(...COLORS.gold);
+  doc.text(`Tel: ${IMPRESSUM.phone}`, pageWidth / 2, pageHeight - 50, { align: 'center' });
+  doc.text(`E-Mail: ${IMPRESSUM.email}`, pageWidth / 2, pageHeight - 42, { align: 'center' });
+  
+  doc.setFontSize(8);
+  doc.setTextColor(...COLORS.white);
+  doc.text(`${IMPRESSUM.registry} | ${IMPRESSUM.vatId}`, pageWidth / 2, pageHeight - 30, { align: 'center' });
 };
 
 const addSectionTitle = (doc: jsPDF, title: string, yPosition: number) => {

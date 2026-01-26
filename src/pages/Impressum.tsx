@@ -48,6 +48,15 @@ const Impressum = () => {
 
               <div>
                 <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
+                  Umsatzsteuer-Identifikationsnummer
+                </h2>
+                <p className="text-muted-foreground text-base font-medium">
+                  USt-IdNr.: DE162233216
+                </p>
+              </div>
+
+              <div>
+                <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-4">
                   Kontakt
                 </h2>
                 <p className="text-muted-foreground text-base font-medium">
