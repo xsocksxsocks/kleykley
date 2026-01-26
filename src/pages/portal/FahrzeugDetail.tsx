@@ -246,12 +246,18 @@ const FahrzeugDetail: React.FC = () => {
                     {formatCurrency(vehicle.price)}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  Netto zzgl. 19% MwSt.
-                </p>
-                {vehicle.vat_deductible && (
-                  <p className="text-xs text-green-600 mt-1">
-                    ✓ MwSt. ausweisbar
+                {vehicle.vat_deductible ? (
+                  <>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Netto zzgl. 19% MwSt.
+                    </p>
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ MwSt. ausweisbar
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Brutto
                   </p>
                 )}
               </CardContent>

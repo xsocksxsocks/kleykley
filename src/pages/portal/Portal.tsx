@@ -877,7 +877,7 @@ const Portal: React.FC = () => {
                               </p>
                             )}
                             <p className="text-xs text-muted-foreground">
-                              Netto zzgl. MwSt.
+                              {vehicle.vat_deductible ? 'Netto zzgl. MwSt.' : 'Brutto'}
                             </p>
                           </div>
                         </CardContent>
