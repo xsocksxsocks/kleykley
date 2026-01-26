@@ -187,25 +187,24 @@ const createCoverPage = async (doc: jsPDF, logoBase64: string) => {
   doc.setFont('helvetica', 'normal');
   doc.text('Übersicht aller Produkte & Fahrzeuge', pageWidth / 2, 200, { align: 'center' });
   
-  // Date
+  // Date - above the bottom decorative line
   doc.setFontSize(14);
   doc.setTextColor(...COLORS.gold);
-  doc.text(formatDate(new Date().toISOString()), pageWidth / 2, 220, { align: 'center' });
+  doc.text(formatDate(new Date().toISOString()), pageWidth / 2, pageHeight - 90, { align: 'center' });
   
-  // Contact info and Impressum at bottom
+  // Contact info and Impressum at bottom (below the line at pageHeight - 80)
   doc.setFontSize(10);
   doc.setTextColor(...COLORS.white);
-  doc.text(IMPRESSUM.company, pageWidth / 2, pageHeight - 75, { align: 'center' });
-  doc.text(IMPRESSUM.address, pageWidth / 2, pageHeight - 65, { align: 'center' });
+  doc.text(IMPRESSUM.company, pageWidth / 2, pageHeight - 68, { align: 'center' });
+  doc.text(IMPRESSUM.address, pageWidth / 2, pageHeight - 58, { align: 'center' });
   
   doc.setFontSize(9);
   doc.setTextColor(...COLORS.gold);
-  doc.text(`Tel: ${IMPRESSUM.phone}`, pageWidth / 2, pageHeight - 50, { align: 'center' });
-  doc.text(`E-Mail: ${IMPRESSUM.email}`, pageWidth / 2, pageHeight - 42, { align: 'center' });
+  doc.text(`Tel: ${IMPRESSUM.phone}  |  E-Mail: ${IMPRESSUM.email}`, pageWidth / 2, pageHeight - 45, { align: 'center' });
   
   doc.setFontSize(8);
   doc.setTextColor(...COLORS.white);
-  doc.text(`${IMPRESSUM.registry} | ${IMPRESSUM.vatId}`, pageWidth / 2, pageHeight - 30, { align: 'center' });
+  doc.text(`${IMPRESSUM.registry} | ${IMPRESSUM.vatId}`, pageWidth / 2, pageHeight - 35, { align: 'center' });
 };
 
 const addSectionTitle = (doc: jsPDF, title: string, yPosition: number) => {
