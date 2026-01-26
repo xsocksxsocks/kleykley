@@ -133,6 +133,52 @@ export type Database = {
           },
         ]
       }
+      discount_code_usage: {
+        Row: {
+          discount_code_id: string
+          id: string
+          order_id: string | null
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          discount_code_id: string
+          id?: string
+          order_id?: string | null
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          discount_code_id?: string
+          id?: string
+          order_id?: string | null
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_code_usage_discount_code_id_fkey"
+            columns: ["discount_code_id"]
+            isOneToOne: false
+            referencedRelation: "discount_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discount_code_usage_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discount_code_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_codes: {
         Row: {
           code: string

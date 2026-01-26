@@ -178,6 +178,8 @@ const Warenkorb: React.FC = () => {
         const errorMsg = error.message || '';
         if (errorMsg.includes('Invalid discount code')) {
           setDiscountError('Ungültiger Rabattcode');
+        } else if (errorMsg.includes('already used this discount code')) {
+          setDiscountError('Sie haben diesen Rabattcode bereits verwendet');
         } else if (errorMsg.includes('Order total must be at least')) {
           const minValue = errorMsg.match(/at least (\d+(\.\d+)?)/)?.[1];
           setDiscountError(`Mindestbestellwert: ${minValue ? formatCurrency(parseFloat(minValue)) : 'nicht erreicht'}`);
@@ -343,6 +345,22 @@ const Warenkorb: React.FC = () => {
           .insert(allOrderItems);
 
         if (itemsError) throw itemsError;
+      }
+
+      // Record discount code usage if a code was applied
+      if (appliedDiscount) {
+        const { error: usageError } = await supabase
+          .from('discount_code_usage')
+          .insert({
+            user_id: user.id,
+            discount_code_id: appliedDiscount.id,
+            order_id: createdOrder.id,
+          });
+        
+        if (usageError) {
+          console.error('Failed to record discount usage:', usageError);
+          // Don't fail the order, just log the error
+        }
       }
 
       // Send confirmation email to customer
