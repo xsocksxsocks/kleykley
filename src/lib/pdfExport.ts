@@ -430,7 +430,7 @@ export const exportCatalogToPDF = async (): Promise<void> => {
 
       autoTable(doc, {
         startY: yPos,
-        head: [['Fzg.-Nr.', 'Fahrzeug', 'EZ', 'Km-Stand', 'Leistung', 'MwSt. absetzbar', 'Preis (netto)']],
+        head: [['Fzg.-Nr.', 'Fahrzeug', 'EZ', 'Km-Stand', 'Leistung', 'MwSt. ausweisbar', 'Preis (netto)']],
         body: tableData,
         theme: 'striped',
         headStyles: {
