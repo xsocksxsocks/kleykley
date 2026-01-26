@@ -173,17 +173,23 @@ const Warenkorb: React.FC = () => {
 
     const finalNetTotal = netTotal - codeDiscount;
     
-    // Recalculate tax proportionally based on taxable portion
-    // If discount is applied, reduce taxable amount proportionally
-    const discountRatio = netTotal > 0 ? (netTotal - codeDiscount) / netTotal : 1;
-    const finalTaxTotal = taxTotal * discountRatio;
+    // Calculate discount ratio for proportional distribution
+    const discountRatio = netTotal > 0 ? finalNetTotal / netTotal : 1;
 
-    // Adjust tax breakdown for discount ratio
-    const adjustedTaxBreakdown = taxBreakdown.map(item => ({
-      ...item,
-      taxAmount: item.taxAmount * discountRatio,
-      netAmount: item.netAmount * discountRatio,
-    }));
+    // Adjust tax breakdown for discount ratio and recalculate taxes correctly
+    const adjustedTaxBreakdown = taxBreakdown.map(item => {
+      const adjustedNetAmount = item.netAmount * discountRatio;
+      // Recalculate tax based on the adjusted net amount
+      const adjustedTaxAmount = item.hasTax ? calculateTax(adjustedNetAmount, item.taxRate) : 0;
+      return {
+        ...item,
+        netAmount: adjustedNetAmount,
+        taxAmount: adjustedTaxAmount,
+      };
+    });
+
+    // Sum up all taxes from the breakdown (this ensures consistency)
+    const finalTaxTotal = adjustedTaxBreakdown.reduce((sum, item) => sum + item.taxAmount, 0);
 
     return {
       netTotal: finalNetTotal,
