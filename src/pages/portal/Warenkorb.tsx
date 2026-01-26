@@ -610,7 +610,7 @@ const Warenkorb: React.FC = () => {
                         )}
                         <p className="text-xs text-muted-foreground">
                           {item.vehicle.vat_deductible 
-                            ? '✓ MwSt. ausweisbar (inkl. MwSt.)' 
+                            ? '✓ MwSt. ausweisbar' 
                             : 'zzgl. 19% MwSt.'}
                         </p>
                       </div>
@@ -738,7 +738,7 @@ const Warenkorb: React.FC = () => {
                   </div>
                   {hasOnlyVatDeductibleVehicles && (
                     <p className="text-xs text-muted-foreground">
-                      ✓ Alle Fahrzeuge mit MwSt. ausweisbar - Preis inkl. MwSt.
+                      ✓ Alle Fahrzeuge mit MwSt. ausweisbar
                     </p>
                   )}
                 </div>
