@@ -175,10 +175,21 @@ export const CartDropdown: React.FC<CartDropdownProps> = ({ isActive = false }) 
             </div>
             <DropdownMenuSeparator />
             <div className="p-3">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-sm font-medium">Gesamt (Netto)</span>
-                <span className="text-lg font-bold">{formatCurrency(totalPrice)}</span>
-              </div>
+              {(() => {
+                // Check if ONLY VAT-deductible vehicles are in cart
+                const hasOnlyVatDeductibleVehicles = items.length === 0 && 
+                  vehicleItems.length > 0 && 
+                  vehicleItems.every(item => item.vehicle.vat_deductible);
+                
+                return (
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm font-medium">
+                      Gesamt{!hasOnlyVatDeductibleVehicles && ' (Netto)'}
+                    </span>
+                    <span className="text-lg font-bold">{formatCurrency(totalPrice)}</span>
+                  </div>
+                );
+              })()}
               <Button asChild className="w-full">
                 <Link to="/portal/warenkorb">
                   Zur Angebotsanfrage
