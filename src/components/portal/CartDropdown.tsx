@@ -79,7 +79,7 @@ export const CartDropdown: React.FC<CartDropdownProps> = ({ isActive = false }) 
                           <Badge variant="outline" className="text-xs px-1.5 py-0 shrink-0">Ware</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {formatCurrency(discountedPrice)} / Stück
+                          {formatCurrency(discountedPrice)} / Stück (Netto)
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <Button
@@ -148,10 +148,11 @@ export const CartDropdown: React.FC<CartDropdownProps> = ({ isActive = false }) 
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{item.vehicle.brand} {item.vehicle.model}</p>
                         <p className="text-xs text-muted-foreground">
-                          {item.vehicle.vehicle_type || 'Fahrzeug'}
+                          {item.vehicle.vat_deductible ? 'Netto' : 'Brutto'}
+                          {item.vehicle.vat_deductible && ' · ✓ MwSt. ausw.'}
                         </p>
                         <div className="flex items-center mt-1">
-                          <Badge variant="outline" className="text-xs">1x Fahrzeug</Badge>
+                          <Badge variant="outline" className="text-xs">Fahrzeug</Badge>
                           <Button
                             variant="ghost"
                             size="icon"
