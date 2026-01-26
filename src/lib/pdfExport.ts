@@ -133,11 +133,11 @@ const addHeaderSync = (doc: jsPDF, logoBase64: string) => {
   doc.setFillColor(...COLORS.navy);
   doc.rect(0, 0, pageWidth, 30, 'F');
   
-  // Add logo (proportionally scaled)
+  // Add logo (proportionally scaled - aspect ratio ~3.5:1)
   try {
-    const logoWidth = 35;
-    const logoHeight = 12;
-    doc.addImage(logoBase64, 'PNG', 15, 9, logoWidth, logoHeight);
+    const logoWidth = 40;
+    const logoHeight = 11;
+    doc.addImage(logoBase64, 'PNG', 15, 10, logoWidth, logoHeight);
   } catch (error) {
     console.error('Error adding logo to header:', error);
   }
@@ -168,10 +168,10 @@ const createCoverPage = async (doc: jsPDF, logoBase64: string) => {
   doc.line(30, 60, pageWidth - 30, 60);
   doc.line(30, pageHeight - 80, pageWidth - 30, pageHeight - 80);
   
-  // Add logo (centered, larger)
+  // Add logo (centered, larger - aspect ratio ~3.5:1)
   try {
-    const logoWidth = 80;
-    const logoHeight = 28;
+    const logoWidth = 90;
+    const logoHeight = 26;
     doc.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 100, logoWidth, logoHeight);
   } catch (error) {
     console.error('Error adding logo to cover:', error);
