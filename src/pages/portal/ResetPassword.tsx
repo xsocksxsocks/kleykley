@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import logoImage from '@/assets/logo-kley.png';
 import { Loader2, Check, Eye, EyeOff } from 'lucide-react';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
 
 const passwordSchema = z.object({
   password: z.string()
@@ -214,6 +215,7 @@ const ResetPassword: React.FC = () => {
                 </Button>
               </div>
               {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+              <PasswordStrengthIndicator password={password} />
             </div>
 
             <div className="space-y-2">
