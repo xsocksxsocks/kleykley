@@ -120,6 +120,10 @@ const addFooter = (doc: jsPDF, pageNumber: number, totalPages: number) => {
 };
 
 const addHeader = async (doc: jsPDF, logoBase64: string) => {
+  addHeaderSync(doc, logoBase64);
+};
+
+const addHeaderSync = (doc: jsPDF, logoBase64: string) => {
   const pageWidth = doc.internal.pageSize.width;
   
   // Header background
@@ -350,7 +354,13 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         3: { cellWidth: 20, halign: 'center' },
         4: { cellWidth: 30, halign: 'right' },
       },
-      margin: { left: 15, right: 15 },
+      margin: { top: 45, bottom: 30, left: 15, right: 15 },
+      didDrawPage: (data: any) => {
+        // Add header on new pages created by autoTable
+        if (data.pageNumber > 1 || doc.getNumberOfPages() > currentPage) {
+          addHeaderSync(doc, logoBase64);
+        }
+      },
     });
 
     yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -439,7 +449,13 @@ export const exportCatalogToPDF = async (): Promise<void> => {
           5: { cellWidth: 22, halign: 'center' },
           6: { cellWidth: 28, halign: 'right' },
         },
-        margin: { left: 15, right: 15 },
+        margin: { top: 45, bottom: 30, left: 15, right: 15 },
+        didDrawPage: (data: any) => {
+          // Add header on new pages created by autoTable
+          if (data.pageNumber > 1 || doc.getNumberOfPages() > currentPage) {
+            addHeaderSync(doc, logoBase64);
+          }
+        },
       });
 
       yPos = (doc as any).lastAutoTable.finalY + 15;
