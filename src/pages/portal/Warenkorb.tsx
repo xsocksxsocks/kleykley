@@ -603,25 +603,27 @@ const Warenkorb: React.FC = () => {
                               {formatCurrency(item.vehicle.price)}
                             </p>
                             <p className="text-red-600 font-medium text-sm">
-                              {formatCurrency(discountedPrice)} netto
+                              {formatCurrency(discountedPrice)} {item.vehicle.vat_deductible ? 'netto' : 'brutto'}
                             </p>
                           </>
                         ) : (
                           <p className="text-muted-foreground text-sm">
-                            {formatCurrency(item.vehicle.price)} netto
+                            {formatCurrency(item.vehicle.price)} {item.vehicle.vat_deductible ? 'netto' : 'brutto'}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          {item.vehicle.vat_deductible 
-                            ? '✓ MwSt. ausweisbar' 
-                            : 'Brutto'}
-                        </p>
+                        {item.vehicle.vat_deductible && (
+                          <p className="text-xs text-muted-foreground">
+                            ✓ MwSt. ausweisbar
+                          </p>
+                        )}
                       </div>
                       <div className="text-right w-28">
                         <p className={`font-bold ${hasDiscount ? 'text-red-600' : ''}`}>
                           {formatCurrency(discountedPrice)}
                         </p>
-                        <p className="text-xs text-muted-foreground">netto</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.vehicle.vat_deductible ? 'netto' : 'brutto'}
+                        </p>
                       </div>
                       <Button
                         variant="ghost"
