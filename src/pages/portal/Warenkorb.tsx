@@ -93,14 +93,6 @@ const Warenkorb: React.FC = () => {
     }
   }, [profile]);
 
-  // Check if cart contains ONLY VAT-deductible vehicles (no products, all vehicles have vat_deductible)
-  const hasOnlyVatDeductibleVehicles = items.length === 0 && 
-    vehicleItems.length > 0 && 
-    vehicleItems.every(item => item.vehicle.vat_deductible);
-
-  // Check if cart contains ANY VAT-deductible vehicle
-  const hasAnyVatDeductibleVehicle = vehicleItems.some(item => item.vehicle.vat_deductible);
-
   // Calculate totals with tax and discounts
   const calculateTotals = () => {
     let netTotal = 0;
@@ -143,15 +135,14 @@ const Warenkorb: React.FC = () => {
     }
 
     const finalNetTotal = netTotal - codeDiscount;
-    // Only calculate additional tax if NOT all items are VAT-deductible vehicles
-    const finalTaxTotal = hasOnlyVatDeductibleVehicles ? 0 : finalNetTotal * 0.19;
+    const finalTaxTotal = finalNetTotal * 0.19; // Recalculate tax on discounted total
 
     return {
       netTotal: finalNetTotal,
       taxTotal: finalTaxTotal,
       discountTotal,
       codeDiscount,
-      grossTotal: hasOnlyVatDeductibleVehicles ? finalNetTotal : finalNetTotal + finalTaxTotal,
+      grossTotal: finalNetTotal + finalTaxTotal,
     };
   };
 
@@ -600,17 +591,17 @@ const Warenkorb: React.FC = () => {
                               {formatCurrency(item.vehicle.price)}
                             </p>
                             <p className="text-red-600 font-medium text-sm">
-                              {formatCurrency(discountedPrice)}{!item.vehicle.vat_deductible && ' netto'}
+                              {formatCurrency(discountedPrice)} netto
                             </p>
                           </>
                         ) : (
                           <p className="text-muted-foreground text-sm">
-                            {formatCurrency(item.vehicle.price)}{!item.vehicle.vat_deductible && ' netto'}
+                            {formatCurrency(item.vehicle.price)} netto
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground">
                           {item.vehicle.vat_deductible 
-                            ? '✓ MwSt. ausweisbar' 
+                            ? '✓ MwSt. ausweisbar (bereits im Preis)' 
                             : 'zzgl. 19% MwSt.'}
                         </p>
                       </div>
@@ -618,9 +609,7 @@ const Warenkorb: React.FC = () => {
                         <p className={`font-bold ${hasDiscount ? 'text-red-600' : ''}`}>
                           {formatCurrency(discountedPrice)}
                         </p>
-                        {!item.vehicle.vat_deductible && (
-                          <p className="text-xs text-muted-foreground">netto</p>
-                        )}
+                        <p className="text-xs text-muted-foreground">netto</p>
                       </div>
                       <Button
                         variant="ghost"
@@ -723,24 +712,17 @@ const Warenkorb: React.FC = () => {
                     </div>
                   )}
                   <div className="flex justify-between text-sm font-medium">
-                    <span>Zwischensumme{!hasOnlyVatDeductibleVehicles && ' (Netto)'}</span>
+                    <span>Zwischensumme (Netto)</span>
                     <span>{formatCurrency(totals.netTotal)}</span>
                   </div>
-                  {!hasOnlyVatDeductibleVehicles && (
-                    <div className="flex justify-between text-sm">
-                      <span>MwSt. (19%)</span>
-                      <span>{formatCurrency(totals.taxTotal)}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-sm">
+                    <span>MwSt. (19%)</span>
+                    <span>{formatCurrency(totals.taxTotal)}</span>
+                  </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                    <span>Gesamt{!hasOnlyVatDeductibleVehicles && ' (Brutto)'}</span>
+                    <span>Gesamt (Brutto)</span>
                     <span>{formatCurrency(totals.grossTotal)}</span>
                   </div>
-                  {hasOnlyVatDeductibleVehicles && (
-                    <p className="text-xs text-muted-foreground">
-                      ✓ Alle Fahrzeuge mit MwSt. ausweisbar
-                    </p>
-                  )}
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Die endgültigen Preise, Lieferzeiten sowie ggf. weitere Hinweise erhalten Sie in Ihrem individuellen unverbindlichen Angebot. Das Anfordern eines Angebotes stellt keine Bestellung dar und ist für Sie völlig unverbindlich.
