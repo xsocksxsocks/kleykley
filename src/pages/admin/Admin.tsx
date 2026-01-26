@@ -58,6 +58,7 @@ import {
   ChevronDown,
   Loader2,
   Mail,
+  FileDown,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -75,6 +76,7 @@ import { DiscountCodeManagement } from '@/components/admin/DiscountCodeManagemen
 import { BulkProductImporter } from '@/components/admin/BulkProductImporter';
 import { EmailLogViewer } from '@/components/admin/EmailLogViewer';
 import { CategoryManagement } from '@/components/admin/CategoryManagement';
+import { exportCatalogToPDF } from '@/lib/pdfExport';
 
 interface ProductImage {
   id: string;
@@ -161,8 +163,7 @@ const Admin: React.FC = () => {
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [productCategoryFilter, setProductCategoryFilter] = useState<string>('all');
   const [productSearchQuery, setProductSearchQuery] = useState<string>('');
-  
-  // Product form state
+  const [pdfExporting, setPdfExporting] = useState(false);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productForm, setProductForm] = useState({
@@ -642,6 +643,36 @@ const Admin: React.FC = () => {
             <h1 className="text-xl font-bold">Admin Panel</h1>
           </div>
           <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                setPdfExporting(true);
+                try {
+                  await exportCatalogToPDF();
+                  toast({
+                    title: 'PDF Export erfolgreich',
+                    description: 'Der Katalog wurde heruntergeladen.',
+                  });
+                } catch (error) {
+                  console.error('PDF export error:', error);
+                  toast({
+                    title: 'Fehler',
+                    description: 'PDF konnte nicht erstellt werden.',
+                    variant: 'destructive',
+                  });
+                } finally {
+                  setPdfExporting(false);
+                }
+              }}
+              disabled={pdfExporting}
+            >
+              {pdfExporting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileDown className="h-4 w-4 mr-2" />
+              )}
+              PDF Katalog
+            </Button>
             {pendingCustomers.length > 0 && (
               <Badge variant="destructive">{pendingCustomers.length} wartend</Badge>
             )}
