@@ -67,6 +67,16 @@ const formatCurrency = (value: number): string => {
   });
 };
 
+// Map singular vehicle types to plural for display
+const getVehicleTypePlural = (type: string): string => {
+  const pluralMap: Record<string, string> = {
+    'Fahrzeug': 'Fahrzeuge',
+    'Motorrad': 'Motorräder',
+    'Baumaschine': 'Baumaschinen',
+  };
+  return pluralMap[type] || type;
+};
+
 const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString('de-DE', {
     day: '2-digit',
@@ -408,7 +418,7 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         yPos = 45;
       }
       
-      yPos = addSectionTitle(doc, vehicleType, yPos);
+      yPos = addSectionTitle(doc, getVehicleTypePlural(vehicleType), yPos);
       
       const tableData = typeVehicles.map(vehicle => {
         const finalPrice = vehicle.discount_percentage && vehicle.discount_percentage > 0
@@ -430,7 +440,7 @@ export const exportCatalogToPDF = async (): Promise<void> => {
 
       autoTable(doc, {
         startY: yPos,
-        head: [['Fzg.-Nr.', 'Fahrzeug', 'EZ', 'Km-Stand', 'Leistung', 'MwSt.\nausweisbar', 'Preis (netto)']],
+        head: [['Fzg.-Nr.', 'Bezeichnung', 'EZ', 'Km-Stand', 'Leistung', 'MwSt.\nausweisbar', 'Preis (netto)']],
         body: tableData,
         theme: 'striped',
         headStyles: {
