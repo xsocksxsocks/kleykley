@@ -59,9 +59,9 @@ export const VEHICLE_BRANDS = {
 } as const;
 
 export const VEHICLE_TYPE_LABELS = {
-  auto: 'Fahrzeug',
-  motorrad: 'Motorrad',
-  baumaschine: 'Baumaschine',
+  auto: 'Fahrzeuge',
+  motorrad: 'Motorräder',
+  baumaschine: 'Baumaschinen',
 } as const;
 
 export type VehicleType = keyof typeof VEHICLE_BRANDS;

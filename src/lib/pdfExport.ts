@@ -448,12 +448,12 @@ export const exportCatalogToPDF = async (): Promise<void> => {
         },
         columnStyles: {
           0: { cellWidth: 18 },
-          1: { cellWidth: 45 },
-          2: { cellWidth: 22 },
-          3: { cellWidth: 25 },
-          4: { cellWidth: 20, halign: 'center' },
-          5: { cellWidth: 18, halign: 'center' },
-          6: { cellWidth: 32, halign: 'right' },
+          1: { cellWidth: 42 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 24 },
+          4: { cellWidth: 18, halign: 'center' },
+          5: { cellWidth: 24, halign: 'center' },
+          6: { cellWidth: 34, halign: 'right' },
         },
         margin: { top: 45, bottom: 30, left: 15, right: 15 },
         didDrawPage: (data: any) => {
