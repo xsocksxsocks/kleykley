@@ -612,14 +612,14 @@ const VehicleManagement: React.FC = () => {
                       <div className="space-y-2">
                         <Label>Kraftstoff</Label>
                         <Select
-                          value={form.fuel_type}
-                          onValueChange={(value) => setForm({ ...form, fuel_type: value })}
+                          value={form.fuel_type || '__none__'}
+                          onValueChange={(value) => setForm({ ...form, fuel_type: value === '__none__' ? '' : value })}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Keine Angabe" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Keine Angabe</SelectItem>
+                            <SelectItem value="__none__">Keine Angabe</SelectItem>
                             {FUEL_TYPES.map((type) => (
                               <SelectItem key={type} value={type}>{type}</SelectItem>
                             ))}
@@ -629,14 +629,14 @@ const VehicleManagement: React.FC = () => {
                       <div className="space-y-2">
                         <Label>Getriebe</Label>
                         <Select
-                          value={form.transmission}
-                          onValueChange={(value) => setForm({ ...form, transmission: value })}
+                          value={form.transmission || '__none__'}
+                          onValueChange={(value) => setForm({ ...form, transmission: value === '__none__' ? '' : value })}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Keine Angabe" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Keine Angabe</SelectItem>
+                            <SelectItem value="__none__">Keine Angabe</SelectItem>
                             {TRANSMISSIONS.map((trans) => (
                               <SelectItem key={trans} value={trans}>{trans}</SelectItem>
                             ))}
@@ -657,14 +657,14 @@ const VehicleManagement: React.FC = () => {
                       <div className="space-y-2">
                         <Label>Farbe</Label>
                         <Select
-                          value={form.color}
-                          onValueChange={(value) => setForm({ ...form, color: value })}
+                          value={form.color || '__none__'}
+                          onValueChange={(value) => setForm({ ...form, color: value === '__none__' ? '' : value })}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Keine Angabe" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Keine Angabe</SelectItem>
+                            <SelectItem value="__none__">Keine Angabe</SelectItem>
                             {COLORS.map((color) => (
                               <SelectItem key={color} value={color}>{color}</SelectItem>
                             ))}
