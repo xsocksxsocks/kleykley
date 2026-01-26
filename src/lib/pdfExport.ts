@@ -225,17 +225,35 @@ export const exportCatalogToPDF = async (): Promise<void> => {
   const categoryMap = new Map<string, Category>();
   categories.forEach(cat => categoryMap.set(cat.id, cat));
 
-  // Group products by category
-  const productsByCategory = new Map<string, { category: Category | null; products: Product[] }>();
+  // Find parent categories (categories without parent_id)
+  const parentCategories = categories.filter(cat => !cat.parent_id);
+
+  // Group products by PARENT category (not subcategory)
+  const productsByParentCategory = new Map<string, { category: Category | null; products: Product[] }>();
   
   products.forEach(product => {
-    const categoryId = product.category_id || 'uncategorized';
-    const category = product.category_id ? categoryMap.get(product.category_id) || null : null;
+    let parentCategoryId = 'uncategorized';
+    let parentCategory: Category | null = null;
     
-    if (!productsByCategory.has(categoryId)) {
-      productsByCategory.set(categoryId, { category, products: [] });
+    if (product.category_id) {
+      const productCategory = categoryMap.get(product.category_id);
+      if (productCategory) {
+        // If this category has a parent, use the parent
+        if (productCategory.parent_id) {
+          parentCategoryId = productCategory.parent_id;
+          parentCategory = categoryMap.get(productCategory.parent_id) || null;
+        } else {
+          // This is already a parent category
+          parentCategoryId = productCategory.id;
+          parentCategory = productCategory;
+        }
+      }
     }
-    productsByCategory.get(categoryId)!.products.push(product);
+    
+    if (!productsByParentCategory.has(parentCategoryId)) {
+      productsByParentCategory.set(parentCategoryId, { category: parentCategory, products: [] });
+    }
+    productsByParentCategory.get(parentCategoryId)!.products.push(product);
   });
 
   // Load logo
@@ -273,8 +291,8 @@ export const exportCatalogToPDF = async (): Promise<void> => {
   doc.text('Produkte', 15, yPos);
   yPos += 15;
 
-  // Products by category
-  for (const [categoryId, { category, products: categoryProducts }] of productsByCategory) {
+  // Products by parent category
+  for (const [categoryId, { category, products: categoryProducts }] of productsByParentCategory) {
     if (categoryProducts.length === 0) continue;
     
     // Check if we need a new page
@@ -285,15 +303,10 @@ export const exportCatalogToPDF = async (): Promise<void> => {
       yPos = 45;
     }
     
-    // Category title
+    // Category title (only parent category name)
     const categoryName = category?.name || 'Ohne Kategorie';
-    let parentName = '';
-    if (category?.parent_id) {
-      const parent = categoryMap.get(category.parent_id);
-      if (parent) parentName = `${parent.name} › `;
-    }
     
-    yPos = addSectionTitle(doc, `${parentName}${categoryName}`, yPos);
+    yPos = addSectionTitle(doc, categoryName, yPos);
     
     // Products table
     const tableData = categoryProducts.map(product => {
