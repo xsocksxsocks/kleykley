@@ -613,8 +613,8 @@ const Warenkorb: React.FC = () => {
                         )}
                         <p className="text-xs text-muted-foreground">
                           {item.vehicle.vat_deductible 
-                            ? '✓ MwSt. ausweisbar (bereits im Preis)' 
-                            : 'zzgl. 19% MwSt.'}
+                            ? '✓ MwSt. ausweisbar' 
+                            : 'Brutto'}
                         </p>
                       </div>
                       <div className="text-right w-28">
