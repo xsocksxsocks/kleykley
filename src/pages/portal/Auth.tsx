@@ -256,9 +256,12 @@ const Auth: React.FC = () => {
               Kundenportal
             </span>
           </div>
-          <div className="text-sm text-cream/60">
-            Bitte melden Sie sich an
-          </div>
+          <Link 
+            to="/" 
+            className="text-sm text-cream/80 hover:text-gold transition-colors"
+          >
+            ← Zur Hauptseite
+          </Link>
         </div>
       </header>
 
@@ -537,7 +540,7 @@ const Auth: React.FC = () => {
       </Dialog>
       </div>
 
-      <PortalFooter />
+      <PortalFooter isLoggedIn={false} />
     </div>
   );
 };
