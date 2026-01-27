@@ -17,7 +17,7 @@ export function PortalFooter() {
               />
             </Link>
             <p className="text-sm leading-relaxed text-cream/70">
-              Ihr zuverlässiger Partner für Produkte und Lösungen.
+              Ihr zuverlässiger Partner für Insolvenzwaren und Warenbestände.
             </p>
           </div>
 
@@ -64,10 +64,10 @@ export function PortalFooter() {
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-gold shrink-0" />
                 <a 
-                  href="tel:+4943221234567" 
+                  href="tel:+4943226874699" 
                   className="text-sm hover:text-gold transition-colors"
                 >
-                  +49 (0) 4322 123 4567
+                  +49 4322 6874699
                 </a>
               </li>
               <li className="flex items-center gap-2">
