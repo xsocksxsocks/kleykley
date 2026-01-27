@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ import logoImage from '@/assets/logo-kley.png';
 import { EU_COUNTRIES } from '@/lib/countries';
 import { Loader2 } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
+import { PortalFooter } from '@/components/portal/PortalFooter';
 
 const loginSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
@@ -245,7 +246,23 @@ const Auth: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header - ohne klickbare Navigation */}
+      <header className="bg-navy-dark text-cream">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src={logoImage} alt="Kley" className="h-10 w-auto" />
+            <span className="font-serif text-lg font-bold text-gold hidden sm:inline">
+              Kundenportal
+            </span>
+          </div>
+          <div className="text-sm text-cream/60">
+            Bitte melden Sie sich an
+          </div>
+        </div>
+      </header>
+
+      <div className="flex-1 flex items-center justify-center p-4">
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
           <img src={logoImage} alt="Kley" className="h-12 mx-auto mb-4" />
@@ -518,6 +535,9 @@ const Auth: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+      </div>
+
+      <PortalFooter />
     </div>
   );
 };

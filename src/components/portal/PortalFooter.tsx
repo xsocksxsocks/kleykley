@@ -17,7 +17,8 @@ export function PortalFooter() {
               />
             </Link>
             <p className="text-sm leading-relaxed text-cream/70">
-              Ihr zuverlässiger Partner für Insolvenzwaren und Warenbestände.
+              Ihr zuverlässiger Partner für Insolvenzwaren, Lagerbestände und Sonderposten. 
+              Wir bieten Ihnen hochwertige Produkte zu attraktiven Konditionen.
             </p>
           </div>
 
