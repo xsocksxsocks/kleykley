@@ -1,8 +1,26 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
 import logoImage from "@/assets/logo-kley.png";
+import { useToast } from "@/hooks/use-toast";
 
-export function PortalFooter() {
+interface PortalFooterProps {
+  isLoggedIn?: boolean;
+}
+
+export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
+  const { toast } = useToast();
+
+  const handleRestrictedClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      toast({
+        title: "Anmeldung erforderlich",
+        description: "Bitte melden Sie sich an, um Zugriff auf diesen Bereich zu erhalten.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <footer className="bg-navy-dark text-cream/80 mt-auto">
       <div className="container mx-auto px-6 py-12">
@@ -27,17 +45,29 @@ export function PortalFooter() {
             <h4 className="text-gold font-serif text-lg font-bold mb-4">Portal</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/portal" className="text-sm hover:text-gold transition-colors">
+                <Link 
+                  to="/portal" 
+                  className="text-sm hover:text-gold transition-colors"
+                  onClick={handleRestrictedClick}
+                >
                   Produktkatalog
                 </Link>
               </li>
               <li>
-                <Link to="/portal/anfragen" className="text-sm hover:text-gold transition-colors">
+                <Link 
+                  to="/portal/anfragen" 
+                  className="text-sm hover:text-gold transition-colors"
+                  onClick={handleRestrictedClick}
+                >
                   Meine Angebote
                 </Link>
               </li>
               <li>
-                <Link to="/portal/profil" className="text-sm hover:text-gold transition-colors">
+                <Link 
+                  to="/portal/profil" 
+                  className="text-sm hover:text-gold transition-colors"
+                  onClick={handleRestrictedClick}
+                >
                   Mein Profil
                 </Link>
               </li>
