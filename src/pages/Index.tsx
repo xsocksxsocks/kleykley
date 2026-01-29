@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Building2, Scale, Users, Heart, ArrowRight } from "lucide-react";
+import { Building2, Scale, Users, Heart, ArrowRight, ShoppingBag } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import heroImage from "@/assets/hero-office.jpg";
 import handshakeImage from "@/assets/business-handshake.jpg";
@@ -58,7 +58,7 @@ const Index = () => {
               Kompetente und persönliche Rechtsberatung in Bordesholm. 
               Wir stehen Ihnen mit Erfahrung und Engagement zur Seite.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4">
               <Button variant="gold" size="xl" asChild>
                 <Link to="/kontakt">
                   Erstberatung vereinbaren
@@ -67,6 +67,12 @@ const Index = () => {
               </Button>
               <Button variant="hero" size="xl" asChild>
                 <Link to="/leistungen">Unsere Leistungen</Link>
+              </Button>
+              <Button variant="hero" size="xl" asChild>
+                <Link to="/portal">
+                  <ShoppingBag className="w-5 h-5 mr-2" />
+                  Kundenportal
+                </Link>
               </Button>
             </div>
           </div>
