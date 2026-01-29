@@ -123,10 +123,19 @@ const Index = () => {
       </section>
 
       {/* Portal Section */}
-      <section className="py-28 bg-gradient-to-br from-navy via-navy-dark to-navy relative overflow-hidden">
+      <section className="py-28 relative overflow-hidden">
+        {/* Background image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${handshakeImage})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-navy/95 via-navy-dark/95 to-navy/95" />
+        </div>
+        
         {/* Decorative background elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-64 h-64 bg-gold/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gold/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold/5 rounded-full blur-3xl" />
         
         <div 
           ref={portalAnimation.ref}
