@@ -777,7 +777,7 @@ const Admin: React.FC = () => {
                           'Stück', // Default unit
                           p.stock_quantity.toString(),
                           p.is_active ? 'Ja' : 'Nein',
-                          `${p.tax_rate}%`,
+                          p.tax_rate.toString(),
                           '', // Einkaufspreis - not stored
                           p.price.toFixed(2).replace('.', ','),
                           category?.name || '',
