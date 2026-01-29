@@ -123,19 +123,25 @@ const Index = () => {
       </section>
 
       {/* Portal Section */}
-      <section className="py-24 bg-background">
+      <section className="py-28 bg-gradient-to-br from-navy via-navy-dark to-navy relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl" />
+        
         <div 
           ref={portalAnimation.ref}
-          className={`container mx-auto px-6 transition-opacity duration-700 ${
+          className={`container mx-auto px-6 relative z-10 transition-opacity duration-700 ${
             portalAnimation.isVisible ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <div className={`text-center mb-16 ${portalAnimation.isVisible ? 'animate-slide-up' : ''}`}>
             <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase">Kundenportal</span>
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4 mb-6">
-              Exklusive Angebote für Geschäftskunden
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-cream mt-4 mb-6">
+              Entdecken Sie unser Sortiment
             </h2>
-            <div className="w-16 h-0.5 bg-gradient-gold mx-auto" />
+            <p className="text-cream/70 text-lg max-w-2xl mx-auto">
+              Hochwertige Produkte zu attraktiven Konditionen – jetzt registrieren und profitieren.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -146,18 +152,18 @@ const Index = () => {
             ].map((item, index) => (
               <div
                 key={item.title}
-                className={`group p-8 bg-card rounded-lg border border-border hover:border-gold/50 transition-all duration-500 hover:shadow-elegant ${
+                className={`group p-8 bg-cream/5 backdrop-blur-sm rounded-lg border border-gold/20 hover:border-gold/50 hover:bg-cream/10 transition-all duration-500 ${
                   portalAnimation.isVisible ? 'animate-slide-up' : 'opacity-0'
                 }`}
                 style={{ animationDelay: `${index * 150}ms` }}
               >
-                <div className="w-14 h-14 rounded-lg bg-navy flex items-center justify-center mb-6 group-hover:bg-gradient-gold transition-all duration-300">
+                <div className="w-14 h-14 rounded-lg bg-gold/10 flex items-center justify-center mb-6 group-hover:bg-gradient-gold transition-all duration-300">
                   <item.icon className="w-7 h-7 text-gold group-hover:text-navy-dark transition-colors" />
                 </div>
-                <h3 className="text-xl font-serif font-bold text-foreground mb-3">
+                <h3 className="text-xl font-serif font-bold text-cream mb-3">
                   {item.title}
                 </h3>
-                <p className="text-muted-foreground text-base font-medium leading-relaxed">
+                <p className="text-cream/70 text-base font-medium leading-relaxed">
                   {item.description}
                 </p>
               </div>
@@ -165,7 +171,7 @@ const Index = () => {
           </div>
 
           <div className="text-center">
-            <Button variant="gold" size="lg" asChild>
+            <Button variant="gold" size="xl" asChild>
               <Link to="/portal">
                 <ShoppingBag className="w-5 h-5 mr-2" />
                 Kundenportal durchsuchen
