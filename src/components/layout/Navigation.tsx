@@ -10,7 +10,6 @@ const navLinks = [
   { href: "/leistungen", label: "Leistungen" },
   { href: "/ueber-uns", label: "Über uns" },
   { href: "/kontakt", label: "Kontakt" },
-  { href: "/portal", label: "Kundenportal" },
 ];
 
 export function Navigation() {
@@ -46,8 +45,11 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
-            <Button variant="gold" size="sm" asChild>
+            <Button variant="outline" size="sm" className="border-cream/30 text-cream hover:bg-cream/10" asChild>
               <Link to="/kontakt">Beratung anfragen</Link>
+            </Button>
+            <Button variant="gold" size="sm" asChild>
+              <Link to="/portal">Kundenportal</Link>
             </Button>
           </div>
 
@@ -80,8 +82,11 @@ export function Navigation() {
                   {link.label}
                 </Link>
               ))}
-              <Button variant="gold" size="lg" className="mt-4" asChild>
+              <Button variant="outline" size="lg" className="mt-4 border-cream/30 text-cream" asChild>
                 <Link to="/kontakt">Beratung anfragen</Link>
+              </Button>
+              <Button variant="gold" size="lg" className="mt-2" asChild>
+                <Link to="/portal">Kundenportal</Link>
               </Button>
             </div>
           </div>
