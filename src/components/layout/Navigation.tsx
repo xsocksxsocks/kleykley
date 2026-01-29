@@ -45,9 +45,12 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
-            <Button variant="outline" size="sm" className="border-cream/30 text-cream hover:bg-cream/10" asChild>
-              <Link to="/kontakt">Beratung anfragen</Link>
-            </Button>
+            <Link
+              to="/kontakt"
+              className="text-base font-semibold tracking-wide text-cream/70 hover:text-gold transition-colors duration-300"
+            >
+              Beratung anfragen
+            </Link>
             <Button variant="gold" size="sm" asChild>
               <Link to="/portal">Kundenportal</Link>
             </Button>
@@ -82,10 +85,7 @@ export function Navigation() {
                   {link.label}
                 </Link>
               ))}
-              <Button variant="outline" size="lg" className="mt-4 border-cream/30 text-cream" asChild>
-                <Link to="/kontakt">Beratung anfragen</Link>
-              </Button>
-              <Button variant="gold" size="lg" className="mt-2" asChild>
+              <Button variant="gold" size="lg" className="mt-4" asChild>
                 <Link to="/portal">Kundenportal</Link>
               </Button>
             </div>
