@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car, Heart, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ShoppingCart, Clock, Package, Star, Search, X, Eye, AlertTriangle, XCircle, Percent, Car, Heart, ChevronLeft, ChevronRight, ChevronDown, UserPlus } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,19 +84,13 @@ const Portal: React.FC = () => {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/portal/auth');
-    }
-  }, [user, loading, navigate]);
+  // Guest access allowed - no redirect for unauthenticated users
+
+  // Check if user is a guest (not logged in)
+  const isGuest = !user;
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!isApproved && !isAdmin) {
-        setLoadingProducts(false);
-        setLoadingVehicles(false);
-        return;
-      }
 
       // Fetch products
       const { data: productsData, error: productsError } = await supabase
@@ -153,10 +148,8 @@ const Portal: React.FC = () => {
       setLoadingVehicles(false);
     };
 
-    if (user) {
-      fetchData();
-    }
-  }, [user, isApproved, isAdmin, toast]);
+    fetchData();
+  }, [toast]);
 
   const handleAddToCart = (product: Product) => {
     const success = addToCart(product);
@@ -311,16 +304,12 @@ const Portal: React.FC = () => {
     return km.toLocaleString('de-DE') + ' km';
   };
 
-  if (loading) {
+  if (loading && user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   // Rejected view
@@ -398,14 +387,43 @@ const Portal: React.FC = () => {
   }
 
   return (
-    <PortalLayout>
+    <PortalLayout showNav={!isGuest}>
       <div className="container mx-auto px-4 py-8">
+        {/* Guest Banner */}
+        {isGuest && (
+          <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <UserPlus className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <span className="text-amber-800 dark:text-amber-200">
+                Registrieren Sie sich, um Produkte in den Warenkorb zu legen und Angebotsanfragen zu senden.
+              </span>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-amber-600 text-amber-700 hover:bg-amber-100 dark:border-amber-500 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                  onClick={() => navigate('/portal/auth')}
+                >
+                  Anmelden
+                </Button>
+                <Button 
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  onClick={() => navigate('/portal/auth?mode=register')}
+                >
+                  Registrieren
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-2">
-            Willkommen, {profile?.company_name || profile?.full_name || 'Kunde'}!
+            {isGuest ? 'Willkommen im Kundenportal!' : `Willkommen, ${profile?.company_name || profile?.full_name || 'Kunde'}!`}
           </h2>
           <p className="text-muted-foreground">
-            Entdecken Sie unsere Produkte und Fahrzeuge und senden Sie uns eine Angebotsanfrage.
+            Entdecken Sie unsere Produkte und Fahrzeuge{!isGuest && ' und senden Sie uns eine Angebotsanfrage'}.
             <span className="block text-sm mt-1">Alle Preise verstehen sich als Netto-Preise zzgl. MwSt.</span>
           </p>
         </div>
@@ -532,9 +550,11 @@ const Portal: React.FC = () => {
                     const imageUrl = getProductImage(product);
                     return (
                       <Card key={product.id} className="flex flex-col relative">
-                        <div className="absolute top-2 left-2 z-10">
-                          <FavoriteButton itemType="product" itemId={product.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
-                        </div>
+                        {!isGuest && (
+                          <div className="absolute top-2 left-2 z-10">
+                            <FavoriteButton itemType="product" itemId={product.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
+                          </div>
+                        )}
                         {(product.is_recommended || (product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0)) && (
                           <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
                             {product.is_recommended && (
@@ -623,10 +643,12 @@ const Portal: React.FC = () => {
                           </Button>
                           <Button
                             className="flex-1"
-                            onClick={() => handleAddToCart(product)}
+                            onClick={() => isGuest ? navigate('/portal/auth') : handleAddToCart(product)}
+                            disabled={isGuest}
+                            title={isGuest ? 'Bitte registrieren Sie sich' : undefined}
                           >
                             <ShoppingCart className="h-4 w-4 mr-2" />
-                            Hinzufügen
+                            {isGuest ? 'Anmelden' : 'Hinzufügen'}
                           </Button>
                         </CardFooter>
                       </Card>
@@ -802,19 +824,35 @@ const Portal: React.FC = () => {
                     
                     return (
                       <Card key={vehicle.id} className="flex flex-col relative">
-                        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                          <FavoriteButton itemType="vehicle" itemId={vehicle.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
-                          {vehicle.is_sold && (
-                            <Badge className="bg-destructive text-destructive-foreground">
-                              Verkauft
-                            </Badge>
-                          )}
-                          {vehicle.is_reserved && !vehicle.is_sold && (
-                            <Badge className="bg-amber-500 text-white">
-                              Reserviert
-                            </Badge>
-                          )}
-                        </div>
+                        {!isGuest && (
+                          <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                            <FavoriteButton itemType="vehicle" itemId={vehicle.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
+                            {vehicle.is_sold && (
+                              <Badge className="bg-destructive text-destructive-foreground">
+                                Verkauft
+                              </Badge>
+                            )}
+                            {vehicle.is_reserved && !vehicle.is_sold && (
+                              <Badge className="bg-amber-500 text-white">
+                                Reserviert
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                        {isGuest && (vehicle.is_sold || vehicle.is_reserved) && (
+                          <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                            {vehicle.is_sold && (
+                              <Badge className="bg-destructive text-destructive-foreground">
+                                Verkauft
+                              </Badge>
+                            )}
+                            {vehicle.is_reserved && !vehicle.is_sold && (
+                              <Badge className="bg-amber-500 text-white">
+                                Reserviert
+                              </Badge>
+                            )}
+                          </div>
+                        )}
                         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
                           {vehicle.is_featured && (
                             <Badge className="bg-gold text-navy-dark flex items-center gap-1">
@@ -894,11 +932,12 @@ const Portal: React.FC = () => {
                           </Button>
                           <Button
                             className="flex-1"
-                            onClick={() => handleAddVehicleToCart(vehicle)}
-                            disabled={vehicle.is_sold || inCart}
+                            onClick={() => isGuest ? navigate('/portal/auth') : handleAddVehicleToCart(vehicle)}
+                            disabled={vehicle.is_sold || inCart || isGuest}
+                            title={isGuest ? 'Bitte registrieren Sie sich' : undefined}
                           >
                             <ShoppingCart className="h-4 w-4 mr-2" />
-                            {inCart ? 'Im Angebot' : 'Hinzufügen'}
+                            {isGuest ? 'Anmelden' : inCart ? 'Im Angebot' : 'Hinzufügen'}
                           </Button>
                         </CardFooter>
                       </Card>
