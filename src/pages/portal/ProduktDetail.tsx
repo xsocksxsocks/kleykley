@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   ShoppingCart, 
   ArrowLeft, 
@@ -19,7 +20,8 @@ import {
   Minus,
   Plus,
   AlertTriangle,
-  Percent
+  Percent,
+  UserPlus
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -69,7 +71,7 @@ const formatCurrency = (amount: number): string => {
 
 const ProduktDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, isAdmin, isApproved, loading } = useAuth();
+  const { user, loading } = useAuth();
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -82,6 +84,9 @@ const ProduktDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useRecentlyViewed();
 
+  // Check if user is a guest (not logged in)
+  const isGuest = !user;
+
   // Track recently viewed
   useEffect(() => {
     if (id) {
@@ -89,19 +94,14 @@ const ProduktDetail: React.FC = () => {
     }
   }, [id, addItem]);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/portal/auth');
-    }
-  }, [user, loading, navigate]);
+  // Guest access allowed - no redirect for unauthenticated users
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!id || (!isApproved && !isAdmin)) {
+      if (!id) {
         setLoadingProduct(false);
         return;
       }
-
       // Fetch product
       const { data: productData, error: productError } = await supabase
         .from('products')
@@ -164,10 +164,8 @@ const ProduktDetail: React.FC = () => {
       setLoadingProduct(false);
     };
 
-    if (user) {
-      fetchProduct();
-    }
-  }, [id, user, isApproved, isAdmin, toast]);
+    fetchProduct();
+  }, [id, toast]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -239,8 +237,37 @@ const ProduktDetail: React.FC = () => {
   const currentImage = images[currentImageIndex];
 
   return (
-    <PortalLayout>
+    <PortalLayout showNav={!isGuest}>
       <div className="container mx-auto px-4 py-8">
+        {/* Guest Banner */}
+        {isGuest && (
+          <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <UserPlus className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <span className="text-amber-800 dark:text-amber-200">
+                Registrieren Sie sich, um dieses Produkt in den Warenkorb zu legen.
+              </span>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-amber-600 text-amber-700 hover:bg-amber-100 dark:border-amber-500 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                  onClick={() => navigate('/portal/auth')}
+                >
+                  Anmelden
+                </Button>
+                <Button 
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  onClick={() => navigate('/portal/auth?mode=register')}
+                >
+                  Registrieren
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Back Button */}
         <Button variant="ghost" asChild className="mb-6">
           <Link to="/portal">
@@ -437,14 +464,18 @@ const ProduktDetail: React.FC = () => {
               <Button 
                 size="lg" 
                 className="w-full"
-                onClick={handleAddToCart}
+                onClick={() => isGuest ? navigate('/portal/auth') : handleAddToCart()}
+                disabled={isGuest}
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                Zur Anfrage hinzufügen
+                {isGuest ? 'Anmelden zum Hinzufügen' : 'Zur Anfrage hinzufügen'}
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                Die endgültigen Preise erhalten Sie in Ihrem individuellen Angebot.
+                {isGuest 
+                  ? 'Bitte registrieren Sie sich, um Produkte anzufragen.'
+                  : 'Die endgültigen Preise erhalten Sie in Ihrem individuellen Angebot.'
+                }
               </p>
             </div>
           </div>

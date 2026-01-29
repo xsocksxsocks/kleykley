@@ -8,14 +8,15 @@ import { PortalLayout } from '@/components/portal/PortalLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Car, Star, ShoppingCart, Calendar, Gauge, Fuel, Settings, Users, Palette, Check, Percent } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ArrowLeft, Car, Star, ShoppingCart, Calendar, Gauge, Fuel, Settings, Users, Palette, Check, Percent, UserPlus } from 'lucide-react';
 import { formatCurrency, calculateDiscountedPrice } from '@/types/shop';
 import { useToast } from '@/hooks/use-toast';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { FavoriteButton } from '@/components/portal/FavoriteButton';
 const FahrzeugDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, isApproved, isAdmin, loading } = useAuth();
+  const { user, loading } = useAuth();
   const { addVehicleToCart, vehicleItems } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -24,6 +25,9 @@ const FahrzeugDetail: React.FC = () => {
   const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { addItem } = useRecentlyViewed();
+
+  // Check if user is a guest (not logged in)
+  const isGuest = !user;
 
   const isInCart = vehicle ? vehicleItems.some(item => item.vehicle.id === vehicle.id) : false;
 
@@ -34,19 +38,14 @@ const FahrzeugDetail: React.FC = () => {
     }
   }, [id, addItem]);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/portal/auth');
-    }
-  }, [user, loading, navigate]);
+  // Guest access allowed - no redirect for unauthenticated users
 
   useEffect(() => {
     const fetchVehicle = async () => {
-      if (!id || (!isApproved && !isAdmin)) {
+      if (!id) {
         setLoadingVehicle(false);
         return;
       }
-
       const { data, error } = await supabase
         .from('cars_for_sale')
         .select('*')
@@ -68,10 +67,8 @@ const FahrzeugDetail: React.FC = () => {
       setLoadingVehicle(false);
     };
 
-    if (user) {
-      fetchVehicle();
-    }
-  }, [id, user, isApproved, isAdmin, toast]);
+    fetchVehicle();
+  }, [id, toast]);
 
   const handleAddToCart = () => {
     if (!vehicle) return;
@@ -136,8 +133,37 @@ const FahrzeugDetail: React.FC = () => {
     : vehicle.price;
 
   return (
-    <PortalLayout>
+    <PortalLayout showNav={!isGuest}>
       <div className="container mx-auto px-4 py-8">
+        {/* Guest Banner */}
+        {isGuest && (
+          <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <UserPlus className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <span className="text-amber-800 dark:text-amber-200">
+                Registrieren Sie sich, um dieses Fahrzeug anzufragen.
+              </span>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-amber-600 text-amber-700 hover:bg-amber-100 dark:border-amber-500 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                  onClick={() => navigate('/portal/auth')}
+                >
+                  Anmelden
+                </Button>
+                <Button 
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  onClick={() => navigate('/portal/auth?mode=register')}
+                >
+                  Registrieren
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Back Button */}
         <Button
           variant="ghost"
@@ -261,15 +287,17 @@ const FahrzeugDetail: React.FC = () => {
             <Button 
               className="w-full" 
               size="lg"
-              onClick={handleAddToCart}
-              disabled={vehicle.is_sold || isInCart}
+              onClick={() => isGuest ? navigate('/portal/auth') : handleAddToCart()}
+              disabled={vehicle.is_sold || isInCart || isGuest}
             >
               <ShoppingCart className="h-5 w-5 mr-2" />
-              {vehicle.is_sold 
-                ? 'Nicht verfügbar' 
-                : isInCart 
-                  ? 'Bereits im Angebot' 
-                  : 'Zur Anfrage hinzufügen'}
+              {isGuest
+                ? 'Anmelden zum Anfragen'
+                : vehicle.is_sold 
+                  ? 'Nicht verfügbar' 
+                  : isInCart 
+                    ? 'Bereits im Angebot' 
+                    : 'Zur Anfrage hinzufügen'}
             </Button>
 
             {/* Key Specs */}
