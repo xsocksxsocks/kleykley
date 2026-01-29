@@ -112,7 +112,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
             <li>Unverbindliche Angebotsanfragen senden</li>
             <li>Ihre Dokumente einsehen</li>
           </ul>
-          <p><a href="https://kleykley.lovable.app/portal" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Zum Kundenportal</a></p>
+          <p><a href="https://kley-kanzlei.com/portal" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Zum Kundenportal</a></p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
         `,
@@ -232,7 +232,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
           </div>
 
           <p>Sie können den Status Ihrer Anfrage jederzeit in Ihrem Kundenportal einsehen:</p>
-          <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Meine Anfragen ansehen</a></p>
+          <p><a href="https://kley-kanzlei.com/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Meine Anfragen ansehen</a></p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
         `,
@@ -246,7 +246,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
           <h2>Sehr geehrte/r ${name},</h2>
           <p>Wir haben Ihre Angebotsanfrage ${data?.orderNumber ? `<strong>${escapeHtml(data.orderNumber)}</strong>` : ''} bearbeitet und ein Angebot für Sie erstellt.</p>
           <p>Sie können das Angebot in Ihrem Kundenportal unter "Meine Angebote" einsehen.</p>
-          <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Angebot ansehen</a></p>
+          <p><a href="https://kley-kanzlei.com/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Angebot ansehen</a></p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
         `,
@@ -260,7 +260,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
           <p>Ihre Anfrage ${data?.orderNumber ? `<strong>${escapeHtml(data.orderNumber)}</strong>` : ''} befindet sich nun in Bearbeitung.</p>
           ${data?.newStatus ? `<p><strong>Neuer Status:</strong> ${escapeHtml(data.newStatus)}</p>` : ''}
           <p>Wir werden Sie über den Fortschritt informieren.</p>
-          <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Status ansehen</a></p>
+          <p><a href="https://kley-kanzlei.com/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Status ansehen</a></p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
         `,
@@ -274,7 +274,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
           <p>Ihre Bestellung ${data?.orderNumber ? `<strong>${escapeHtml(data.orderNumber)}</strong>` : ''} wurde versendet.</p>
           ${data?.newStatus ? `<p><strong>Neuer Status:</strong> ${escapeHtml(data.newStatus)}</p>` : ''}
           <p>Die Versandabwicklung erfolgt gemäß den vereinbarten Konditionen. Sollten Sie noch keine detaillierten Versandinformationen erhalten haben, werden wir Ihnen diese in Kürze zukommen lassen.</p>
-          <p><a href="https://kleykley.lovable.app/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Status ansehen</a></p>
+          <p><a href="https://kley-kanzlei.com/portal/anfragen" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Status ansehen</a></p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
         `,
@@ -314,7 +314,7 @@ const getEmailContent = (type: NotificationType, customerName: string, data?: No
           <h2>Sehr geehrte/r ${name},</h2>
           <p>Ein neues Dokument wurde für Sie bereitgestellt${data?.documentName ? `: <strong>${escapeHtml(data.documentName)}</strong>` : ''}.</p>
           <p>Sie können das Dokument in Ihrem Kundenportal unter "Dokumente" einsehen und herunterladen.</p>
-          <p><a href="https://kleykley.lovable.app/portal/dokumente" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Dokumente ansehen</a></p>
+          <p><a href="https://kley-kanzlei.com/portal/dokumente" style="display: inline-block; background-color: #b8860b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Dokumente ansehen</a></p>
           <br>
           <p>Mit freundlichen Grüßen,<br>Ihr Kley Team</p>
         `,
