@@ -133,6 +133,27 @@ export type Database = {
           },
         ]
       }
+      contact_form_submissions: {
+        Row: {
+          created_at: string
+          email_hash: string | null
+          id: string
+          ip_hash: string
+        }
+        Insert: {
+          created_at?: string
+          email_hash?: string | null
+          id?: string
+          ip_hash: string
+        }
+        Update: {
+          created_at?: string
+          email_hash?: string | null
+          id?: string
+          ip_hash?: string
+        }
+        Relationships: []
+      }
       discount_code_usage: {
         Row: {
           discount_code_id: string
@@ -748,6 +769,7 @@ export type Database = {
         Returns: string
       }
       cancel_account_deletion: { Args: { user_id: string }; Returns: undefined }
+      cleanup_old_contact_submissions: { Args: never; Returns: undefined }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_approved_customer: { Args: { _user_id: string }; Returns: boolean }
