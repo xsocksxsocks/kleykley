@@ -33,7 +33,7 @@ const Index = () => {
   const servicesAnimation = useScrollAnimation<HTMLDivElement>();
   const aboutAnimation = useScrollAnimation<HTMLDivElement>();
   const ctaAnimation = useScrollAnimation<HTMLDivElement>();
-
+  const portalAnimation = useScrollAnimation<HTMLDivElement>();
   return (
     <Layout>
       {/* Hero Section */}
@@ -163,6 +163,34 @@ const Index = () => {
                 <div className="absolute -bottom-6 -left-6 w-32 h-32 border-2 border-gold/30 rounded-lg" />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Portal Section */}
+      <section className="py-24 bg-background">
+        <div 
+          ref={portalAnimation.ref}
+          className={`container mx-auto px-6 transition-opacity duration-700 ${
+            portalAnimation.isVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className={`text-center max-w-3xl mx-auto ${portalAnimation.isVisible ? 'animate-slide-up' : ''}`}>
+            <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase">Kundenportal</span>
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4 mb-6">
+              Exklusive Angebote für Geschäftskunden
+            </h2>
+            <p className="text-muted-foreground text-base font-medium mb-8 leading-relaxed">
+              Entdecken Sie unser Kundenportal mit hochwertigen Insolvenzwaren, Lagerbeständen und 
+              Sonderposten zu attraktiven Konditionen. Registrieren Sie sich jetzt und profitieren 
+              Sie von exklusiven B2B-Angeboten.
+            </p>
+            <Button variant="gold" size="lg" asChild>
+              <Link to="/portal">
+                <ShoppingBag className="w-5 h-5 mr-2" />
+                Kundenportal durchsuchen
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
