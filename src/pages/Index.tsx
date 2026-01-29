@@ -138,7 +138,7 @@ const Index = () => {
             <p className="text-cream/80 text-base font-medium mb-8 leading-relaxed">
               Entdecken Sie unser Kundenportal mit hochwertigen Insolvenzwaren, Lagerbeständen und 
               Sonderposten zu attraktiven Konditionen. Registrieren Sie sich jetzt und profitieren 
-              Sie von exklusiven B2B-Angeboten.
+              Sie von exklusiven Angeboten.
             </p>
             <Button variant="gold" size="lg" asChild>
               <Link to="/portal">
