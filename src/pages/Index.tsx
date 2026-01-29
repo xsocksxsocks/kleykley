@@ -71,7 +71,7 @@ const Index = () => {
               <Button variant="hero" size="xl" asChild>
                 <Link to="/portal">
                   <ShoppingBag className="w-5 h-5 mr-2" />
-                  Kundenportal
+                  Kundenportal durchsuchen
                 </Link>
               </Button>
             </div>
