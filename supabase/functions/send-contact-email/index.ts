@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -8,6 +9,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_HOURS = 1;
+const MAX_SUBMISSIONS_PER_WINDOW = 5;
 
 interface ContactFormRequest {
   name: string;
@@ -71,6 +76,37 @@ const validateInput = (data: ContactFormRequest): { valid: boolean; error?: stri
   return { valid: true };
 };
 
+// Get client IP from request headers
+const getClientIP = (req: Request): string => {
+  // Check various headers for the client IP
+  const xForwardedFor = req.headers.get('x-forwarded-for');
+  if (xForwardedFor) {
+    // x-forwarded-for can contain multiple IPs, take the first one
+    return xForwardedFor.split(',')[0].trim();
+  }
+  
+  const xRealIP = req.headers.get('x-real-ip');
+  if (xRealIP) {
+    return xRealIP.trim();
+  }
+  
+  const cfConnectingIP = req.headers.get('cf-connecting-ip');
+  if (cfConnectingIP) {
+    return cfConnectingIP.trim();
+  }
+  
+  return 'unknown';
+};
+
+// Hash IP for privacy (we don't need to store the actual IP)
+const hashIP = async (ip: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(ip + Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.substring(0, 16));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 32);
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -78,6 +114,46 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Initialize Supabase client with service role for rate limiting
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get and hash client IP for rate limiting
+    const clientIP = getClientIP(req);
+    const ipHash = await hashIP(clientIP);
+    
+    // Check rate limit
+    const windowStart = new Date();
+    windowStart.setHours(windowStart.getHours() - RATE_LIMIT_WINDOW_HOURS);
+    
+    const { count, error: countError } = await supabase
+      .from('contact_form_submissions')
+      .select('*', { count: 'exact', head: true })
+      .eq('ip_hash', ipHash)
+      .gte('created_at', windowStart.toISOString());
+    
+    if (countError) {
+      console.error("Rate limit check error:", countError);
+      // Continue without rate limiting if table doesn't exist yet
+    } else if (count !== null && count >= MAX_SUBMISSIONS_PER_WINDOW) {
+      console.log("Rate limit exceeded for IP hash:", ipHash.substring(0, 8));
+      return new Response(
+        JSON.stringify({ 
+          error: 'Zu viele Anfragen. Bitte versuchen Sie es in einer Stunde erneut.',
+          retry_after: RATE_LIMIT_WINDOW_HOURS * 3600
+        }),
+        {
+          status: 429,
+          headers: { 
+            "Content-Type": "application/json", 
+            "Retry-After": String(RATE_LIMIT_WINDOW_HOURS * 3600),
+            ...corsHeaders 
+          },
+        }
+      );
+    }
+
     const body = await req.json();
     const { name, email, phone, subject, message }: ContactFormRequest = body;
 
@@ -94,7 +170,25 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log("Received valid contact form submission:", { name: name.substring(0, 20), email: email.substring(0, 30), subject: subject.substring(0, 30) });
+    console.log("Received valid contact form submission:", { 
+      name: name.substring(0, 20), 
+      email: email.substring(0, 30), 
+      subject: subject.substring(0, 30),
+      ipHash: ipHash.substring(0, 8)
+    });
+
+    // Record the submission for rate limiting (before sending emails)
+    const { error: insertError } = await supabase
+      .from('contact_form_submissions')
+      .insert({
+        ip_hash: ipHash,
+        email_hash: await hashIP(email.toLowerCase()), // Also track by email
+      });
+    
+    if (insertError) {
+      console.error("Failed to record submission:", insertError);
+      // Continue anyway - don't block legitimate users if logging fails
+    }
 
     // Escape all user inputs for safe HTML rendering
     const safeName = escapeHtml(name.trim());
