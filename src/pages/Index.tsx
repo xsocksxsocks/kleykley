@@ -6,6 +6,7 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import heroImage from "@/assets/hero-office.jpg";
 import handshakeImage from "@/assets/business-handshake.jpg";
 import justiceImage from "@/assets/justice-scales.jpg";
+import warehouseImage from "@/assets/warehouse-background.jpg";
 const services = [
   {
     icon: Building2,
@@ -127,7 +128,7 @@ const Index = () => {
         {/* Background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${handshakeImage})` }}
+          style={{ backgroundImage: `url(${warehouseImage})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-navy/95 via-navy-dark/95 to-navy/95" />
         </div>
