@@ -7,9 +7,14 @@ export function CTASection() {
   const animation = useScrollAnimation<HTMLDivElement>();
 
   return (
-    <section className="py-28 bg-background relative">
+    <section className="py-28 bg-background relative overflow-hidden">
       {/* Top border accent */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      
+      {/* Geometric decorations */}
+      <div className="absolute top-20 right-10 w-48 h-48 border border-gold/10 rounded-full hidden lg:block" />
+      <div className="absolute bottom-10 left-20 w-20 h-20 border border-border rotate-12 hidden lg:block" />
+      <div className="absolute top-1/2 right-1/3 w-px h-16 bg-gradient-to-b from-transparent via-gold/15 to-transparent hidden lg:block" />
       
       <div 
         ref={animation.ref}

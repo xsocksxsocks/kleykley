@@ -15,6 +15,11 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-r from-navy-dark/60 via-transparent to-transparent" />
       </div>
       
+      {/* Geometric decorations */}
+      <div className="absolute top-20 right-20 w-64 h-64 border border-gold/10 rounded-full hidden lg:block" />
+      <div className="absolute top-32 right-32 w-40 h-40 border border-gold/5 rounded-full hidden lg:block" />
+      <div className="absolute bottom-40 right-1/4 w-24 h-24 border border-cream/5 rotate-45 hidden lg:block" />
+      
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-2xl">
           {/* Minimal accent line */}

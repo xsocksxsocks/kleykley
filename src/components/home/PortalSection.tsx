@@ -35,7 +35,14 @@ export function PortalSection() {
       {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-navy-dark via-navy to-navy-dark" />
       
-      {/* Decorative elements */}
+      {/* Geometric decorations */}
+      <div className="absolute top-10 left-10 w-72 h-72 border border-gold/5 rounded-full hidden lg:block" />
+      <div className="absolute top-20 left-20 w-48 h-48 border border-gold/10 rounded-full hidden lg:block" />
+      <div className="absolute bottom-20 right-10 w-32 h-32 border border-cream/5 rotate-45 hidden lg:block" />
+      <div className="absolute top-1/2 right-1/4 w-px h-32 bg-gradient-to-b from-transparent via-gold/20 to-transparent hidden lg:block" />
+      <div className="absolute bottom-1/3 left-1/3 w-16 h-16 border border-gold/10 hidden lg:block" />
+      
+      {/* Decorative lines */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
       

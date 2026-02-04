@@ -8,10 +8,15 @@ export function AboutSection() {
   const animation = useScrollAnimation<HTMLDivElement>();
 
   return (
-    <section className="py-28 bg-background">
-      <div 
+    <section className="py-28 bg-background relative overflow-hidden">
+      {/* Geometric decorations */}
+      <div className="absolute top-10 right-20 w-24 h-24 border border-gold/10 rounded-full hidden lg:block" />
+      <div className="absolute bottom-20 left-10 w-40 h-40 border border-border hidden lg:block" />
+      <div className="absolute top-1/3 left-20 w-px h-20 bg-gradient-to-b from-gold/20 to-transparent hidden lg:block" />
+      
+      <div
         ref={animation.ref}
-        className={`container mx-auto px-6 transition-opacity duration-700 ${
+        className={`container mx-auto px-6 relative z-10 transition-opacity duration-700 ${
           animation.isVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
