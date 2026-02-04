@@ -29,14 +29,14 @@ export const CartDropdown: React.FC<CartDropdownProps> = ({ isActive = false }) 
           variant="outline" 
           size="sm" 
           className={cn(
-            "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold relative",
-            isActive && "bg-gold/20 text-gold border-gold/50"
+            "border-border text-muted-foreground hover:bg-accent/10 hover:text-accent relative",
+            isActive && "bg-accent/10 text-accent border-accent/50"
           )}
         >
           <ShoppingCart className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">Warenkorb</span>
           {totalItems > 0 && (
-            <Badge variant="secondary" className="ml-1 sm:ml-2 bg-gold text-navy-dark">
+            <Badge variant="secondary" className="ml-1 sm:ml-2 bg-accent text-accent-foreground">
               {totalItems}
             </Badge>
           )}
