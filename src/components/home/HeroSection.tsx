@@ -42,16 +42,15 @@ export function HeroSection() {
               asChild
               className="group"
             >
-              <Link to="/kontakt">
-                Erstberatung vereinbaren
+              <Link to="/portal">
+                Zum Kundenportal
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
             <Button 
-              variant="outline" 
               size="lg" 
               asChild
-              className="border-cream/20 text-cream hover:bg-cream/5 hover:border-cream/40"
+              className="bg-transparent border border-cream/30 text-cream hover:bg-cream/10 hover:border-cream/50"
             >
               <Link to="/leistungen">
                 Unsere Leistungen

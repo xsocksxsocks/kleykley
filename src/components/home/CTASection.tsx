@@ -20,7 +20,7 @@ export function CTASection() {
             Kontakt
           </span>
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mt-3 mb-4">
-            Lassen Sie uns sprechen
+            Vereinbaren Sie einen Termin
           </h2>
           <p className="text-muted-foreground text-base font-normal mb-10 max-w-lg mx-auto">
             Vereinbaren Sie einen Termin für eine unverbindliche Erstberatung.
