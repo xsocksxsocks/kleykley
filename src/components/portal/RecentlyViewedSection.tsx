@@ -16,6 +16,7 @@ interface Product {
   price: number;
   discount_percentage: number | null;
   image_url: string | null;
+  product_number: string | null;
 }
 
 interface Vehicle {
@@ -27,6 +28,7 @@ interface Vehicle {
   images: string[];
   first_registration_date: string;
   mileage: number;
+  vehicle_number: string | null;
 }
 
 export const RecentlyViewedSection: React.FC = () => {
@@ -49,7 +51,7 @@ export const RecentlyViewedSection: React.FC = () => {
         if (productIds.length > 0) {
           const { data } = await supabase
             .from('products')
-            .select('id, name, price, discount_percentage, image_url')
+            .select('id, name, price, discount_percentage, image_url, product_number')
             .in('id', productIds);
           
           // Sort by the order in items
@@ -64,7 +66,7 @@ export const RecentlyViewedSection: React.FC = () => {
         if (vehicleIds.length > 0) {
           const { data } = await supabase
             .from('cars_for_sale')
-            .select('id, brand, model, price, discount_percentage, images, first_registration_date, mileage')
+            .select('id, brand, model, price, discount_percentage, images, first_registration_date, mileage, vehicle_number')
             .in('id', vehicleIds);
           
           // Sort by the order in items
@@ -128,7 +130,7 @@ export const RecentlyViewedSection: React.FC = () => {
               return (
                 <Link 
                   key={`product-${product.id}`} 
-                  to={`/portal/produkt/${product.id}`}
+                  to={`/portal/produkt/${product.product_number}`}
                   className="flex-shrink-0 w-48"
                 >
                   <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
@@ -157,7 +159,7 @@ export const RecentlyViewedSection: React.FC = () => {
                       <p className="font-medium text-sm truncate">{product.name}</p>
                       <p className="text-sm font-bold mt-1">
                         {hasDiscount ? (
-                          <span className="text-gold">
+                          <span className="text-accent">
                             {formatCurrency(product.price * (1 - product.discount_percentage! / 100))}
                           </span>
                         ) : (
@@ -175,7 +177,7 @@ export const RecentlyViewedSection: React.FC = () => {
               return (
                 <Link 
                   key={`vehicle-${vehicle.id}`} 
-                  to={`/portal/fahrzeug/${vehicle.id}`}
+                  to={`/portal/fahrzeug/${vehicle.vehicle_number}`}
                   className="flex-shrink-0 w-48"
                 >
                   <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">

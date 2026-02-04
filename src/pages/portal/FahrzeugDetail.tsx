@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { FavoriteButton } from '@/components/portal/FavoriteButton';
 const FahrzeugDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { vehicleNumber } = useParams<{ vehicleNumber: string }>();
   const { user, loading } = useAuth();
   const { addVehicleToCart, vehicleItems } = useCart();
   const navigate = useNavigate();
@@ -31,25 +31,25 @@ const FahrzeugDetail: React.FC = () => {
 
   const isInCart = vehicle ? vehicleItems.some(item => item.vehicle.id === vehicle.id) : false;
 
-  // Track recently viewed
+  // Track recently viewed - we'll update this after we have the vehicle ID
   useEffect(() => {
-    if (id) {
-      addItem(id, 'vehicle');
+    if (vehicle?.id) {
+      addItem(vehicle.id, 'vehicle');
     }
-  }, [id, addItem]);
+  }, [vehicle?.id, addItem]);
 
   // Guest access allowed - no redirect for unauthenticated users
 
   useEffect(() => {
     const fetchVehicle = async () => {
-      if (!id) {
+      if (!vehicleNumber) {
         setLoadingVehicle(false);
         return;
       }
       const { data, error } = await supabase
         .from('cars_for_sale')
         .select('*')
-        .eq('id', id)
+        .eq('vehicle_number', vehicleNumber)
         .is('deleted_at', null)
         .maybeSingle();
 
@@ -68,7 +68,7 @@ const FahrzeugDetail: React.FC = () => {
     };
 
     fetchVehicle();
-  }, [id, toast]);
+  }, [vehicleNumber, toast]);
 
   const handleAddToCart = () => {
     if (!vehicle) return;

@@ -52,8 +52,8 @@ const App = () => (
                 <Route path="/portal/anfragen" element={<Anfragen />} />
                 <Route path="/portal/profil" element={<Profil />} />
                 <Route path="/portal/favoriten" element={<Favoriten />} />
-                <Route path="/portal/produkt/:id" element={<ProduktDetail />} />
-                <Route path="/portal/fahrzeug/:id" element={<FahrzeugDetail />} />
+                <Route path="/portal/produkt/:productNumber" element={<ProduktDetail />} />
+                <Route path="/portal/fahrzeug/:vehicleNumber" element={<FahrzeugDetail />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/admin/anfrage/:id" element={<AnfrageDetail />} />
                 <Route path="*" element={<NotFound />} />

@@ -21,6 +21,7 @@ interface Product {
   image_url: string | null;
   stock_quantity: number;
   is_recommended: boolean;
+  product_number: string | null;
 }
 
 interface Vehicle {
@@ -35,6 +36,7 @@ interface Vehicle {
   is_sold: boolean;
   is_reserved: boolean;
   is_featured: boolean;
+  vehicle_number: string | null;
 }
 
 const Favoriten = () => {
@@ -74,7 +76,7 @@ const Favoriten = () => {
         if (productIds.length > 0) {
           const { data } = await supabase
             .from('products')
-            .select('id, name, price, discount_percentage, image_url, stock_quantity, is_recommended')
+            .select('id, name, price, discount_percentage, image_url, stock_quantity, is_recommended, product_number')
             .in('id', productIds);
           setProducts(data || []);
         } else {
@@ -84,7 +86,7 @@ const Favoriten = () => {
         if (vehicleIds.length > 0) {
           const { data } = await supabase
             .from('cars_for_sale')
-            .select('id, brand, model, price, discount_percentage, images, mileage, first_registration_date, is_sold, is_reserved, is_featured')
+            .select('id, brand, model, price, discount_percentage, images, mileage, first_registration_date, is_sold, is_reserved, is_featured, vehicle_number')
             .in('id', vehicleIds);
           setVehicles(data || []);
         } else {
@@ -231,7 +233,7 @@ const Favoriten = () => {
                         </div>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline" asChild className="flex-1">
-                            <Link to={`/portal/produkt/${product.id}`}>
+                            <Link to={`/portal/produkt/${product.product_number}`}>
                               <Eye className="h-4 w-4 mr-1" />
                               Details
                             </Link>
@@ -313,7 +315,7 @@ const Favoriten = () => {
                           <span className="text-xs text-muted-foreground">netto</span>
                         </div>
                         <Button size="sm" variant="outline" asChild className="w-full">
-                          <Link to={`/portal/fahrzeug/${vehicle.id}`}>
+                          <Link to={`/portal/fahrzeug/${vehicle.vehicle_number}`}>
                             <Eye className="h-4 w-4 mr-2" />
                             Details ansehen
                           </Link>
