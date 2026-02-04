@@ -37,6 +37,11 @@ export function ServicesSection() {
       {/* Subtle background decoration */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-muted/50 to-transparent" />
       
+      {/* Geometric decorations */}
+      <div className="absolute top-20 left-10 w-32 h-32 border border-gold/10 rounded-full hidden lg:block" />
+      <div className="absolute bottom-20 right-20 w-48 h-48 border border-border rotate-12 hidden lg:block" />
+      <div className="absolute top-1/2 right-10 w-2 h-24 bg-gradient-to-b from-gold/20 to-transparent hidden lg:block" />
+      
       <div 
         ref={animation.ref}
         className={`container mx-auto px-6 relative z-10 transition-opacity duration-700 ${
