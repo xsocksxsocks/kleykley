@@ -136,7 +136,7 @@ const Favoriten = () => {
     return (
       <PortalLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-gold" />
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
         </div>
       </PortalLayout>
     );
@@ -149,7 +149,7 @@ const Favoriten = () => {
     <PortalLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
-          <Heart className="h-8 w-8 text-gold" />
+          <Heart className="h-8 w-8 text-accent" />
           <h1 className="text-3xl font-serif font-bold text-foreground">Meine Favoriten</h1>
         </div>
 
@@ -217,7 +217,7 @@ const Favoriten = () => {
                         <div className="flex items-baseline gap-2 mb-4">
                           {product.discount_percentage !== null && product.discount_percentage !== undefined && product.discount_percentage > 0 ? (
                             <>
-                              <span className="text-lg font-bold text-gold">
+                              <span className="text-lg font-bold text-accent">
                                 {formatPrice(product.price * (1 - product.discount_percentage / 100))}
                               </span>
                               <span className="text-sm text-muted-foreground line-through">
@@ -300,7 +300,7 @@ const Favoriten = () => {
                         <div className="flex items-baseline gap-2 mb-4">
                           {vehicle.discount_percentage !== null && vehicle.discount_percentage !== undefined && vehicle.discount_percentage > 0 ? (
                             <>
-                              <span className="text-lg font-bold text-gold">
+                              <span className="text-lg font-bold text-accent">
                                 {formatPrice(vehicle.price * (1 - vehicle.discount_percentage / 100))}
                               </span>
                               <span className="text-sm text-muted-foreground line-through">

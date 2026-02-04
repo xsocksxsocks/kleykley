@@ -290,7 +290,7 @@ const ProduktDetail: React.FC = () => {
                   />
                   {product.is_recommended && (
                     <div className="absolute top-4 right-4">
-                      <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                      <Badge className="bg-accent text-accent-foreground flex items-center gap-1">
                         <Star className="h-3 w-3 fill-current" />
                         Empfohlen
                       </Badge>
