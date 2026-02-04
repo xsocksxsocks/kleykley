@@ -49,10 +49,10 @@
     --gradient-navy: linear-gradient(180deg, hsl(220 50% 18%), hsl(220 55% 10%));
     --gradient-hero: linear-gradient(135deg, hsl(220 55% 10%) 0%, hsl(220 50% 20%) 100%);
 
-    /* Shadows - softer for light mode */
-    --shadow-elegant: 0 4px 24px -6px hsl(220 45% 12% / 0.12);
-    --shadow-card: 0 2px 16px -4px hsl(220 45% 12% / 0.08);
-    --shadow-gold: 0 4px 24px -6px hsl(42 70% 45% / 0.35);
+    /* Shadows - ultra soft for elegant appearance */
+    --shadow-elegant: 0 8px 32px -8px hsl(220 45% 12% / 0.08), 0 4px 16px -4px hsl(220 45% 12% / 0.04);
+    --shadow-card: 0 4px 24px -6px hsl(220 45% 12% / 0.05), 0 2px 8px -2px hsl(220 45% 12% / 0.03);
+    --shadow-gold: 0 8px 32px -8px hsl(42 70% 45% / 0.25), 0 4px 16px -4px hsl(42 70% 45% / 0.15);
 
     --sidebar-background: 40 30% 98%;
     --sidebar-foreground: 220 45% 12%;
