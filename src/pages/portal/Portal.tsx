@@ -571,7 +571,7 @@ const Portal: React.FC = () => {
                             )}
                           </div>
                         )}
-                        <Link to={`/portal/produkt/${product.id}`} className="block">
+                        <Link to={`/portal/produkt/${product.product_number}`} className="block">
                           <CardHeader>
                             {imageUrl ? (
                               <img
@@ -636,7 +636,7 @@ const Portal: React.FC = () => {
                             className="flex-1"
                             asChild
                           >
-                            <Link to={`/portal/produkt/${product.id}`}>
+                            <Link to={`/portal/produkt/${product.product_number}`}>
                               <Eye className="h-4 w-4 mr-2" />
                               Details
                             </Link>
@@ -872,7 +872,7 @@ const Portal: React.FC = () => {
                             </Badge>
                           )}
                         </div>
-                        <Link to={`/portal/fahrzeug/${vehicle.id}`} className="block">
+                        <Link to={`/portal/fahrzeug/${vehicle.vehicle_number}`} className="block">
                           <CardHeader>
                             {vehicle.images && vehicle.images.length > 0 ? (
                               <img
@@ -925,7 +925,7 @@ const Portal: React.FC = () => {
                             className="flex-1"
                             asChild
                           >
-                            <Link to={`/portal/fahrzeug/${vehicle.id}`}>
+                            <Link to={`/portal/fahrzeug/${vehicle.vehicle_number}`}>
                               <Eye className="h-4 w-4 mr-2" />
                               Details
                             </Link>

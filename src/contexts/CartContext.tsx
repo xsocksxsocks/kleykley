@@ -19,6 +19,7 @@ export interface Vehicle {
   features: string[] | null;
   images: string[];
   vehicle_type: string | null;
+  vehicle_number: string | null;
   vat_deductible: boolean | null;
   is_featured: boolean | null;
   is_sold: boolean | null;

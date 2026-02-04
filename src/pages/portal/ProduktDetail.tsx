@@ -70,7 +70,7 @@ const formatCurrency = (amount: number): string => {
 };
 
 const ProduktDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { productNumber } = useParams<{ productNumber: string }>();
   const { user, loading } = useAuth();
   const { addToCart } = useCart();
   const navigate = useNavigate();
@@ -87,26 +87,26 @@ const ProduktDetail: React.FC = () => {
   // Check if user is a guest (not logged in)
   const isGuest = !user;
 
-  // Track recently viewed
+  // Track recently viewed - we'll update this after we have the product ID
   useEffect(() => {
-    if (id) {
-      addItem(id, 'product');
+    if (product?.id) {
+      addItem(product.id, 'product');
     }
-  }, [id, addItem]);
+  }, [product?.id, addItem]);
 
   // Guest access allowed - no redirect for unauthenticated users
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!id) {
+      if (!productNumber) {
         setLoadingProduct(false);
         return;
       }
-      // Fetch product
+      // Fetch product by product_number
       const { data: productData, error: productError } = await supabase
         .from('products')
         .select('*')
-        .eq('id', id)
+        .eq('product_number', productNumber)
         .eq('is_active', true)
         .maybeSingle();
 
@@ -132,7 +132,7 @@ const ProduktDetail: React.FC = () => {
       const { data: imagesData } = await supabase
         .from('product_images')
         .select('*')
-        .eq('product_id', id)
+        .eq('product_id', productData.id)
         .order('sort_order', { ascending: true });
 
       if (imagesData && imagesData.length > 0) {
@@ -141,7 +141,7 @@ const ProduktDetail: React.FC = () => {
         // Use fallback image
         setImages([{ 
           id: 'fallback', 
-          product_id: id, 
+          product_id: productData.id, 
           image_url: productData.image_url, 
           sort_order: 0,
           created_at: ''
@@ -165,7 +165,7 @@ const ProduktDetail: React.FC = () => {
     };
 
     fetchProduct();
-  }, [id, toast]);
+  }, [productNumber, toast]);
 
   const handleAddToCart = () => {
     if (!product) return;
