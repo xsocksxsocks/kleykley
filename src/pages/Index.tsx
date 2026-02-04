@@ -202,16 +202,16 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className={`order-2 lg:order-1 ${aboutAnimation.isVisible ? 'animate-slide-left' : ''}`}>
               <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase">Über uns</span>
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-cream mt-4 mb-6 line-decoration">
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4 mb-6 line-decoration">
                 Vertrauen durch Kompetenz
               </h2>
-              <p className="text-cream/80 text-base font-medium leading-relaxed mb-6">
+              <p className="text-muted-foreground text-base font-medium leading-relaxed mb-6">
                 Die Kley Rechtsanwalt GmbH steht für persönliche, kompetente und zuverlässige 
                 Rechtsberatung. Unser Ziel ist es, für unsere Mandanten die bestmöglichen 
                 Lösungen zu finden – mit Engagement, Erfahrung und einem offenen Ohr für 
                 Ihre Anliegen.
               </p>
-              <p className="text-cream/80 text-base font-medium leading-relaxed mb-8">
+              <p className="text-muted-foreground text-base font-medium leading-relaxed mb-8">
                 Von unserem Standort in Bordesholm aus betreuen wir Mandanten in ganz 
                 Schleswig-Holstein und darüber hinaus.
               </p>
