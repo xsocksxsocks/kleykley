@@ -22,7 +22,7 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
   };
 
   return (
-    <footer className="bg-navy-dark text-cream/80 mt-auto">
+    <footer className="bg-card border-t border-border mt-auto">
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand */}
@@ -34,7 +34,7 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
                 className="h-12 w-auto"
               />
             </Link>
-            <p className="text-sm leading-relaxed text-cream/70">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               Ihr zuverlässiger Partner für Insolvenzwaren, Lagerbestände und Sonderposten. 
               Wir bieten Ihnen hochwertige Produkte zu attraktiven Konditionen.
             </p>
@@ -42,12 +42,12 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-gold font-serif text-lg font-bold mb-4">Portal</h4>
+            <h4 className="text-accent font-serif text-lg font-bold mb-4">Portal</h4>
             <ul className="space-y-2">
               <li>
                 <Link 
                   to="/portal" 
-                  className="text-sm hover:text-gold transition-colors"
+                  className="text-sm text-foreground hover:text-accent transition-colors"
                   onClick={handleRestrictedClick}
                 >
                   Produktkatalog
@@ -56,7 +56,7 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
               <li>
                 <Link 
                   to="/portal/anfragen" 
-                  className="text-sm hover:text-gold transition-colors"
+                  className="text-sm text-foreground hover:text-accent transition-colors"
                   onClick={handleRestrictedClick}
                 >
                   Meine Angebote
@@ -65,14 +65,14 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
               <li>
                 <Link 
                   to="/portal/profil" 
-                  className="text-sm hover:text-gold transition-colors"
+                  className="text-sm text-foreground hover:text-accent transition-colors"
                   onClick={handleRestrictedClick}
                 >
                   Mein Profil
                 </Link>
               </li>
               <li>
-                <Link to="/" className="text-sm hover:text-gold transition-colors">
+                <Link to="/" className="text-sm text-foreground hover:text-accent transition-colors">
                   Zur Hauptseite
                 </Link>
               </li>
@@ -81,31 +81,31 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
 
           {/* Contact */}
           <div>
-            <h4 className="text-gold font-serif text-lg font-bold mb-4">Kontakt</h4>
+            <h4 className="text-accent font-serif text-lg font-bold mb-4">Kontakt</h4>
             <ul className="space-y-2">
-              <li className="text-sm font-bold text-cream">
+              <li className="text-sm font-bold text-foreground">
                 Kley Rechtsanwalt GmbH
               </li>
               <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-gold mt-0.5 shrink-0" />
-                <span className="text-sm">
+                <MapPin className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                <span className="text-sm text-foreground">
                   Eiderkamp 13, 24582 Bordesholm
                 </span>
               </li>
               <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-gold shrink-0" />
+                <Phone className="w-4 h-4 text-accent shrink-0" />
                 <a 
                   href="tel:+4943226874699" 
-                  className="text-sm hover:text-gold transition-colors"
+                  className="text-sm text-foreground hover:text-accent transition-colors"
                 >
                   +49 4322 6874699
                 </a>
               </li>
               <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-gold shrink-0" />
+                <Mail className="w-4 h-4 text-accent shrink-0" />
                 <a 
                   href="mailto:info@kanzlei-kley.com" 
-                  className="text-sm hover:text-gold transition-colors"
+                  className="text-sm text-foreground hover:text-accent transition-colors"
                 >
                   info@kanzlei-kley.com
                 </a>
@@ -115,16 +115,16 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 pt-6 border-t border-gold/20">
+        <div className="mt-8 pt-6 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-cream/60">
+            <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} Kley Rechtsanwalt GmbH. Alle Rechte vorbehalten.
             </p>
             <div className="flex gap-4 text-sm">
-              <Link to="/impressum" className="hover:text-gold transition-colors">
+              <Link to="/impressum" className="text-foreground hover:text-accent transition-colors">
                 Impressum
               </Link>
-              <Link to="/datenschutz" className="hover:text-gold transition-colors">
+              <Link to="/datenschutz" className="text-foreground hover:text-accent transition-colors">
                 Datenschutz
               </Link>
             </div>

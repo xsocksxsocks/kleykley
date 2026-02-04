@@ -47,22 +47,22 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
     <div className="min-h-screen bg-background flex flex-col">
       {/* Guest header when not logged in */}
       {!user && (
-        <header className="bg-navy-dark text-cream sticky top-0 z-50">
+        <header className="bg-background/95 backdrop-blur-sm border-b border-border shadow-sm sticky top-0 z-50">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <Link to="/portal" className="flex items-center gap-3">
               <img src={logoImage} alt="Kley" className="h-10 w-auto" />
-              <span className="font-serif text-lg font-bold text-gold hidden sm:inline">
+              <span className="font-serif text-lg font-bold text-accent hidden sm:inline">
                 Kundenportal
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
-              <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
+              <Button variant="outline" size="sm" asChild className="border-border text-muted-foreground hover:bg-accent/10 hover:text-accent">
                 <Link to="/">
                   <Home className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Zur Hauptseite</span>
                 </Link>
               </Button>
-              <Button size="sm" asChild className="bg-gold text-navy-dark hover:bg-gold/90">
+              <Button size="sm" asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link to="/portal/auth">
                   <User className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Anmelden</span>
@@ -74,17 +74,17 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
       )}
 
       {showNav && user && (
-        <header className="bg-navy-dark text-cream sticky top-0 z-50">
+        <header className="bg-background/95 backdrop-blur-sm border-b border-border shadow-sm sticky top-0 z-50">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <Link to="/portal" className="flex items-center gap-3">
               <img src={logoImage} alt="Kley" className="h-10 w-auto" />
-              <span className="font-serif text-lg font-bold text-gold hidden sm:inline">
+              <span className="font-serif text-lg font-bold text-accent hidden sm:inline">
                 Kundenportal
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
               {isAdmin && (
-                <Button variant="outline" size="sm" asChild className="border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold">
+                <Button variant="outline" size="sm" asChild className="border-border text-muted-foreground hover:bg-accent/10 hover:text-accent">
                   <Link to="/admin">
                     <Settings className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">Admin</span>
@@ -96,8 +96,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                 size="sm" 
                 asChild 
                 className={cn(
-                  "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
-                  isOnPortalHome && "bg-gold/20 text-gold border-gold/50"
+                  "border-border text-muted-foreground hover:bg-accent/10 hover:text-accent",
+                  isOnPortalHome && "bg-accent/10 text-accent border-accent/50"
                 )}
               >
                 <Link to="/portal">
@@ -117,8 +117,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
                     variant="outline" 
                     size="sm" 
                     className={cn(
-                      "border-gold/30 bg-transparent text-cream hover:bg-gold/10 hover:text-gold",
-                      isOnUserMenu && "bg-gold/20 text-gold border-gold/50"
+                      "border-border text-muted-foreground hover:bg-accent/10 hover:text-accent",
+                      isOnUserMenu && "bg-accent/10 text-accent border-accent/50"
                     )}
                   >
                     <User className="h-4 w-4 sm:mr-2" />
