@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Package, Tag, Truck, ArrowRight, ShieldCheck, Clock, Star } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import warehouseImage from "@/assets/warehouse-background.jpg";
 
 const features = [
   { 
@@ -32,14 +31,9 @@ export function PortalSection() {
   const animation = useScrollAnimation<HTMLDivElement>();
 
   return (
-    <section className="py-28 relative overflow-hidden">
-      {/* Background image with overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${warehouseImage})` }}
-      >
-        <div className="absolute inset-0 bg-navy-dark/92" />
-      </div>
+    <section className="py-28 bg-navy-dark relative overflow-hidden">
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-navy-dark via-navy to-navy-dark" />
       
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
