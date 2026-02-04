@@ -10,6 +10,12 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Clock, Package, Car, Eye, X } from 'lucide-react';
 import { formatCurrency } from '@/types/shop';
 
+interface ProductImage {
+  id: string;
+  image_url: string;
+  sort_order: number;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -17,6 +23,7 @@ interface Product {
   discount_percentage: number | null;
   image_url: string | null;
   product_number: string | null;
+  product_images?: ProductImage[];
 }
 
 interface Vehicle {
@@ -51,7 +58,7 @@ export const RecentlyViewedSection: React.FC = () => {
         if (productIds.length > 0) {
           const { data } = await supabase
             .from('products')
-            .select('id, name, price, discount_percentage, image_url, product_number')
+            .select('id, name, price, discount_percentage, image_url, product_number, product_images(id, image_url, sort_order)')
             .in('id', productIds);
           
           // Sort by the order in items
@@ -127,6 +134,16 @@ export const RecentlyViewedSection: React.FC = () => {
               const product = item.data as Product;
               const hasDiscount = product.discount_percentage !== null && product.discount_percentage !== undefined && product.discount_percentage > 0;
               
+              // Get the best available image
+              const getProductImage = (): string | null => {
+                if (product.product_images && product.product_images.length > 0) {
+                  const sorted = [...product.product_images].sort((a, b) => a.sort_order - b.sort_order);
+                  return sorted[0].image_url;
+                }
+                return product.image_url;
+              };
+              const imageUrl = getProductImage();
+              
               return (
                 <Link 
                   key={`product-${product.id}`} 
@@ -134,17 +151,15 @@ export const RecentlyViewedSection: React.FC = () => {
                   className="flex-shrink-0 w-48"
                 >
                   <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
-                    <div className="aspect-square bg-muted relative">
-                      {product.image_url ? (
+                    <div className="aspect-square bg-muted relative flex items-center justify-center">
+                      {imageUrl ? (
                         <img
-                          src={product.image_url}
+                          src={imageUrl}
                           alt={product.name}
-                          className="w-full h-full object-cover"
+                          className="max-w-full max-h-full object-contain"
                         />
                       ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <Package className="h-8 w-8 text-muted-foreground" />
-                        </div>
+                        <Package className="h-8 w-8 text-muted-foreground" />
                       )}
                       {hasDiscount && (
                         <Badge className="absolute top-2 left-2 bg-red-500 text-xs">
@@ -181,17 +196,15 @@ export const RecentlyViewedSection: React.FC = () => {
                   className="flex-shrink-0 w-48"
                 >
                   <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
-                    <div className="aspect-square bg-muted relative">
+                    <div className="aspect-square bg-muted relative flex items-center justify-center">
                       {vehicle.images && vehicle.images.length > 0 ? (
                         <img
                           src={vehicle.images[0]}
                           alt={`${vehicle.brand} ${vehicle.model}`}
-                          className="w-full h-full object-cover"
+                          className="max-w-full max-h-full object-contain"
                         />
                       ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <Car className="h-8 w-8 text-muted-foreground" />
-                        </div>
+                        <Car className="h-8 w-8 text-muted-foreground" />
                       )}
                       {hasDiscount && (
                         <Badge className="absolute top-2 left-2 bg-red-500 text-xs">
@@ -209,7 +222,7 @@ export const RecentlyViewedSection: React.FC = () => {
                       </p>
                       <p className="text-sm font-bold mt-1">
                         {hasDiscount ? (
-                          <span className="text-gold">
+                          <span className="text-accent">
                             {formatCurrency(vehicle.price * (1 - vehicle.discount_percentage! / 100))}
                           </span>
                         ) : (
