@@ -17,7 +17,7 @@ export function Navigation() {
   const location = useLocation();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-navy/95 backdrop-blur-sm border-b border-gold/20">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -38,8 +38,8 @@ export function Navigation() {
                 className={cn(
                   "text-base font-semibold tracking-wide transition-colors duration-300",
                   location.pathname === link.href
-                    ? "text-gold"
-                    : "text-cream/70 hover:text-gold"
+                    ? "text-accent"
+                    : "text-muted-foreground hover:text-accent"
                 )}
               >
                 {link.label}
@@ -47,7 +47,7 @@ export function Navigation() {
             ))}
             <Link
               to="/kontakt"
-              className="text-base font-semibold tracking-wide text-cream/70 hover:text-gold transition-colors duration-300"
+              className="text-base font-semibold tracking-wide text-muted-foreground hover:text-accent transition-colors duration-300"
             >
               Beratung anfragen
             </Link>
@@ -59,7 +59,7 @@ export function Navigation() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-cream p-2"
+            className="md:hidden text-foreground p-2"
             aria-label="Menu"
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -68,7 +68,7 @@ export function Navigation() {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden py-6 border-t border-gold/20 animate-fade-in">
+          <div className="md:hidden py-6 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
@@ -78,8 +78,8 @@ export function Navigation() {
                   className={cn(
                     "text-lg font-semibold py-2 transition-colors",
                     location.pathname === link.href
-                      ? "text-gold"
-                      : "text-cream/70 hover:text-gold"
+                      ? "text-accent"
+                      : "text-muted-foreground hover:text-accent"
                   )}
                 >
                   {link.label}
