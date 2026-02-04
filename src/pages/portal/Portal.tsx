@@ -393,22 +393,22 @@ const Portal: React.FC = () => {
         {isGuest && (
           <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
             <UserPlus className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <span className="text-amber-800 dark:text-amber-200">
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+              <span className="text-amber-800 dark:text-amber-200 text-sm sm:text-base">
                 Registrieren Sie sich, um Produkte in den Warenkorb zu legen und Angebotsanfragen zu senden.
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-1 sm:mt-0 shrink-0">
                 <Button 
                   size="sm" 
                   variant="outline"
-                  className="border-amber-600 text-amber-700 hover:bg-amber-100 dark:border-amber-500 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                  className="border-amber-600 text-amber-700 hover:bg-amber-100 dark:border-amber-500 dark:text-amber-300 dark:hover:bg-amber-900/30 text-xs sm:text-sm"
                   onClick={() => navigate('/portal/auth')}
                 >
                   Anmelden
                 </Button>
                 <Button 
                   size="sm"
-                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  className="bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm"
                   onClick={() => navigate('/portal/auth?mode=register')}
                 >
                   Registrieren
@@ -549,7 +549,7 @@ const Portal: React.FC = () => {
                   {paginatedProducts.map((product) => {
                     const imageUrl = getProductImage(product);
                     return (
-                      <Card key={product.id} className="flex flex-col relative">
+                      <Card key={product.id} className="flex flex-col relative transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                         {!isGuest && (
                           <div className="absolute top-2 left-2 z-10">
                             <FavoriteButton itemType="product" itemId={product.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />
@@ -823,7 +823,7 @@ const Portal: React.FC = () => {
                     const inCart = isVehicleInCart(vehicle.id);
                     
                     return (
-                      <Card key={vehicle.id} className="flex flex-col relative">
+                      <Card key={vehicle.id} className="flex flex-col relative transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                         {!isGuest && (
                           <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
                             <FavoriteButton itemType="vehicle" itemId={vehicle.id} className="bg-background/80 hover:bg-background dark:bg-card/80 dark:hover:bg-card" />

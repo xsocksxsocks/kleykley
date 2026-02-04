@@ -185,7 +185,7 @@ const Favoriten = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {productFavorites.map((product) => (
-                    <Card key={product.id} className="overflow-hidden group">
+                    <Card key={product.id} className="overflow-hidden group transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                       <div className="aspect-square bg-muted relative">
                         {product.image_url ? (
                           <img
@@ -262,7 +262,7 @@ const Favoriten = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {vehicleFavorites.map((vehicle) => (
-                    <Card key={vehicle.id} className="overflow-hidden group">
+                    <Card key={vehicle.id} className="overflow-hidden group transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                       <div className="aspect-video bg-muted relative">
                         {vehicle.images && vehicle.images.length > 0 ? (
                           <img
