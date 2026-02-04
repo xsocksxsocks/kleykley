@@ -558,7 +558,7 @@ const Portal: React.FC = () => {
                         {(product.is_recommended || (product.discount_percentage !== undefined && product.discount_percentage !== null && product.discount_percentage > 0)) && (
                           <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
                             {product.is_recommended && (
-                              <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                              <Badge className="bg-accent text-accent-foreground flex items-center gap-1">
                                 <Star className="h-3 w-3 fill-current" />
                                 Empfohlen
                               </Badge>
@@ -855,7 +855,7 @@ const Portal: React.FC = () => {
                         )}
                         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
                           {vehicle.is_featured && (
-                            <Badge className="bg-gold text-navy-dark flex items-center gap-1">
+                            <Badge className="bg-accent text-accent-foreground flex items-center gap-1">
                               <Star className="h-3 w-3 fill-current" />
                               Empfohlen
                             </Badge>
