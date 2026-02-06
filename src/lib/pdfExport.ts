@@ -301,94 +301,13 @@ export const exportCatalogToPDF = async (): Promise<void> => {
   let currentPage = 1;
   const pages: (() => void)[] = [];
 
-  // Products section
-  doc.addPage();
-  currentPage++;
-  await addHeader(doc, logoBase64);
-  
-  let yPos = 45;
-  
-  // Section title for products
-  doc.setFontSize(20);
-  doc.setTextColor(...COLORS.navy);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Produkte', 15, yPos);
-  yPos += 15;
-
-  // Products by parent category
-  for (const [categoryId, { category, products: categoryProducts }] of productsByParentCategory) {
-    if (categoryProducts.length === 0) continue;
-    
-    // Check if we need a new page
-    if (yPos > 240) {
-      doc.addPage();
-      currentPage++;
-      await addHeader(doc, logoBase64);
-      yPos = 45;
-    }
-    
-    // Category title (only parent category name)
-    const categoryName = category?.name || 'Ohne Kategorie';
-    
-    yPos = addSectionTitle(doc, categoryName, yPos);
-    
-    // Products table
-    const tableData = categoryProducts.map(product => {
-      const finalPrice = product.discount_percentage && product.discount_percentage > 0
-        ? product.price * (1 - product.discount_percentage / 100)
-        : product.price;
-      
-      return [
-        product.product_number || '-',
-        product.name,
-        product.stock_quantity.toString(),
-        formatCurrency(finalPrice),
-      ];
-    });
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Art.-Nr.', 'Bezeichnung', 'Bestand', 'Preis (netto)']],
-      body: tableData,
-      theme: 'striped',
-      headStyles: {
-        fillColor: COLORS.navy,
-        textColor: COLORS.white,
-        fontStyle: 'bold',
-        fontSize: 9,
-      },
-      bodyStyles: {
-        fontSize: 8,
-        textColor: COLORS.textDark,
-      },
-      alternateRowStyles: {
-        fillColor: COLORS.lightGray,
-      },
-      columnStyles: {
-        0: { cellWidth: 25 },
-        1: { cellWidth: 90 },
-        2: { cellWidth: 25, halign: 'center' },
-        3: { cellWidth: 30, halign: 'right' },
-      },
-      margin: { top: 45, bottom: 30, left: 15, right: 15 },
-      didDrawPage: (data: any) => {
-        // Add header on new pages created by autoTable
-        if (data.pageNumber > 1 || doc.getNumberOfPages() > currentPage) {
-          addHeaderSync(doc, logoBase64);
-        }
-      },
-    });
-
-    yPos = (doc as any).lastAutoTable.finalY + 15;
-  }
-
-  // Vehicles section - new page
+  // Vehicles section FIRST
   if (vehicles.length > 0) {
     doc.addPage();
     currentPage++;
     await addHeader(doc, logoBase64);
     
-    yPos = 45;
+    let yPos = 45;
     
     // Section title for vehicles
     doc.setFontSize(20);
@@ -476,6 +395,87 @@ export const exportCatalogToPDF = async (): Promise<void> => {
 
       yPos = (doc as any).lastAutoTable.finalY + 15;
     }
+  }
+
+  // Products section - after vehicles
+  doc.addPage();
+  currentPage++;
+  await addHeader(doc, logoBase64);
+  
+  let yPos = 45;
+  
+  // Section title for products
+  doc.setFontSize(20);
+  doc.setTextColor(...COLORS.navy);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Waren', 15, yPos);
+  yPos += 15;
+
+  // Products by parent category
+  for (const [categoryId, { category, products: categoryProducts }] of productsByParentCategory) {
+    if (categoryProducts.length === 0) continue;
+    
+    // Check if we need a new page
+    if (yPos > 240) {
+      doc.addPage();
+      currentPage++;
+      await addHeader(doc, logoBase64);
+      yPos = 45;
+    }
+    
+    // Category title (only parent category name)
+    const categoryName = category?.name || 'Ohne Kategorie';
+    
+    yPos = addSectionTitle(doc, categoryName, yPos);
+    
+    // Products table
+    const tableData = categoryProducts.map(product => {
+      const finalPrice = product.discount_percentage && product.discount_percentage > 0
+        ? product.price * (1 - product.discount_percentage / 100)
+        : product.price;
+      
+      return [
+        product.product_number || '-',
+        product.name,
+        product.stock_quantity.toString(),
+        formatCurrency(finalPrice),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Art.-Nr.', 'Bezeichnung', 'Bestand', 'Preis (netto)']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: COLORS.navy,
+        textColor: COLORS.white,
+        fontStyle: 'bold',
+        fontSize: 9,
+      },
+      bodyStyles: {
+        fontSize: 8,
+        textColor: COLORS.textDark,
+      },
+      alternateRowStyles: {
+        fillColor: COLORS.lightGray,
+      },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 90 },
+        2: { cellWidth: 25, halign: 'center' },
+        3: { cellWidth: 30, halign: 'right' },
+      },
+      margin: { top: 45, bottom: 30, left: 15, right: 15 },
+      didDrawPage: (data: any) => {
+        // Add header on new pages created by autoTable
+        if (data.pageNumber > 1 || doc.getNumberOfPages() > currentPage) {
+          addHeaderSync(doc, logoBase64);
+        }
+      },
+    });
+
+    yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
   // Add footers to all pages (except cover)
