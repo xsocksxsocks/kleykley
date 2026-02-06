@@ -72,9 +72,9 @@ const Portal: React.FC = () => {
   const PRODUCTS_PER_PAGE = 24;
   const VEHICLES_PER_PAGE = 24;
   
-  // Get initial tab from URL param or default to 'products'
+  // Get initial tab from URL param or default to 'vehicles'
   const tabFromUrl = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(tabFromUrl === 'vehicles' ? 'vehicles' : 'products');
+  const [activeTab, setActiveTab] = useState(tabFromUrl === 'products' ? 'products' : 'vehicles');
   
   // Update tab when URL param changes
   useEffect(() => {
@@ -430,13 +430,13 @@ const Portal: React.FC = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="products" className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              Waren
-            </TabsTrigger>
             <TabsTrigger value="vehicles" className="flex items-center gap-2">
               <Car className="h-4 w-4" />
               Fahrzeuge
+            </TabsTrigger>
+            <TabsTrigger value="products" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Waren
             </TabsTrigger>
           </TabsList>
 
