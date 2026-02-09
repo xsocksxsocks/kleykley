@@ -114,7 +114,10 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
     return (
       customer.full_name?.toLowerCase().includes(query) ||
       customer.email.toLowerCase().includes(query) ||
-      customer.company_name?.toLowerCase().includes(query)
+      customer.company_name?.toLowerCase().includes(query) ||
+      customer.phone?.toLowerCase().includes(query) ||
+      customer.city?.toLowerCase().includes(query) ||
+      customer.id?.toLowerCase().includes(query)
     );
   });
 
