@@ -226,13 +226,14 @@ const Admin: React.FC = () => {
         if (categoriesError) throw categoriesError;
         setCategories(categoriesData || []);
 
-        // Fetch orders with items
+        // Fetch orders with items and discount codes
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
           .select(`
             *,
             order_items (*),
-            profiles (*)
+            profiles (*),
+            discount_codes (id, code, discount_type, discount_value)
           `)
           .order('created_at', { ascending: false });
 
@@ -1432,10 +1433,17 @@ const Admin: React.FC = () => {
                             {new Date(order.created_at).toLocaleDateString('de-DE')}
                           </TableCell>
                           <TableCell>
-                            {order.total_amount.toLocaleString('de-DE', {
-                              style: 'currency',
-                              currency: 'EUR',
-                            })}
+                            <div className="flex items-center gap-2">
+                              {order.total_amount.toLocaleString('de-DE', {
+                                style: 'currency',
+                                currency: 'EUR',
+                              })}
+                              {(order as any).discount_codes && (order as any).discount_amount > 0 && (
+                                <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30 text-xs">
+                                  {(order as any).discount_codes.code}
+                                </Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge className={statusColors[order.status]}>
