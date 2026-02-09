@@ -686,66 +686,7 @@ const Warenkorb: React.FC = () => {
                 <CardTitle>Ihr unverbindliches Angebot</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Discount Code Input */}
-                <div className="space-y-2">
-                  <Label htmlFor="discountCode" className="text-sm font-medium">Rabattcode</Label>
-                  {appliedDiscount ? (
-                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md">
-                      <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-600" />
-                        <span className="font-mono font-medium">{appliedDiscount.code}</span>
-                        <Badge className="bg-green-500 text-white">
-                          {appliedDiscount.discount_type === 'percentage' 
-                            ? `-${appliedDiscount.discount_value}%` 
-                            : `-${formatCurrency(appliedDiscount.discount_value)}`}
-                        </Badge>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleRemoveDiscountCode}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="discountCode"
-                          value={discountCodeInput}
-                          onChange={(e) => {
-                            setDiscountCodeInput(e.target.value.toUpperCase());
-                            setDiscountError('');
-                          }}
-                          placeholder="Code eingeben"
-                          className="pl-10 font-mono"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleApplyDiscountCode();
-                            }
-                          }}
-                        />
-                      </div>
-                      <Button
-                        onClick={handleApplyDiscountCode}
-                        disabled={!discountCodeInput.trim() || isValidatingCode}
-                        variant="outline"
-                      >
-                        {isValidatingCode ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          'Einlösen'
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                  {discountError && (
-                    <p className="text-sm text-destructive">{discountError}</p>
-                  )}
-                </div>
+                {/* Discount Code Input - hidden from customers */}
 
                 <div className="space-y-2 pt-2 border-t">
                   {(totals.discountTotal > 0 || totals.codeDiscount > 0) && (
