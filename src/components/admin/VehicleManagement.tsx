@@ -54,6 +54,7 @@ interface CarForSale {
   features_en: string[] | null;
   images: string[];
   vehicle_type: string;
+  vehicle_number: string | null;
   vat_deductible: boolean;
   is_featured: boolean;
   is_sold: boolean;
@@ -440,7 +441,8 @@ const VehicleManagement: React.FC = () => {
         (car.description?.toLowerCase().includes(query)) ||
         (car.color?.toLowerCase().includes(query)) ||
         (car.fuel_type?.toLowerCase().includes(query)) ||
-        (car.vehicle_type?.toLowerCase().includes(query));
+        (car.vehicle_type?.toLowerCase().includes(query)) ||
+        (car.vehicle_number?.toLowerCase().includes(query));
       if (!matchesSearch) return false;
     }
     // Then apply type filter
