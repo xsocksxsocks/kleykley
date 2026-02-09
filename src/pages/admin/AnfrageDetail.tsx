@@ -58,11 +58,21 @@ const statusColors: Record<Order['status'], string> = {
   cancelled: 'bg-red-500/20 text-red-700 dark:text-red-400',
 };
 
+interface DiscountCode {
+  id: string;
+  code: string;
+  discount_type: string;
+  discount_value: number;
+}
+
 interface OrderWithDetails extends Order {
   order_items: OrderItem[];
   profiles: Profile;
   admin_notes?: string | null;
   admin_notes_updated_at?: string | null;
+  discount_code_id?: string | null;
+  discount_amount?: number | null;
+  discount_codes?: DiscountCode | null;
 }
 
 const AnfrageDetail: React.FC = () => {
@@ -90,7 +100,8 @@ const AnfrageDetail: React.FC = () => {
           .select(`
             *,
             order_items (*),
-            profiles (*)
+            profiles (*),
+            discount_codes (id, code, discount_type, discount_value)
           `)
           .eq('id', id)
           .maybeSingle();
@@ -342,6 +353,28 @@ const AnfrageDetail: React.FC = () => {
                 <Separator className="my-4" />
 
                 <div className="space-y-2">
+                  {/* Subtotal before discount */}
+                  {order.discount_codes && order.discount_amount && order.discount_amount > 0 ? (
+                    <>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Zwischensumme Netto</span>
+                        <span>{formatCurrency(netTotal + order.discount_amount)}</span>
+                      </div>
+                      <div className="flex justify-between text-green-600 dark:text-green-400">
+                        <span className="flex items-center gap-2">
+                          <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30">
+                            {order.discount_codes.code}
+                          </Badge>
+                          <span>
+                            {order.discount_codes.discount_type === 'percentage' 
+                              ? `${order.discount_codes.discount_value}% Rabatt`
+                              : `${formatCurrency(order.discount_codes.discount_value)} Rabatt`}
+                          </span>
+                        </span>
+                        <span>-{formatCurrency(order.discount_amount)}</span>
+                      </div>
+                    </>
+                  ) : null}
                   <div className="flex justify-between text-lg">
                     <span>Summe Netto</span>
                     <span className="font-semibold">{formatCurrency(netTotal)}</span>
