@@ -227,7 +227,8 @@ const Portal: React.FC = () => {
       const matchesName = p.name.toLowerCase().includes(query);
       const matchesDescription = p.description?.toLowerCase().includes(query);
       const matchesCategory = getCategoryName(p.category_id)?.toLowerCase().includes(query);
-      if (!matchesName && !matchesDescription && !matchesCategory) {
+      const matchesProductNumber = p.product_number?.toLowerCase().includes(query);
+      if (!matchesName && !matchesDescription && !matchesCategory && !matchesProductNumber) {
         return false;
       }
     }
@@ -270,7 +271,8 @@ const Portal: React.FC = () => {
       const matchesBrand = v.brand.toLowerCase().includes(query);
       const matchesModel = v.model.toLowerCase().includes(query);
       const matchesDescription = v.description?.toLowerCase().includes(query);
-      if (!matchesBrand && !matchesModel && !matchesDescription) {
+      const matchesVehicleNumber = (v as any).vehicle_number?.toLowerCase().includes(query);
+      if (!matchesBrand && !matchesModel && !matchesDescription && !matchesVehicleNumber) {
         return false;
       }
     }
