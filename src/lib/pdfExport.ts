@@ -57,7 +57,7 @@ const IMPRESSUM = {
   registry: 'Amtsgericht Kiel, HRB 25081 KI',
   vatId: 'USt-IdNr.: DE162233216',
   email: 'info@kanzlei-kley.com',
-  phone: '+49 4322 6874699',
+  phone: '+49 4322 6843104',
 };
 
 const formatCurrency = (value: number): string => {
