@@ -6,18 +6,18 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 const features = [
   { 
     icon: Package, 
-    title: "Insolvenzwaren", 
-    description: "Hochwertige Produkte aus Insolvenzmassen zu attraktiven Preisen" 
+    title: "Geprüfte Fahrzeuge", 
+    description: "Hochwertige Fahrzeuge aus Insolvenzmassen zu attraktiven Preisen" 
   },
   { 
     icon: Tag, 
-    title: "Sonderposten", 
-    description: "Lagerbestände und Restposten mit erheblichen Preisnachlässen" 
+    title: "Attraktive Konditionen", 
+    description: "PKW, LKW und Nutzfahrzeuge mit erheblichen Preisnachlässen" 
   },
   { 
     icon: Truck, 
-    title: "Schnelle Lieferung", 
-    description: "Zuverlässige Abwicklung und zeitnahe Zustellung" 
+    title: "Schnelle Abwicklung", 
+    description: "Zuverlässige Abwicklung und transparente Fahrzeugdaten" 
   },
 ];
 
@@ -57,13 +57,13 @@ export function PortalSection() {
           <div className={`${animation.isVisible ? 'animate-slide-left' : ''}`}>
             <div className="w-12 h-px bg-gold/60 mb-6" />
             <span className="text-gold/70 text-xs font-medium tracking-[0.25em] uppercase">
-              Kundenportal
+              Fahrzeugportal
             </span>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-cream mt-3 mb-5">
-              Entdecken Sie unser Sortiment
+              Entdecken Sie unsere Fahrzeuge
             </h2>
             <p className="text-cream/60 text-base leading-relaxed mb-8 max-w-lg">
-              Profitieren Sie von hochwertigen Produkten aus Insolvenzmassen und Sonderposten 
+              Profitieren Sie von hochwertigen Fahrzeugen aus Insolvenzmassen 
               zu besonders attraktiven Konditionen. Registrieren Sie sich jetzt für exklusiven Zugang.
             </p>
             
@@ -81,7 +81,7 @@ export function PortalSection() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button variant="gold" size="lg" asChild className="group">
                 <Link to="/portal">
-                  Zum Kundenportal
+                  Zum Fahrzeugportal
                   <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>

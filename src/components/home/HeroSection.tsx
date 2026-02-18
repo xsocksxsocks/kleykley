@@ -48,7 +48,7 @@ export function HeroSection() {
               className="group"
             >
               <Link to="/portal">
-                Zum Kundenportal
+                Zum Fahrzeugportal
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>

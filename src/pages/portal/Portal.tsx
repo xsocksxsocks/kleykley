@@ -397,7 +397,7 @@ const Portal: React.FC = () => {
             <UserPlus className="h-4 w-4 text-amber-600" />
             <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
               <span className="text-amber-800 dark:text-amber-200 text-sm sm:text-base">
-                Registrieren Sie sich, um Produkte in den Warenkorb zu legen und Angebotsanfragen zu senden.
+                Registrieren Sie sich, um Fahrzeuge anzufragen und Angebotsanfragen zu senden.
               </span>
               <div className="flex gap-2 mt-1 sm:mt-0 shrink-0">
                 <Button 
@@ -422,10 +422,10 @@ const Portal: React.FC = () => {
 
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-2">
-            {isGuest ? 'Willkommen im Kundenportal!' : `Willkommen, ${profile?.company_name || profile?.full_name || 'Kunde'}!`}
+          {isGuest ? 'Willkommen im Fahrzeugportal!' : `Willkommen, ${profile?.company_name || profile?.full_name || 'Kunde'}!`}
           </h2>
           <p className="text-muted-foreground">
-            Entdecken Sie unsere Produkte und Fahrzeuge{!isGuest && ' und senden Sie uns eine Angebotsanfrage'}.
+            Entdecken Sie unsere Fahrzeuge{!isGuest && ' und senden Sie uns eine Angebotsanfrage'}.
             <span className="block text-sm mt-1">Alle Preise verstehen sich als Netto-Preise zzgl. MwSt.</span>
           </p>
         </div>
