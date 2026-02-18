@@ -52,7 +52,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
             <Link to="/portal" className="flex items-center gap-3">
               <img src={logoImage} alt="Kley" className="h-10 w-auto" />
               <span className="font-serif text-lg font-bold text-accent hidden sm:inline">
-                Kundenportal
+                Fahrzeugportal
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
@@ -79,7 +79,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, showNav = 
             <Link to="/portal" className="flex items-center gap-3">
               <img src={logoImage} alt="Kley" className="h-10 w-auto" />
               <span className="font-serif text-lg font-bold text-accent hidden sm:inline">
-                Kundenportal
+                Fahrzeugportal
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">

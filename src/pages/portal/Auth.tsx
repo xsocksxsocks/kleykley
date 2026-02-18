@@ -257,7 +257,7 @@ const Auth: React.FC = () => {
           <div className="flex items-center gap-3">
             <img src={logoImage} alt="Kley" className="h-10 w-auto" />
             <span className="font-serif text-lg font-bold text-gold hidden sm:inline">
-              Kundenportal
+              Fahrzeugportal
             </span>
           </div>
           <Link 
@@ -273,7 +273,7 @@ const Auth: React.FC = () => {
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
           <img src={logoImage} alt="Kley" className="h-12 mx-auto mb-4" />
-          <CardTitle className="text-2xl font-bold">Kundenportal</CardTitle>
+          <CardTitle className="text-2xl font-bold">Fahrzeugportal</CardTitle>
           <CardDescription>
             Melden Sie sich an oder erstellen Sie ein Konto
           </CardDescription>

@@ -52,7 +52,7 @@ export function Navigation() {
               Beratung anfragen
             </Link>
             <Button variant="gold" size="sm" asChild>
-              <Link to="/portal">Kundenportal</Link>
+              <Link to="/portal">Fahrzeugportal</Link>
             </Button>
           </div>
 
@@ -86,7 +86,7 @@ export function Navigation() {
                 </Link>
               ))}
               <Button variant="gold" size="lg" className="mt-4" asChild>
-                <Link to="/portal">Kundenportal</Link>
+                <Link to="/portal">Fahrzeugportal</Link>
               </Button>
             </div>
           </div>

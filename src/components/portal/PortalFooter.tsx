@@ -35,14 +35,14 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
               />
             </Link>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Ihr zuverlässiger Partner für Insolvenzwaren, Lagerbestände und Sonderposten. 
-              Wir bieten Ihnen hochwertige Produkte zu attraktiven Konditionen.
+              Ihr zuverlässiger Partner für Fahrzeuge aus Insolvenzmassen. 
+              Wir bieten Ihnen hochwertige Fahrzeuge zu attraktiven Konditionen.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-accent font-serif text-lg font-bold mb-4">Portal</h4>
+            <h4 className="text-accent font-serif text-lg font-bold mb-4">Fahrzeugportal</h4>
             <ul className="space-y-2">
               <li>
                 <Link 
