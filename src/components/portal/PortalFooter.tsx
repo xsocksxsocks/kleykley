@@ -50,7 +50,7 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
                   className="text-sm text-foreground hover:text-accent transition-colors"
                   onClick={handleRestrictedClick}
                 >
-                  Produktkatalog
+                  Fahrzeugkatalog
                 </Link>
               </li>
               <li>
