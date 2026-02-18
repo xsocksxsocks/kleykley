@@ -39,7 +39,7 @@ export function CTASection() {
             {/* Contact details */}
             <div className="space-y-4 mb-8">
               <a 
-                href="tel:+4943226843104" 
+                href="tel:+4943226843102" 
                 className="flex items-center gap-4 group"
               >
                 <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gold/10 transition-colors">
@@ -47,7 +47,7 @@ export function CTASection() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Telefon</p>
-                  <p className="text-foreground font-medium group-hover:text-gold transition-colors">+49 4322 6843104</p>
+                  <p className="text-foreground font-medium group-hover:text-gold transition-colors">+49 4322 6843102</p>
                 </div>
               </a>
               

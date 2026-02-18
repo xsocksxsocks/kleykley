@@ -95,10 +95,10 @@ export function PortalFooter({ isLoggedIn = true }: PortalFooterProps) {
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-accent shrink-0" />
                 <a 
-                  href="tel:+4943226843104" 
+                  href="tel:+4943226843102" 
                   className="text-sm text-foreground hover:text-accent transition-colors"
                 >
-                  +49 4322 6843104
+                  +49 4322 6843102
                 </a>
               </li>
               <li className="flex items-center gap-2">
